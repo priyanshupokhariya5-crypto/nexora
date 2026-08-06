@@ -427,4 +427,152 @@ router.delete('/websites/:siteId', async (req, res) => {
   }
 });
 
+// Public Published Website Fetch Endpoint
+router.get('/public/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    if (isMongoConnected()) {
+      const site = await Website.findOne({ slug });
+      if (!site || site.isPublished === false) {
+        return res.status(404).json({ success: false, message: 'Website not found or not published' });
+      }
+      site.views = (site.views || 0) + 1;
+      await site.save();
+      return res.json({ success: true, website: site });
+    } else {
+      let site = Array.from(memoryWebsitesStore.values()).find(s => s.slug === slug);
+      if (!site || site.isPublished === false) {
+        return res.status(404).json({ success: false, message: 'Website not found or not published' });
+      }
+      site.views = (site.views || 0) + 1;
+      return res.json({ success: true, website: site });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 6. AI ASSISTANT ENDPOINTS (STREAMING & GENERATION)
+// ==========================================
+
+const generateAiResponseData = (action, prompt, currentText = '', targetLang = 'Spanish') => {
+  const p = (prompt || 'Business').trim();
+
+  switch (action) {
+    case 'hero':
+      return {
+        heroTitle: `Empowering ${p} With Next-Gen Innovations`,
+        heroSubtitle: `Streamline operations, increase conversion, and scale your ${p} business with our high-performance platform.`,
+        ctaText: `Get Started Free`
+      };
+    case 'about':
+      return {
+        aboutTitle: `Crafting Excellence in ${p}`,
+        aboutDesc: `Founded with a vision to redefine ${p}, we combine industry expertise with cutting-edge craftsmanship to deliver extraordinary results for scaling businesses.`
+      };
+    case 'services':
+      return {
+        servicesTitle: `Premier ${p} Solutions`,
+        services: [
+          { title: `${p} Core Strategy`, price: '$299', desc: `Comprehensive end-to-end framework optimized for immediate ROI.` },
+          { title: `Automated Execution`, price: '$599', desc: `High-performance execution engine engineered for maximum productivity.` },
+          { title: `Enterprise Scaling`, price: '$999', desc: `Dedicated infrastructure and 24/7 priority support for global growth.` }
+        ]
+      };
+    case 'faq':
+      return {
+        faqTitle: `Frequently Asked Questions`,
+        faqs: [
+          { question: `How fast can I set up ${p}?`, answer: `Deployment takes less than 5 minutes with our automated onboarding.` },
+          { question: `Is there a money-back guarantee?`, answer: `Yes, we offer a 30-day full refund policy on all paid plans.` },
+          { question: `Can I customize ${p} to my brand?`, answer: `Absolutely! Full control over colors, typography, images, and domain.` }
+        ]
+      };
+    case 'seo':
+      return {
+        metaTitle: `${p} — High-Converting Official Website`,
+        metaDescription: `Discover premier ${p} services designed for scaling enterprises. Fast setup, proven results, and 24/7 support.`,
+        keywords: `${p}, business, scaling, platform, premium, fast`
+      };
+    case 'cta':
+      return {
+        ctaText: `Claim Your Free ${p} Trial`,
+        ctaSubtext: `No credit card required. Instant 14-day full access.`
+      };
+    case 'rewrite':
+      return {
+        resultText: `Transforming ${currentText || p} with elevated clarity, precision, and modern customer appeal.`
+      };
+    case 'shorten':
+      return {
+        resultText: currentText ? currentText.split('. ')[0] + '.' : `Accelerate growth with ${p}.`
+      };
+    case 'expand':
+      return {
+        resultText: `${currentText || p} — Built from the ground up to empower businesses with seamless execution, unparalleled performance, and long-term strategic advantage.`
+      };
+    case 'translate':
+      return {
+        targetLang,
+        resultText: targetLang === 'Spanish' 
+          ? `Impulsando ${p} con innovaciones de última generación y rendimiento superior.`
+          : targetLang === 'French'
+          ? `Propulser ${p} avec des innovations de nouvelle génération.`
+          : targetLang === 'German'
+          ? `Beflügeln Sie ${p} mit Innovationen der nächsten Generation.`
+          : `Empowering ${p} in ${targetLang}.`
+      };
+    default:
+      return {
+        heroTitle: `Transform Your ${p} Business`,
+        heroSubtitle: `Elevate user engagement with tailored digital solutions.`,
+        ctaText: `Explore Now`
+      };
+  }
+};
+
+// Synchronous JSON response endpoint
+router.post('/ai/generate', async (req, res) => {
+  try {
+    const { action, prompt, currentText, targetLang } = req.body;
+    const result = generateAiResponseData(action, prompt, currentText, targetLang);
+    return res.json({ success: true, action, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// SSE Streaming AI Endpoint
+router.post('/ai/stream', async (req, res) => {
+  try {
+    const { action, prompt, currentText, targetLang } = req.body;
+    const resultData = generateAiResponseData(action, prompt, currentText, targetLang);
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const jsonStr = JSON.stringify(resultData);
+    const chunkSize = Math.max(1, Math.floor(jsonStr.length / 10));
+
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index >= jsonStr.length) {
+        res.write(`data: [DONE]\n\n`);
+        clearInterval(interval);
+        res.end();
+        return;
+      }
+
+      const chunk = jsonStr.slice(index, index + chunkSize);
+      index += chunkSize;
+      res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+    }, 80);
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

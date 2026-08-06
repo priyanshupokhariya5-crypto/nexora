@@ -6,6 +6,7 @@ import VisualEditor from './components/VisualEditor';
 import Dashboard from './components/Dashboard';
 import AuthModal from './components/AuthModal';
 import AdminThemeModal from './components/AdminThemeModal';
+import PublicWebsite from './components/PublicWebsite';
 import { TEMPLATES_DATA } from './data/templatesData';
 
 export default function App() {
@@ -13,7 +14,27 @@ export default function App() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [editingSite, setEditingSite] = useState(null);
   const [savedWebsites, setSavedWebsites] = useState([]);
-  
+  const [publicSlug, setPublicSlug] = useState(null);
+
+  // Check URL pathname for /site/:slug routing
+  useEffect(() => {
+    const checkPathRoute = () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/site/')) {
+        const slug = path.replace('/site/', '').trim();
+        if (slug) {
+          setPublicSlug(slug);
+          return;
+        }
+      }
+      setPublicSlug(null);
+    };
+
+    checkPathRoute();
+    window.addEventListener('popstate', checkPathRoute);
+    return () => window.removeEventListener('popstate', checkPathRoute);
+  }, []);
+
   // Exactly 30 template presets
   const templates = TEMPLATES_DATA.slice(0, 30);
 
@@ -78,6 +99,11 @@ export default function App() {
     setUser(userData);
     loadSavedWebsites(userData);
   };
+
+  // If URL path is /site/:slug, render PublicWebsite standalone page
+  if (publicSlug) {
+    return <PublicWebsite slug={publicSlug} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white text-slate-900">

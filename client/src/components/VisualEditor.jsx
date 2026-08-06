@@ -5,9 +5,10 @@ import {
   Palette, Type, Layout, Sliders, Sparkles, Check, Copy, Eye, RefreshCw, X, User, 
   Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, RotateCw, Layers, FileText, 
   ChevronRight, ChevronDown, Wand2, SlidersHorizontal, Square, MoveUp, MoveDown, 
-  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical
+  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
+import AiAssistantPanel from './AiAssistantPanel';
 import confetti from 'canvas-confetti';
 import { TEMPLATES_DATA } from '../data/templatesData';
 
@@ -43,7 +44,7 @@ export default function VisualEditor({
   onBack 
 }) {
   const [leftTab, setLeftTab] = useState('sections');
-  const [rightTab, setRightTab] = useState('branding');
+  const [rightTab, setRightTab] = useState('branding'); // 'branding', 'typography', 'content', 'buttons'
   
   const [viewportMode, setViewportMode] = useState('desktop');
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -60,15 +61,16 @@ export default function VisualEditor({
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   // File Upload State
-  const [uploadingSlot, setUploadingSlot] = useState(null); // 'heroImageUrl', 'aboutImageUrl', 'galleryImageUrl'
+  const [uploadingSlot, setUploadingSlot] = useState(null); // 'logoImageUrl', 'heroImageUrl', 'aboutImageUrl', 'galleryImageUrl'
   const fileInputRef = useRef(null);
 
-  // Initial Custom State supporting 3 distinct business images and existing site data load
+  // Initial Custom State supporting full page content and images
   const [customState, setCustomState] = useState(() => {
     if (initialSite?.customData) {
       return {
         ...template.defaultData,
         ...initialSite.customData,
+        logoImageUrl: initialSite.customData.logoImageUrl || '',
         heroImageUrl: initialSite.customData.heroImageUrl || template.image,
         aboutImageUrl: initialSite.customData.aboutImageUrl || template.image,
         galleryImageUrl: initialSite.customData.galleryImageUrl || template.image,
@@ -80,6 +82,7 @@ export default function VisualEditor({
     }
     return {
       ...template.defaultData,
+      logoImageUrl: '',
       heroImageUrl: template.image,
       aboutImageUrl: template.defaultData?.aboutImageUrl || template.image,
       galleryImageUrl: template.defaultData?.galleryImageUrl || template.image,
@@ -185,6 +188,30 @@ export default function VisualEditor({
       ...customState,
       [field]: value
     });
+  };
+
+  const handleFeatureChange = (index, key, value) => {
+    const updated = [...(customState.features || [])];
+    updated[index] = { ...updated[index], [key]: value };
+    pushToHistory({ ...customState, features: updated });
+  };
+
+  const handleServiceChange = (index, key, value) => {
+    const updated = [...(customState.services || [])];
+    updated[index] = { ...updated[index], [key]: value };
+    pushToHistory({ ...customState, services: updated });
+  };
+
+  const handlePricingChange = (index, key, value) => {
+    const updated = [...(customState.pricing || [])];
+    updated[index] = { ...updated[index], [key]: value };
+    pushToHistory({ ...customState, pricing: updated });
+  };
+
+  const handleTestimonialChange = (index, key, value) => {
+    const updated = [...(customState.testimonials || [])];
+    updated[index] = { ...updated[index], [key]: value };
+    pushToHistory({ ...customState, testimonials: updated });
   };
 
   // Image Upload via Cloudinary / Data URL Endpoint
@@ -662,7 +689,7 @@ export default function VisualEditor({
 
         {/* RIGHT SIDEBAR INSPECTOR PANEL */}
         {!isPreviewMode && (
-          <aside className="w-72 bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0 z-20">
+          <aside className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col flex-shrink-0 z-20">
             
             <div className="flex border-b border-slate-800 p-1 bg-slate-950">
               <button
@@ -679,7 +706,15 @@ export default function VisualEditor({
                   rightTab === 'typography' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                Typography
+                Fonts
+              </button>
+              <button
+                onClick={() => setRightTab('content')}
+                className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-colors ${
+                  rightTab === 'content' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Content
               </button>
               <button
                 onClick={() => setRightTab('buttons')}
@@ -715,7 +750,29 @@ export default function VisualEditor({
                       type="text"
                       value={customState.logoText || ''}
                       onChange={(e) => handleTextChange('logoText', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
+                      placeholder="e.g. VoltTech Store"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-300">Brand Logo Image</label>
+                      <button
+                        type="button"
+                        onClick={() => triggerImageUpload('logoImageUrl')}
+                        className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1"
+                      >
+                        <UploadCloud className="w-3 h-3" />
+                        <span>Upload Logo</span>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={customState.logoImageUrl || ''}
+                      onChange={(e) => handleTextChange('logoImageUrl', e.target.value)}
+                      placeholder="Custom Logo Image URL..."
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
                     />
                   </div>
 
@@ -765,7 +822,7 @@ export default function VisualEditor({
               {rightTab === 'typography' && (
                 <div className="space-y-4">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-                    Typography & Copywriting
+                    Typography & Fonts
                   </span>
 
                   <div>
@@ -781,26 +838,178 @@ export default function VisualEditor({
                       <option value="inter">Inter UI</option>
                     </select>
                   </div>
+                </div>
+              )}
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Hero Headline</label>
-                    <textarea
-                      rows={3}
-                      value={customState.heroTitle || ''}
-                      onChange={(e) => handleTextChange('heroTitle', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    />
+              {/* FULL PAGE CONTENT EDITING TAB */}
+              {rightTab === 'content' && (
+                <div className="space-y-5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
+                    Full Page Content & Section Editors
+                  </span>
+
+                  {/* 1. HERO SECTION CONTENT */}
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <span className="block text-xs font-bold text-brand-400 font-display">1. Hero Section</span>
+                    
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Hero Title</label>
+                      <textarea
+                        rows={2}
+                        value={customState.heroTitle || ''}
+                        onChange={(e) => handleTextChange('heroTitle', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Hero Subtitle</label>
+                      <textarea
+                        rows={2}
+                        value={customState.heroSubtitle || ''}
+                        onChange={(e) => handleTextChange('heroSubtitle', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Hero Subtitle</label>
-                    <textarea
-                      rows={3}
-                      value={customState.heroSubtitle || ''}
-                      onChange={(e) => handleTextChange('heroSubtitle', e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    />
+                  {/* 2. FEATURES SECTION CONTENT */}
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <span className="block text-xs font-bold text-amber-400 font-display">2. Features Section</span>
+                    
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Features Section Title</label>
+                      <input
+                        type="text"
+                        value={customState.featuresTitle || ''}
+                        onChange={(e) => handleTextChange('featuresTitle', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    {(customState.features || []).map((feat, idx) => (
+                      <div key={idx} className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                        <label className="text-[9px] font-semibold text-slate-400">Feature #{idx+1}</label>
+                        <input
+                          type="text"
+                          value={feat.title || ''}
+                          onChange={(e) => handleFeatureChange(idx, 'title', e.target.value)}
+                          className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
+                          placeholder="Feature Title..."
+                        />
+                        <textarea
+                          rows={2}
+                          value={feat.desc || ''}
+                          onChange={(e) => handleFeatureChange(idx, 'desc', e.target.value)}
+                          className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
+                          placeholder="Feature Description..."
+                        />
+                      </div>
+                    ))}
                   </div>
+
+                  {/* 3. ABOUT STORY SECTION CONTENT */}
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <span className="block text-xs font-bold text-emerald-400 font-display">3. About Section</span>
+                    
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">About Title</label>
+                      <input
+                        type="text"
+                        value={customState.aboutTitle || ''}
+                        onChange={(e) => handleTextChange('aboutTitle', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">About Description</label>
+                      <textarea
+                        rows={3}
+                        value={customState.aboutDesc || ''}
+                        onChange={(e) => handleTextChange('aboutDesc', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. SERVICES SECTION CONTENT */}
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <span className="block text-xs font-bold text-indigo-400 font-display">4. Services / Products Section</span>
+                    
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Services Title</label>
+                      <input
+                        type="text"
+                        value={customState.servicesTitle || ''}
+                        onChange={(e) => handleTextChange('servicesTitle', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    {(customState.services || []).map((serv, idx) => (
+                      <div key={idx} className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                        <label className="text-[9px] font-semibold text-slate-400">Item #{idx+1}</label>
+                        <input
+                          type="text"
+                          value={serv.title || ''}
+                          onChange={(e) => handleServiceChange(idx, 'title', e.target.value)}
+                          className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
+                          placeholder="Item Title..."
+                        />
+                        <input
+                          type="text"
+                          value={serv.price || ''}
+                          onChange={(e) => handleServiceChange(idx, 'price', e.target.value)}
+                          className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white font-mono"
+                          placeholder="Price Tag (e.g. $79)..."
+                        />
+                        <textarea
+                          rows={2}
+                          value={serv.desc || ''}
+                          onChange={(e) => handleServiceChange(idx, 'desc', e.target.value)}
+                          className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
+                          placeholder="Description..."
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 5. CONTACT & FOOTER */}
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
+                    <span className="block text-xs font-bold text-rose-400 font-display">5. Contact & Footer Details</span>
+                    
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Contact Email</label>
+                      <input
+                        type="email"
+                        value={customState.contactEmail || ''}
+                        onChange={(e) => handleTextChange('contactEmail', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Contact Phone</label>
+                      <input
+                        type="text"
+                        value={customState.contactPhone || ''}
+                        onChange={(e) => handleTextChange('contactPhone', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Footer Copyright Text</label>
+                      <input
+                        type="text"
+                        value={customState.footerText || ''}
+                        onChange={(e) => handleTextChange('footerText', e.target.value)}
+                        className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
+                      />
+                    </div>
+                  </div>
+
                 </div>
               )}
 
@@ -841,61 +1050,18 @@ export default function VisualEditor({
 
       </div>
 
-      {/* 3. AI ASSISTANT MODAL DRAWER */}
-      <AnimatePresence>
-        {isAiModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-800 shadow-2xl relative"
-            >
-              <button
-                onClick={() => setIsAiModalOpen(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl bg-brand-600/20 border border-brand-500/30 text-brand-400 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white font-display">Nexora AI Assistant</h3>
-                  <p className="text-xs text-slate-400">Enter a prompt to auto-generate website content.</p>
-                </div>
-              </div>
-
-              <form onSubmit={handleAiGenerate} className="space-y-4">
-                <textarea
-                  rows={4}
-                  required
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  placeholder="e.g. Write a high-converting headline and subtext for a luxury supercar rental business..."
-                  className="w-full p-4 text-xs rounded-2xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                />
-
-                <button
-                  type="submit"
-                  disabled={isGeneratingAi}
-                  className="w-full py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md flex items-center justify-center space-x-2"
-                >
-                  {isGeneratingAi ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Wand2 className="w-4 h-4 text-amber-300" />
-                  )}
-                  <span>{isGeneratingAi ? 'Generating Content...' : 'Generate Content'}</span>
-                </button>
-              </form>
-
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* 3. AI ASSISTANT PANEL DRAWER */}
+      <AiAssistantPanel
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        customState={customState}
+        onApplyAiUpdate={(updates) => {
+          pushToHistory({
+            ...customState,
+            ...updates
+          });
+        }}
+      />
 
     </div>
   );

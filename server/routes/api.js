@@ -1,0 +1,430 @@
+const express = require('express');
+const router = express.Router();
+const { TEMPLATES_DATA } = require('../data/templatesList');
+const Website = require('../models/Website');
+const User = require('../models/User');
+const Theme = require('../models/Theme');
+const TemplateModel = require('../models/TemplateModel');
+
+// In-memory fallback stores when MongoDB is not connected
+const memoryWebsitesStore = new Map();
+const memoryUsersStore = new Map();
+const memoryThemesStore = new Map();
+
+// Helper to check if Mongoose is connected
+const isMongoConnected = () => {
+  const mongoose = require('mongoose');
+  return mongoose.connection.readyState === 1;
+};
+
+// Seed MongoDB with 30 templates automatically if collection is empty
+const seedTemplatesIfEmpty = async () => {
+  try {
+    if (isMongoConnected()) {
+      const count = await TemplateModel.countDocuments();
+      if (count === 0) {
+        await TemplateModel.insertMany(TEMPLATES_DATA);
+        console.log('🌱 Seeded 30 templates into MongoDB "templates" collection');
+      }
+    }
+  } catch (err) {
+    console.error('Template seeding error:', err.message);
+  }
+};
+
+// ==========================================
+// 1. CLOUDINARY & IMAGE UPLOAD ENDPOINT
+// ==========================================
+
+router.post('/upload', async (req, res) => {
+  try {
+    const { image } = req.body; // base64 string or image data URL
+
+    if (!image) {
+      return res.status(400).json({ success: false, message: 'No image data provided for upload.' });
+    }
+
+    // Check if Cloudinary credentials are set in environment
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      const cloudinary = require('cloudinary').v2;
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+      });
+
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        folder: 'nexora_uploads'
+      });
+
+      return res.json({
+        success: true,
+        provider: 'cloudinary',
+        url: uploadResponse.secure_url,
+        message: 'Image uploaded successfully to Cloudinary!'
+      });
+    }
+
+    // Out-of-the-box fallback: Return data URL / base64 image
+    return res.json({
+      success: true,
+      provider: 'base64',
+      url: image,
+      message: 'Image uploaded successfully!'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 2. ADMIN THEMES ENDPOINTS (GET / POST / DELETE)
+// ==========================================
+
+router.get('/admin/themes', async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const themes = await Theme.find().sort({ createdAt: -1 });
+      return res.json({ success: true, count: themes.length, themes });
+    } else {
+      const themes = Array.from(memoryThemesStore.values());
+      return res.json({ success: true, count: themes.length, themes });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/admin/themes', async (req, res) => {
+  try {
+    const { name, accentColor, bgTheme, fontFamily, category, badge } = req.body;
+
+    if (!name || !accentColor) {
+      return res.status(400).json({ success: false, message: 'Please provide theme name and accent color.' });
+    }
+
+    const themeId = 'thm_' + Math.random().toString(36).substr(2, 9);
+    const themePayload = {
+      themeId,
+      name,
+      accentColor: accentColor || '#2551e8',
+      bgTheme: bgTheme || 'light',
+      fontFamily: fontFamily || 'sans',
+      category: category || 'E-Commerce',
+      badge: badge || 'Admin Preset',
+      createdAt: new Date()
+    };
+
+    if (isMongoConnected()) {
+      const newTheme = new Theme(themePayload);
+      await newTheme.save();
+      return res.json({ success: true, theme: newTheme, message: 'Admin theme added successfully to MongoDB!' });
+    } else {
+      memoryThemesStore.set(themeId, themePayload);
+      return res.json({ success: true, theme: themePayload, message: 'Admin theme added successfully!' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/admin/themes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isMongoConnected()) {
+      await Theme.findOneAndDelete({ $or: [{ _id: id }, { themeId: id }] });
+      return res.json({ success: true, message: 'Theme deleted successfully from MongoDB' });
+    } else {
+      memoryThemesStore.delete(id);
+      return res.json({ success: true, message: 'Theme deleted successfully' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 3. AUTHENTICATION ENDPOINTS (LOGIN / REGISTER)
+// ==========================================
+
+router.post('/auth/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Please provide name, email, and password.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (isMongoConnected()) {
+      const existingUser = await User.findOne({ email: cleanEmail });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: 'An account with this email already exists in MongoDB.' });
+      }
+
+      const newUser = new User({
+        name,
+        email: cleanEmail,
+        password
+      });
+      await newUser.save();
+
+      const userPayload = {
+        id: newUser._id.toString(),
+        name: newUser.name,
+        email: newUser.email,
+        createdAt: newUser.createdAt
+      };
+
+      return res.json({ success: true, user: userPayload, message: 'Registration successful!' });
+    } else {
+      if (memoryUsersStore.has(cleanEmail)) {
+        return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
+      }
+
+      const userId = 'usr_' + Math.random().toString(36).substr(2, 9);
+      const userPayload = {
+        id: userId,
+        name,
+        email: cleanEmail,
+        password,
+        createdAt: new Date()
+      };
+
+      memoryUsersStore.set(cleanEmail, userPayload);
+      return res.json({ success: true, user: userPayload, message: 'Registration successful!' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Please enter your email and password.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (isMongoConnected()) {
+      const user = await User.findOne({ email: cleanEmail });
+      if (!user || user.password !== password) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      }
+
+      const userPayload = {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt
+      };
+
+      return res.json({ success: true, user: userPayload, message: 'Login successful!' });
+    } else {
+      const user = memoryUsersStore.get(cleanEmail);
+      if (!user || user.password !== password) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      }
+
+      const userPayload = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt
+      };
+
+      return res.json({ success: true, user: userPayload, message: 'Login successful!' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 4. TEMPLATES CATALOG ENDPOINTS (DIRECT MONGODB QUERY)
+// ==========================================
+
+router.get('/templates', async (req, res) => {
+  try {
+    await seedTemplatesIfEmpty();
+    const { category, search } = req.query;
+
+    if (isMongoConnected()) {
+      let query = {};
+      if (category && category !== 'All') {
+        query.category = { $regex: new RegExp(`^${category}$`, 'i') };
+      }
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { tagline: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } }
+        ];
+      }
+      const dbTemplates = await TemplateModel.find(query).limit(30);
+      
+      const templates = dbTemplates.length > 0 ? dbTemplates : TEMPLATES_DATA.slice(0, 30);
+      return res.json({
+        success: true,
+        source: dbTemplates.length > 0 ? 'mongodb' : 'static',
+        count: templates.length,
+        templates
+      });
+    } else {
+      let filtered = TEMPLATES_DATA.slice(0, 30);
+
+      if (category && category !== 'All') {
+        filtered = filtered.filter(t => t.category.toLowerCase() === category.toLowerCase());
+      }
+
+      if (search) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(t => 
+          t.title.toLowerCase().includes(q) || 
+          t.tagline.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q)
+        );
+      }
+
+      return res.json({
+        success: true,
+        source: 'in-memory',
+        count: filtered.length,
+        templates: filtered
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/templates/:id', async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const template = await TemplateModel.findOne({ id: req.params.id });
+      if (template) return res.json({ success: true, source: 'mongodb', template });
+    }
+    const template = TEMPLATES_DATA.find(t => t.id === req.params.id);
+    if (!template) {
+      return res.status(404).json({ success: false, message: 'Template not found' });
+    }
+    res.json({ success: true, source: 'fallback', template });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 5. WEBSITES CRUD ENDPOINTS (AUTO-SAVE & MONGODB SYNC)
+// ==========================================
+
+router.post('/websites', async (req, res) => {
+  try {
+    const { userId, siteId, templateId, title, slug, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
+
+    if (!templateId || !title || !customData) {
+      return res.status(400).json({ success: false, message: 'Missing required website configuration parameters.' });
+    }
+
+    const ownerId = userId || 'guest';
+    const generateId = siteId || 'site_' + Math.random().toString(36).substr(2, 9);
+    const generateSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(100 + Math.random() * 900);
+
+    const sitePayload = {
+      userId: ownerId,
+      siteId: generateId,
+      templateId,
+      title,
+      slug: generateSlug,
+      accentColor: accentColor || '#2551e8',
+      fontFamily: fontFamily || 'sans',
+      bgTheme: bgTheme || 'light',
+      customData,
+      isPublished: isPublished !== undefined ? isPublished : true,
+      updatedAt: new Date()
+    };
+
+    if (isMongoConnected()) {
+      const existing = await Website.findOne({ siteId: generateId });
+      let savedSite;
+      if (existing) {
+        savedSite = await Website.findOneAndUpdate({ siteId: generateId }, sitePayload, { new: true });
+      } else {
+        savedSite = new Website(sitePayload);
+        await savedSite.save();
+      }
+      return res.json({ success: true, website: savedSite, mode: 'mongodb' });
+    } else {
+      if (!sitePayload.createdAt) sitePayload.createdAt = new Date();
+      if (!sitePayload.views) sitePayload.views = Math.floor(Math.random() * 50) + 12;
+      memoryWebsitesStore.set(generateId, sitePayload);
+      return res.json({ success: true, website: sitePayload, mode: 'in-memory' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/websites', async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    if (isMongoConnected()) {
+      const query = userId ? { userId } : {};
+      const websites = await Website.find(query).sort({ updatedAt: -1 });
+      return res.json({ success: true, count: websites.length, websites });
+    } else {
+      let websites = Array.from(memoryWebsitesStore.values());
+      if (userId) {
+        websites = websites.filter(s => s.userId === userId || s.userId === 'guest');
+      }
+      return res.json({ success: true, count: websites.length, websites });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/websites/:identifier', async (req, res) => {
+  try {
+    const id = req.params.identifier;
+    if (isMongoConnected()) {
+      const site = await Website.findOne({ $or: [{ siteId: id }, { slug: id }] });
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found' });
+      site.views += 1;
+      await site.save();
+      return res.json({ success: true, website: site });
+    } else {
+      let site = memoryWebsitesStore.get(id);
+      if (!site) {
+        site = Array.from(memoryWebsitesStore.values()).find(s => s.slug === id);
+      }
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found' });
+      site.views = (site.views || 0) + 1;
+      return res.json({ success: true, website: site });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/websites/:siteId', async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    if (isMongoConnected()) {
+      await Website.findOneAndDelete({ siteId });
+      return res.json({ success: true, message: 'Website deleted successfully from MongoDB' });
+    } else {
+      memoryWebsitesStore.delete(siteId);
+      return res.json({ success: true, message: 'Website deleted successfully' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+module.exports = router;

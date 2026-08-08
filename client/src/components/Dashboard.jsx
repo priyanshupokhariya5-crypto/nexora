@@ -3,6 +3,7 @@ import {
   Plus, ExternalLink, Edit3, Trash2, Globe, Eye, Sparkles, 
   Layout, BarChart2, CheckCircle2, Clock, Layers, LogIn
 } from 'lucide-react';
+import { apiFetch } from '../api';
 
 export default function Dashboard({ 
   user = null,
@@ -15,8 +16,8 @@ export default function Dashboard({
 
   const fetchWebsites = async () => {
     try {
-      const url = user ? `/api/websites?userId=${user.id}` : '/api/websites';
-      const res = await fetch(url);
+      const endpoint = user ? `/api/websites?userId=${user.id}` : '/api/websites';
+      const res = await apiFetch(endpoint);
       const data = await res.json();
       if (data.success) {
         setSavedSites(data.websites || []);
@@ -35,7 +36,7 @@ export default function Dashboard({
   const handleDelete = async (siteId) => {
     if (!window.confirm('Are you sure you want to delete this website project?')) return;
     try {
-      const res = await fetch(`/api/websites/${siteId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/websites/${siteId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         setSavedSites(prev => prev.filter(s => s.siteId !== siteId));

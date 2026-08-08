@@ -11,6 +11,7 @@ import TemplateRenderer from './TemplateRenderer';
 import AiAssistantPanel from './AiAssistantPanel';
 import confetti from 'canvas-confetti';
 import { TEMPLATES_DATA } from '../data/templatesData';
+import { apiFetch } from '../api';
 
 const CURATED_COLORS = [
   { name: 'Royal Blue', hex: '#2551e8' },
@@ -122,7 +123,7 @@ export default function VisualEditor({
           isPublished: true
         };
 
-        const res = await fetch('/api/websites', {
+        const res = await apiFetch('/api/websites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -231,7 +232,7 @@ export default function VisualEditor({
       const base64Data = reader.result;
       try {
         setSaveStatus('saving');
-        const res = await fetch('/api/upload', {
+        const res = await apiFetch('/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64Data })
@@ -268,7 +269,7 @@ export default function VisualEditor({
         isPublished: true
       };
 
-      const res = await fetch('/api/websites', {
+      const res = await apiFetch('/api/websites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -5,6 +5,7 @@ import {
   Search, Zap, Edit3, Scissors, Maximize2, Globe, CheckCircle2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { apiFetch } from '../api';
 
 const AI_TOOLS = [
   { id: 'hero', name: 'Hero Generator', icon: Rocket, desc: 'Generate high-converting hero headlines & subtext' },
@@ -52,7 +53,7 @@ export default function AiAssistantPanel({
         targetLang
       };
 
-      const res = await fetch('/api/ai/generate', {
+      const res = await apiFetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

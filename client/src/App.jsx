@@ -8,6 +8,7 @@ import AuthModal from './components/AuthModal';
 import AdminThemeModal from './components/AdminThemeModal';
 import PublicWebsite from './components/PublicWebsite';
 import { TEMPLATES_DATA } from './data/templatesData';
+import { apiFetch } from './api';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
@@ -49,8 +50,8 @@ export default function App() {
   // Load User Specific Websites
   const loadSavedWebsites = async (currentUser = user) => {
     try {
-      const url = currentUser ? `/api/websites?userId=${currentUser.id}` : '/api/websites';
-      const res = await fetch(url);
+      const endpoint = currentUser ? `/api/websites?userId=${currentUser.id}` : '/api/websites';
+      const res = await apiFetch(endpoint);
       const data = await res.json();
       if (data.success) {
         setSavedWebsites(data.websites || []);

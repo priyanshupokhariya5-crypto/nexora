@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Palette, Sparkles, Trash2, Check, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react';
 import { TEMPLATE_CATEGORIES } from '../data/templatesData';
+import { apiFetch } from '../api';
 
 export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
   const [themes, setThemes] = useState([]);
@@ -17,7 +18,7 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
 
   const fetchAdminThemes = async () => {
     try {
-      const res = await fetch('/api/admin/themes');
+      const res = await apiFetch('/api/admin/themes');
       const data = await res.json();
       if (data.success) {
         setThemes(data.themes || []);
@@ -51,7 +52,7 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
         badge
       };
 
-      const res = await fetch('/api/admin/themes', {
+      const res = await apiFetch('/api/admin/themes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -77,7 +78,7 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
   const handleDeleteTheme = async (themeId) => {
     if (!window.confirm('Delete this admin theme preset?')) return;
     try {
-      const res = await fetch(`/api/admin/themes/${themeId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/admin/themes/${themeId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         setThemes(prev => prev.filter(t => t.themeId !== themeId && t._id !== themeId));

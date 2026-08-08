@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, ArrowRight, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { apiFetch } from '../api';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' or 'signup'
@@ -20,7 +21,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const body = mode === 'login' ? { email, password } : { name, email, password };
 
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)

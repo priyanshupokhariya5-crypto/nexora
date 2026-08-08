@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, AlertCircle, ArrowLeft, Zap, Globe, Sparkles } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import { TEMPLATES_DATA } from '../data/templatesData';
+import { apiFetch } from '../api';
 
 export default function PublicWebsite({ slug }) {
   const [website, setWebsite] = useState(null);
@@ -14,7 +15,7 @@ export default function PublicWebsite({ slug }) {
       setErrorMsg('');
 
       try {
-        const res = await fetch(`/api/public/${slug}`);
+        const res = await apiFetch(`/api/public/${slug}`);
         const data = await res.json();
 
         if (data.success && data.website) {

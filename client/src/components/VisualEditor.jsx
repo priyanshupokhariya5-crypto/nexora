@@ -657,7 +657,15 @@ export default function VisualEditor({
               className="absolute top-4 z-40 bg-emerald-500 text-slate-950 px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-bold"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Published Live! URL: {window.location.origin}/site/{savedSiteData.slug}</span>
+              <span>Published Live! URL:</span>
+              <a
+                href={`${window.location.origin}/site/${savedSiteData.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-mono hover:opacity-80"
+              >
+                {window.location.origin}/site/{savedSiteData.slug}
+              </a>
               <button
                 onClick={handleCopyPublishedLink}
                 className="px-3 py-1 rounded-xl bg-slate-950 text-white hover:bg-slate-800 text-[10px] font-bold flex items-center space-x-1"

@@ -964,7 +964,6 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                 <li><a href="#privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
                 <li><a href="#terms" className="hover:text-white transition-colors">Terms of Service</a></li>
                 <li><a href="#security" className="hover:text-white transition-colors">Security Overview</a></li>
-                <li><span className="text-emerald-400 font-semibold">MongoDB Connected</span></li>
               </ul>
             </div>
 

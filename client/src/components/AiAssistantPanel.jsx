@@ -117,12 +117,12 @@ export default function AiAssistantPanel({
   const activeToolObj = AI_TOOLS.find(t => t.id === selectedTool) || AI_TOOLS[0];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-2xl w-full border border-slate-800 shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden"
+        className="bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 max-w-2xl w-full mx-2 border border-slate-800 shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800 flex-shrink-0">

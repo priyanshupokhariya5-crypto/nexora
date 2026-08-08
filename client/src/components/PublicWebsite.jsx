@@ -80,7 +80,7 @@ export default function PublicWebsite({ slug }) {
   const template = TEMPLATES_DATA.find(t => t.id === website.templateId) || TEMPLATES_DATA[0];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans">
+    <div className="min-h-screen bg-white text-slate-900 font-sans overflow-x-hidden w-full max-w-full">
       <TemplateRenderer
         template={template}
         customData={website.customData || {}}

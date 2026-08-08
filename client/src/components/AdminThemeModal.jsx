@@ -89,8 +89,8 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-slate-200 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 max-w-xl w-full mx-2 border border-slate-200 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         
         {/* Close Button */}
         <button

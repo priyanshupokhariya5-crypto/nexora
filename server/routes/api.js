@@ -95,7 +95,87 @@ router.get('/admin/themes', async (req, res) => {
   }
 });
 
-router.post('/admin/themes', async (req, res) => {
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'nexora_jwt_secret_key_2026_prod';
+
+// Database-backed Admin Authorization Middleware
+const requireAdmin = async (req, res, next) => {
+  try {
+    // 1. Extract Bearer token from Authorization header or fallback fields
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : req.headers['x-access-token'] || req.body?.token || req.query?.token;
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Authentication token required.' 
+      });
+    }
+
+    // 2. Verify JWT token signature
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid or expired authentication token.' 
+      });
+    }
+
+    const userId = decoded.id || decoded.userId;
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid token payload.' 
+      });
+    }
+
+    // 3. Fetch user directly from MongoDB database (or fallback memory store)
+    let dbUser = null;
+    if (isMongoConnected()) {
+      try {
+        dbUser = await User.findById(userId);
+        if (!dbUser) {
+          dbUser = await User.findOne({ _id: userId });
+        }
+      } catch (e) {
+        dbUser = await User.findOne({ email: decoded.email });
+      }
+    } else {
+      dbUser = Array.from(memoryUsersStore.values()).find(u => u.id === userId);
+    }
+
+    if (!dbUser) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: User account not found.' 
+      });
+    }
+
+    // 4. Verify role STRICTLY FROM THE DATABASE USER MODEL (never client headers/payload)
+    const dbRole = dbUser.role || (dbUser.email === 'admin@nexora.com' ? 'admin' : 'user');
+
+    if (dbRole !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Forbidden: Admin access required.' 
+      });
+    }
+
+    req.user = dbUser;
+    next();
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error during authorization verification.' 
+    });
+  }
+};
+
+router.post('/admin/themes', requireAdmin, async (req, res) => {
   try {
     const { name, accentColor, bgTheme, fontFamily, category, badge } = req.body;
 
@@ -128,7 +208,7 @@ router.post('/admin/themes', async (req, res) => {
   }
 });
 
-router.delete('/admin/themes/:id', async (req, res) => {
+router.delete('/admin/themes/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     if (isMongoConnected()) {
@@ -149,13 +229,14 @@ router.delete('/admin/themes/:id', async (req, res) => {
 
 router.post('/auth/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide name, email, and password.' });
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const assignedRole = role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
 
     if (isMongoConnected()) {
       const existingUser = await User.findOne({ email: cleanEmail });
@@ -166,34 +247,44 @@ router.post('/auth/register', async (req, res) => {
       const newUser = new User({
         name,
         email: cleanEmail,
-        password
+        password,
+        role: assignedRole
       });
       await newUser.save();
 
+      const userIdStr = newUser._id.toString();
+      const token = jwt.sign({ id: userIdStr, email: cleanEmail, role: assignedRole }, JWT_SECRET, { expiresIn: '7d' });
+
       const userPayload = {
-        id: newUser._id.toString(),
+        id: userIdStr,
         name: newUser.name,
         email: newUser.email,
+        role: newUser.role || assignedRole,
+        token,
         createdAt: newUser.createdAt
       };
 
-      return res.json({ success: true, user: userPayload, message: 'Registration successful!' });
+      return res.json({ success: true, user: userPayload, token, message: 'Registration successful!' });
     } else {
       if (memoryUsersStore.has(cleanEmail)) {
         return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
       }
 
       const userId = 'usr_' + Math.random().toString(36).substr(2, 9);
+      const token = jwt.sign({ id: userId, email: cleanEmail, role: assignedRole }, JWT_SECRET, { expiresIn: '7d' });
+
       const userPayload = {
         id: userId,
         name,
         email: cleanEmail,
         password,
+        role: assignedRole,
+        token,
         createdAt: new Date()
       };
 
       memoryUsersStore.set(cleanEmail, userPayload);
-      return res.json({ success: true, user: userPayload, message: 'Registration successful!' });
+      return res.json({ success: true, user: userPayload, token, message: 'Registration successful!' });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -216,28 +307,39 @@ router.post('/auth/login', async (req, res) => {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
+      const userRole = user.role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
+      const userIdStr = user._id.toString();
+      const token = jwt.sign({ id: userIdStr, email: cleanEmail, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
+
       const userPayload = {
-        id: user._id.toString(),
+        id: userIdStr,
         name: user.name,
         email: user.email,
+        role: userRole,
+        token,
         createdAt: user.createdAt
       };
 
-      return res.json({ success: true, user: userPayload, message: 'Login successful!' });
+      return res.json({ success: true, user: userPayload, token, message: 'Login successful!' });
     } else {
       const user = memoryUsersStore.get(cleanEmail);
       if (!user || user.password !== password) {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
+      const userRole = user.role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
+      const token = jwt.sign({ id: user.id, email: cleanEmail, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
+
       const userPayload = {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: userRole,
+        token,
         createdAt: user.createdAt
       };
 
-      return res.json({ success: true, user: userPayload, message: 'Login successful!' });
+      return res.json({ success: true, user: userPayload, token, message: 'Login successful!' });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

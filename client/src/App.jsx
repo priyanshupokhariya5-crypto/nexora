@@ -165,10 +165,11 @@ export default function App() {
         onAuthSuccess={handleAuthSuccess}
       />
 
-      {/* Admin Theme Manager Modal */}
+      {/* Admin Theme Manager Modal (ADMIN ROLE ONLY) */}
       <AdminThemeModal
-        isOpen={isAdminThemeOpen}
+        isOpen={isAdminThemeOpen && user?.role === 'admin'}
         onClose={() => setIsAdminThemeOpen(false)}
+        user={user}
       />
 
     </div>

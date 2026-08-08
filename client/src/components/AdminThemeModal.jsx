@@ -3,7 +3,7 @@ import { X, Plus, Palette, Sparkles, Trash2, Check, RefreshCw, AlertCircle, Shie
 import { TEMPLATE_CATEGORIES } from '../data/templatesData';
 import { apiFetch } from '../api';
 
-export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
+export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = null }) {
   const [themes, setThemes] = useState([]);
   const [name, setName] = useState('');
   const [accentColor, setAccentColor] = useState('#2551e8');
@@ -49,12 +49,16 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
         bgTheme,
         fontFamily,
         category,
-        badge
+        badge,
+        role: user?.role || 'user'
       };
 
       const res = await apiFetch('/api/admin/themes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-role': user?.role || 'user'
+        },
         body: JSON.stringify(payload)
       });
 
@@ -78,7 +82,12 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded }) {
   const handleDeleteTheme = async (themeId) => {
     if (!window.confirm('Delete this admin theme preset?')) return;
     try {
-      const res = await apiFetch(`/api/admin/themes/${themeId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/admin/themes/${themeId}`, { 
+        method: 'DELETE',
+        headers: {
+          'x-user-role': user?.role || 'user'
+        }
+      });
       const data = await res.json();
       if (data.success) {
         setThemes(prev => prev.filter(t => t.themeId !== themeId && t._id !== themeId));

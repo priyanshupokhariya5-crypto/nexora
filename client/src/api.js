@@ -26,12 +26,25 @@ export const getApiUrl = (endpoint) => {
   return `${API_BASE_URL}${cleanEndpoint}`;
 };
 
-/**
- * Universal fetch wrapper using normalized production/local API URL
- */
 export const apiFetch = async (endpoint, options = {}) => {
   const url = getApiUrl(endpoint);
-  return fetch(url, options);
+  
+  // Automatically attach Authorization Bearer token header if present in localStorage
+  const headers = { ...(options.headers || {}) };
+  try {
+    const savedUser = localStorage.getItem('nexora_user');
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      if (parsed?.token && !headers['Authorization'] && !headers['authorization']) {
+        headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    }
+  } catch (e) {}
+
+  return fetch(url, {
+    ...options,
+    headers
+  });
 };
 
 export default {

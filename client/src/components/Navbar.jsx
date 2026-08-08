@@ -117,17 +117,19 @@ export default function Navbar({
         {/* Right Action Controls */}
         <div className="flex items-center space-x-2.5">
 
-          {/* Admin Themes Access Button */}
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onOpenAdminThemes}
-            className="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-xs font-bold transition-all duration-200 shadow-soft-sm"
-            title="Admin Template Themes Manager"
-          >
-            <ShieldCheck className="w-4 h-4 text-amber-600" />
-            <span>Admin Themes</span>
-          </motion.button>
+          {/* Admin Themes Access Button (ADMIN ONLY) */}
+          {user?.role === 'admin' && (
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={onOpenAdminThemes}
+              className="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-xs font-bold transition-all duration-200 shadow-soft-sm"
+              title="Admin Template Themes Manager"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-600" />
+              <span>Admin Themes</span>
+            </motion.button>
+          )}
 
           {user ? (
             <div className="relative">
@@ -164,13 +166,15 @@ export default function Navbar({
                       <span>My Websites</span>
                     </button>
 
-                    <button
-                      onClick={() => { onOpenAdminThemes(); setDropdownOpen(false); }}
-                      className="w-full px-4 py-2 text-left text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center space-x-2 border-t border-slate-100"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Admin Theme Manager</span>
-                    </button>
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => { onOpenAdminThemes(); setDropdownOpen(false); }}
+                        className="w-full px-4 py-2 text-left text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center space-x-2 border-t border-slate-100"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Admin Theme Manager</span>
+                      </button>
+                    )}
 
                     <button
                       onClick={() => { onLogout(); setDropdownOpen(false); }}

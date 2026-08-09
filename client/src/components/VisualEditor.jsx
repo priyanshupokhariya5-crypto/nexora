@@ -5,7 +5,7 @@ import {
   Palette, Type, Layout, Sliders, Sparkles, Check, Copy, Eye, RefreshCw, X, User, 
   Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, RotateCw, Layers, FileText, 
   ChevronRight, ChevronDown, Wand2, SlidersHorizontal, Square, MoveUp, MoveDown, 
-  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3
+  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3, ExternalLink
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import AiAssistantPanel from './AiAssistantPanel';
@@ -791,32 +791,47 @@ export default function VisualEditor({
   );
 
   const renderCenterCanvasContent = (isMobile = false) => (
-    <div className={`flex-1 bg-slate-950 overflow-x-hidden overflow-y-auto ${isMobile ? 'p-2 pb-24' : 'p-4 md:p-8'} flex items-start justify-center relative w-full max-w-full`}>
+    <div className={`flex-1 bg-slate-950 overflow-x-hidden overflow-y-auto ${isMobile ? 'p-3 pb-28' : 'p-4 md:p-8'} flex flex-col items-center justify-start relative w-full max-w-full box-border`}>
+      {/* DEDICATED PUBLISHED LIVE URL BANNER CARD */}
       {savedSiteData && (
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-2 sm:top-4 z-40 bg-emerald-500 text-slate-950 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl flex flex-wrap items-center justify-between sm:justify-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold w-[95%] max-w-full overflow-hidden"
+          className="w-full max-w-full sm:max-w-xl mb-4 p-3.5 sm:p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/40 text-emerald-100 shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 box-border flex-shrink-0"
         >
-          <div className="flex items-center space-x-1 flex-shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span>Published Live:</span>
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2">
+                <span className="font-extrabold text-xs text-white font-display">Website Published Live!</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0" />
+              </div>
+              <p className="text-[11px] font-mono text-emerald-300/90 truncate min-w-0 mt-0.5">
+                {window.location.origin}/site/{savedSiteData.slug}
+              </p>
+            </div>
           </div>
-          <a
-            href={`${window.location.origin}/site/${savedSiteData.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline font-mono hover:opacity-80 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-none break-all"
-          >
-            /site/{savedSiteData.slug}
-          </a>
-          <button
-            onClick={handleCopyPublishedLink}
-            className="px-2 py-0.5 sm:py-1 rounded-lg bg-slate-950 text-white hover:bg-slate-800 text-[9px] sm:text-[10px] font-bold flex items-center space-x-1 flex-shrink-0"
-          >
-            <Copy className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
-          </button>
+
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <a
+              href={`${window.location.origin}/site/${savedSiteData.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center space-x-1 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Live Site</span>
+            </a>
+            <button
+              onClick={handleCopyPublishedLink}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-300 hover:bg-slate-800 text-xs font-bold flex items-center justify-center space-x-1 flex-shrink-0 transition-colors"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
+            </button>
+          </div>
         </motion.div>
       )}
 

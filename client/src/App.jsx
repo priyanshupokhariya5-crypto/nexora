@@ -128,6 +128,7 @@ export default function App() {
           templates={templates}
           onSelectTemplate={handleSelectTemplate}
           onExploreCatalog={() => setCurrentView('catalog')}
+          user={user}
         />
       )}
 

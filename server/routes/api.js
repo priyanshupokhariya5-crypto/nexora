@@ -229,14 +229,15 @@ router.delete('/admin/themes/:id', requireAdmin, async (req, res) => {
 
 router.post('/auth/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide name, email, and password.' });
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const assignedRole = role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
+    const isAdminEmail = cleanEmail === 'priyanshupokhariya5@gmail.com' || cleanEmail === 'admin@nexora.com';
+    const assignedRole = isAdminEmail ? 'admin' : 'user';
 
     if (isMongoConnected()) {
       const existingUser = await User.findOne({ email: cleanEmail });
@@ -259,7 +260,7 @@ router.post('/auth/register', async (req, res) => {
         id: userIdStr,
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role || assignedRole,
+        role: assignedRole,
         token,
         createdAt: newUser.createdAt
       };
@@ -300,6 +301,7 @@ router.post('/auth/login', async (req, res) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
+    const isAdminEmail = cleanEmail === 'priyanshupokhariya5@gmail.com' || cleanEmail === 'admin@nexora.com';
 
     if (isMongoConnected()) {
       const user = await User.findOne({ email: cleanEmail });
@@ -307,7 +309,7 @@ router.post('/auth/login', async (req, res) => {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
-      const userRole = user.role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
+      const userRole = isAdminEmail ? 'admin' : (user.role || 'user');
       const userIdStr = user._id.toString();
       const token = jwt.sign({ id: userIdStr, email: cleanEmail, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
 
@@ -327,7 +329,7 @@ router.post('/auth/login', async (req, res) => {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
       }
 
-      const userRole = user.role || (cleanEmail === 'admin@nexora.com' ? 'admin' : 'user');
+      const userRole = isAdminEmail ? 'admin' : (user.role || 'user');
       const token = jwt.sign({ id: user.id, email: cleanEmail, role: userRole }, JWT_SECRET, { expiresIn: '7d' });
 
       const userPayload = {

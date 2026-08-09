@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { TEMPLATE_CATEGORIES } from '../data/templatesData';
 
-export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog }) {
+export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [openFaq, setOpenFaq] = useState(null);
@@ -718,10 +718,12 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   <Check className="w-4 h-4 text-brand-400" />
                   <span>Custom Domain Publishing</span>
                 </li>
-                <li className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-brand-400" />
-                  <span>Admin Theme Manager Access</span>
-                </li>
+                {user?.role === 'admin' && (
+                  <li className="flex items-center space-x-2">
+                    <Check className="w-4 h-4 text-brand-400" />
+                    <span>Admin Theme Manager Access</span>
+                  </li>
+                )}
               </ul>
             </div>
 

@@ -281,6 +281,7 @@ export default function VisualEditor({
         setSavedSiteData(data.website);
         if (onSaveSite) onSaveSite(data.website);
         setSaveStatus('saved');
+        setMobileTab('preview');
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
       }
     } catch (err) {
@@ -791,7 +792,7 @@ export default function VisualEditor({
   );
 
   const renderCenterCanvasContent = (isMobile = false) => (
-    <div className={`flex-1 bg-slate-950 overflow-x-hidden overflow-y-auto ${isMobile ? 'p-3 pb-28' : 'p-4 md:p-8'} flex flex-col items-center justify-start relative w-full max-w-full box-border`}>
+    <div className={`flex-1 bg-slate-950 ${isMobile ? 'w-full max-w-full p-2.5 sm:p-4 pb-28 flex flex-col items-center justify-start box-border' : 'overflow-x-hidden overflow-y-auto p-4 md:p-8 flex flex-col items-center justify-start relative w-full max-w-full box-border'}`}>
       {/* DEDICATED PUBLISHED LIVE URL BANNER CARD */}
       {savedSiteData && (
         <motion.div 
@@ -1016,7 +1017,7 @@ export default function VisualEditor({
       </header>
 
       {/* 2A. MOBILE RENDER CONTAINER (< 768px): RENDERS EXACTLY ONE SINGLE ACTIVE VIEW AT A TIME */}
-      <div className="md:hidden flex-1 flex flex-col w-full overflow-x-hidden overflow-y-auto pb-16 relative bg-slate-950">
+      <div className="md:hidden flex-1 flex flex-col w-full max-w-full overflow-x-hidden overflow-y-auto relative bg-slate-950 box-border">
         {mobileTab === 'sections' && renderLeftSidebarContent()}
         {mobileTab === 'preview' && renderCenterCanvasContent(true)}
         {mobileTab === 'settings' && renderRightInspectorContent()}

@@ -66,12 +66,20 @@ export default function App() {
   }, [user]);
 
   const handleSelectTemplate = (template) => {
+    if (!user) {
+      setIsAuthOpen(true);
+      return;
+    }
     setSelectedTemplate(template);
     setEditingSite(null);
     setCurrentView('editor');
   };
 
   const handleEditSite = (site) => {
+    if (!user) {
+      setIsAuthOpen(true);
+      return;
+    }
     const tpl = templates.find(t => t.id === site.templateId) || templates[0];
     setSelectedTemplate(tpl);
     setEditingSite(site);
@@ -94,6 +102,9 @@ export default function App() {
     localStorage.removeItem('nexora_user');
     setUser(null);
     setSavedWebsites([]);
+    if (currentView === 'editor') {
+      setCurrentView('catalog');
+    }
   };
 
   const handleAuthSuccess = (userData) => {
@@ -140,14 +151,27 @@ export default function App() {
       )}
 
       {currentView === 'editor' && selectedTemplate && (
-        <VisualEditor
-          template={selectedTemplate}
-          initialSite={editingSite}
-          user={user}
-          onRequireAuth={() => setIsAuthOpen(true)}
-          onSaveSite={handleSiteSaved}
-          onBack={() => setCurrentView('catalog')}
-        />
+        !user ? (
+          <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-950 text-white text-center">
+            <h2 className="text-2xl font-bold font-display mb-2">Authentication Required</h2>
+            <p className="text-xs text-slate-400 mb-6">Please log in or sign up to access the Nexora Visual Studio Editor.</p>
+            <button
+              onClick={() => { setIsAuthOpen(true); setCurrentView('catalog'); }}
+              className="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg"
+            >
+              Log In To Continue
+            </button>
+          </div>
+        ) : (
+          <VisualEditor
+            template={selectedTemplate}
+            initialSite={editingSite}
+            user={user}
+            onRequireAuth={() => setIsAuthOpen(true)}
+            onSaveSite={handleSiteSaved}
+            onBack={() => setCurrentView('catalog')}
+          />
+        )
       )}
 
       {currentView === 'dashboard' && (

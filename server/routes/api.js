@@ -422,24 +422,83 @@ router.get('/templates/:id', async (req, res) => {
   }
 });
 
+// Middleware: Require Authenticated User (JWT Verification)
+const requireAuth = (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : req.headers['x-access-token'] || req.body?.token || req.query?.token;
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Authentication token required.' 
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid or expired authentication token.' 
+      });
+    }
+
+    const userId = decoded.id || decoded.userId;
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid token payload.' 
+      });
+    }
+
+    req.authUserId = userId;
+    next();
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Authorization error.' });
+  }
+};
+
 // ==========================================
 // 5. WEBSITES CRUD ENDPOINTS (AUTO-SAVE & MONGODB SYNC)
 // ==========================================
 
-router.post('/websites', async (req, res) => {
+router.post('/websites', requireAuth, async (req, res) => {
   try {
-    const { userId, siteId, templateId, title, slug, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
+    const { siteId, templateId, title, slug, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
 
     if (!templateId || !title || !customData) {
       return res.status(400).json({ success: false, message: 'Missing required website configuration parameters.' });
     }
 
-    const ownerId = userId || 'guest';
+    const authenticatedUserId = req.authUserId;
     const generateId = siteId || 'site_' + Math.random().toString(36).substr(2, 9);
     const generateSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(100 + Math.random() * 900);
 
+    // Enforce ownership: User can ONLY update/publish their own website
+    if (isMongoConnected()) {
+      const existing = await Website.findOne({ siteId: generateId });
+      if (existing && existing.userId && existing.userId.toString() !== authenticatedUserId.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You can only publish or modify websites belonging to your account.'
+        });
+      }
+    } else {
+      const existing = memoryWebsitesStore.get(generateId);
+      if (existing && existing.userId && existing.userId.toString() !== authenticatedUserId.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Forbidden: You can only publish or modify websites belonging to your account.'
+        });
+      }
+    }
+
     const sitePayload = {
-      userId: ownerId,
+      userId: authenticatedUserId,
       siteId: generateId,
       templateId,
       title,
@@ -448,7 +507,7 @@ router.post('/websites', async (req, res) => {
       fontFamily: fontFamily || 'sans',
       bgTheme: bgTheme || 'light',
       customData,
-      isPublished: isPublished !== undefined ? isPublished : true,
+      isPublished: isPublished !== undefined ? Boolean(isPublished) : false,
       updatedAt: new Date()
     };
 

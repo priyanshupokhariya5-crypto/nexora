@@ -113,7 +113,7 @@ export default function VisualEditor({
     const timer = setTimeout(async () => {
       try {
         const payload = {
-          userId: user?.id || 'usr_guest',
+          userId: user?.id,
           siteId: initialSite?.siteId || savedSiteData?.siteId,
           templateId: template.id,
           title: siteTitle,
@@ -121,7 +121,7 @@ export default function VisualEditor({
           fontFamily: customState.fontFamily,
           bgTheme: customState.bgTheme,
           customData: customState,
-          isPublished: true
+          isPublished: Boolean(initialSite?.isPublished || savedSiteData?.isPublished)
         };
 
         const res = await apiFetch('/api/websites', {

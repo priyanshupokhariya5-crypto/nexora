@@ -58,10 +58,11 @@ export default function TemplateRenderer({
 
   // Viewport Container Adjuster
   const viewportStyles = {
-    desktop: 'w-full',
+    desktop: 'w-full max-w-full',
     tablet: 'max-w-[768px] mx-auto border-x border-slate-300 shadow-2xl rounded-2xl overflow-hidden my-4',
-    mobile: 'w-full max-w-full sm:max-w-[390px] mx-auto border-x border-slate-300 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden my-2 sm:my-6 border-y-4 sm:border-y-8 border-slate-800'
-  }[viewportMode];
+    mobile: 'w-full max-w-full sm:max-w-[390px] mx-auto overflow-hidden',
+    full: 'w-full max-w-full'
+  }[viewportMode] || 'w-full max-w-full';
 
   return (
     <div className={`transition-all duration-300 ${viewportStyles}`}>

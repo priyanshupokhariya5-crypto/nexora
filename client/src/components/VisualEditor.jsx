@@ -844,14 +844,14 @@ export default function VisualEditor({
           viewportMode === 'tablet' ? 'max-w-xl' : 'max-w-xs'
         }`}
       >
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[600px] sm:min-h-[800px] text-slate-900 w-full max-w-full">
+        <div className={`bg-white text-slate-900 w-full max-w-full ${isMobile ? 'rounded-2xl border border-slate-800 shadow-xl overflow-hidden' : 'rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[600px] sm:min-h-[800px]'}`}>
           <TemplateRenderer
             template={template}
             customData={customState}
             accentColor={customState.accentColor}
             fontFamily={customState.fontFamily}
             bgTheme={customState.bgTheme}
-            viewportMode={isMobile ? 'mobile' : viewportMode}
+            viewportMode={isMobile ? 'full' : viewportMode}
           />
         </div>
       </div>

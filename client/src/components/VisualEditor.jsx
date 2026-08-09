@@ -791,30 +791,30 @@ export default function VisualEditor({
   );
 
   const renderCenterCanvasContent = (isMobile = false) => (
-    <div className={`flex-1 bg-slate-950 overflow-x-hidden overflow-y-auto ${isMobile ? 'p-2' : 'p-4 md:p-8'} flex items-start justify-center relative w-full max-w-full`}>
+    <div className={`flex-1 bg-slate-950 overflow-x-hidden overflow-y-auto ${isMobile ? 'p-2 pb-24' : 'p-4 md:p-8'} flex items-start justify-center relative w-full max-w-full`}>
       {savedSiteData && (
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-2 sm:top-4 z-40 bg-emerald-500 text-slate-950 px-3 sm:px-4 py-2 rounded-2xl shadow-xl flex flex-wrap items-center gap-2 text-xs font-bold max-w-[95%]"
+          className="absolute top-2 sm:top-4 z-40 bg-emerald-500 text-slate-950 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shadow-xl flex flex-wrap items-center justify-between sm:justify-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold w-[95%] max-w-full overflow-hidden"
         >
-          <div className="flex items-center space-x-1.5">
-            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          <div className="flex items-center space-x-1 flex-shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
             <span>Published Live:</span>
           </div>
           <a
             href={`${window.location.origin}/site/${savedSiteData.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline font-mono hover:opacity-80 truncate max-w-[160px] sm:max-w-none"
+            className="underline font-mono hover:opacity-80 truncate max-w-[120px] xs:max-w-[180px] sm:max-w-none break-all"
           >
             /site/{savedSiteData.slug}
           </a>
           <button
             onClick={handleCopyPublishedLink}
-            className="px-2.5 py-1 rounded-xl bg-slate-950 text-white hover:bg-slate-800 text-[10px] font-bold flex items-center space-x-1 flex-shrink-0"
+            className="px-2 py-0.5 sm:py-1 rounded-lg bg-slate-950 text-white hover:bg-slate-800 text-[9px] sm:text-[10px] font-bold flex items-center space-x-1 flex-shrink-0"
           >
-            <Copy className="w-3 h-3" />
+            <Copy className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
           </button>
         </motion.div>
@@ -1027,7 +1027,7 @@ export default function VisualEditor({
       </div>
 
       {/* 3. STICKY BOTTOM MOBILE NAVIGATION BAR (< 768px) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800/90 px-4 flex items-center justify-around z-50 pb-safe shadow-2xl">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full max-w-full h-16 bg-slate-900 border-t border-slate-800/90 px-2 sm:px-4 flex items-center justify-around z-50 pb-safe shadow-2xl box-border">
         <button
           onClick={() => setMobileTab('sections')}
           className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${

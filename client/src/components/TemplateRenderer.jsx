@@ -384,27 +384,27 @@ export default function TemplateRenderer({
           // 7. CONTACT & FOOTER
           if (section === 'contact') {
             return (
-              <footer key="contact" id="contact" className={`py-12 px-4 sm:px-6 ${isDark ? 'bg-slate-950 text-slate-200 border-t border-slate-900' : 'bg-slate-900 text-white'}`}>
-                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center border-b border-slate-800 pb-10">
+              <footer key="contact" id="contact" className={`py-10 sm:py-12 px-4 sm:px-6 ${isDark ? 'bg-slate-950 text-slate-200 border-t border-slate-900' : 'bg-slate-900 text-white'} w-full max-w-full overflow-hidden`}>
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center border-b border-slate-800 pb-8 sm:pb-10 w-full max-w-full">
                   <div>
-                    <h3 className="text-2xl font-bold font-display">Get In Touch With Us</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold font-display">Get In Touch With Us</h3>
                     <p className="mt-2 text-xs opacity-75">Ready to start your next business project? Reach out to us today.</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-4 text-xs font-medium">
-                    <span className="flex items-center space-x-2">
-                      <Mail className="w-4 h-4 text-brand-400" />
-                      <span>{data.contactEmail || 'contact@business.com'}</span>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 text-xs font-medium max-w-full overflow-hidden break-words">
+                    <span className="flex items-center space-x-2 truncate min-w-0">
+                      <Mail className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                      <span className="truncate">{data.contactEmail || 'contact@business.com'}</span>
                     </span>
-                    <span className="flex items-center space-x-2">
-                      <Phone className="w-4 h-4 text-brand-400" />
-                      <span>{data.contactPhone || '+1 (800) 555-0199'}</span>
+                    <span className="flex items-center space-x-2 truncate min-w-0">
+                      <Phone className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                      <span className="truncate">{data.contactPhone || '+1 (800) 555-0199'}</span>
                     </span>
                   </div>
                 </div>
 
-                <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] opacity-60">
-                  <p>{data.footerText || `© 2026 ${data.logoText || template.title}. All rights reserved.`}</p>
-                  <p className="mt-2 sm:mt-0 font-mono">Built with Nexora</p>
+                <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] opacity-70 gap-2 sm:gap-4 w-full max-w-full">
+                  <p className="text-center sm:text-left break-words">{data.footerText || `© 2026 ${data.logoText || template.title}. All rights reserved.`}</p>
+                  <p className="mt-2 sm:mt-0 font-mono text-center sm:text-right flex-shrink-0">Built with Nexora</p>
                 </div>
               </footer>
             );

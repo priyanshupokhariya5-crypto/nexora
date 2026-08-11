@@ -616,8 +616,64 @@ router.get('/public/:slug', async (req, res) => {
 });
 
 // ==========================================
-// 6. AI ASSISTANT ENDPOINTS (STREAMING & GENERATION)
+// 6. AI ASSISTANT ENDPOINTS (GOOGLE GEMINI API INTEGRATION)
 // ==========================================
+
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+const callGeminiApi = async (action, prompt, currentText = '', targetLang = 'Spanish') => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.log('ℹ️ GEMINI_API_KEY not configured in environment. Using smart template engine.');
+    return null;
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: { responseMimeType: 'application/json' }
+    });
+
+    let schemaPrompt = '';
+    if (action === 'hero') {
+      schemaPrompt = 'Output JSON Schema: {"heroTitle": "string", "heroSubtitle": "string", "ctaText": "string"}';
+    } else if (action === 'about') {
+      schemaPrompt = 'Output JSON Schema: {"aboutTitle": "string", "aboutDesc": "string"}';
+    } else if (action === 'services') {
+      schemaPrompt = 'Output JSON Schema: {"servicesTitle": "string", "services": [{"title": "string", "price": "string", "desc": "string"}]}';
+    } else if (action === 'faq') {
+      schemaPrompt = 'Output JSON Schema: {"faqTitle": "string", "faqs": [{"question": "string", "answer": "string"}]}';
+    } else if (action === 'seo') {
+      schemaPrompt = 'Output JSON Schema: {"metaTitle": "string", "metaDescription": "string", "keywords": "string"}';
+    } else if (action === 'cta') {
+      schemaPrompt = 'Output JSON Schema: {"ctaText": "string", "ctaSubtext": "string"}';
+    } else if (action === 'rewrite' || action === 'shorten' || action === 'expand') {
+      schemaPrompt = 'Output JSON Schema: {"resultText": "string"}';
+    } else if (action === 'translate') {
+      schemaPrompt = `Output JSON Schema: {"targetLang": "${targetLang}", "resultText": "string"}`;
+    } else {
+      schemaPrompt = 'Output JSON Schema: {"heroTitle": "string", "heroSubtitle": "string", "ctaText": "string"}';
+    }
+
+    const fullPrompt = `You are Nexora AI Assistant, a high-converting website copywriter. Generate professional website copy for a modern business.
+User Action: ${action}
+User Prompt / Business Description: ${prompt}
+Current Text Copy: ${currentText || 'None'}
+Target Language: ${targetLang}
+
+${schemaPrompt}
+Return ONLY valid JSON matching the exact schema specified. Do not include markdown code block formatting or backticks.`;
+
+    const response = await model.generateContent(fullPrompt);
+    const text = response.response.text();
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanedText);
+  } catch (err) {
+    console.error('⚠️ Gemini API execution error, falling back to smart template generator:', err.message);
+    return null;
+  }
+};
 
 const generateAiResponseData = (action, prompt, currentText = '', targetLang = 'Spanish') => {
   const p = (prompt || 'Business').trim();
@@ -695,22 +751,28 @@ const generateAiResponseData = (action, prompt, currentText = '', targetLang = '
   }
 };
 
-// Synchronous JSON response endpoint
+// Synchronous JSON response endpoint (Powered by Gemini API)
 router.post('/ai/generate', async (req, res) => {
   try {
     const { action, prompt, currentText, targetLang } = req.body;
-    const result = generateAiResponseData(action, prompt, currentText, targetLang);
+    let result = await callGeminiApi(action, prompt, currentText, targetLang);
+    if (!result) {
+      result = generateAiResponseData(action, prompt, currentText, targetLang);
+    }
     return res.json({ success: true, action, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// SSE Streaming AI Endpoint
+// SSE Streaming AI Endpoint (Powered by Gemini API)
 router.post('/ai/stream', async (req, res) => {
   try {
     const { action, prompt, currentText, targetLang } = req.body;
-    const resultData = generateAiResponseData(action, prompt, currentText, targetLang);
+    let resultData = await callGeminiApi(action, prompt, currentText, targetLang);
+    if (!resultData) {
+      resultData = generateAiResponseData(action, prompt, currentText, targetLang);
+    }
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');

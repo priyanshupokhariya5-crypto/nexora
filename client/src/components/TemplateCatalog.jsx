@@ -47,7 +47,7 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
         <div className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-bold mb-4 shadow-soft-sm">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>50+ Professional Industry Presets</span>
+            <span>{templates.length || 30} Professional Industry Presets</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-display">

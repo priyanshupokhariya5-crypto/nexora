@@ -82,7 +82,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-lg shadow-brand-600/30 hover:shadow-brand-600/40 transition-all duration-200 flex items-center justify-center space-x-3 group"
             >
               <Sparkles className="w-5 h-5 text-amber-300 group-hover:rotate-12 transition-transform" />
-              <span>Explore 30 Templates</span>
+              <span>{user ? 'Explore All Templates' : 'Get Started Free'}</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
 

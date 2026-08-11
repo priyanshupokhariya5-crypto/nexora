@@ -5,6 +5,7 @@ import { Sparkles, LayoutGrid, ArrowRight, Zap, Layers, LogOut, ChevronDown, Shi
 export default function Navbar({ 
   currentView, 
   setCurrentView, 
+  templatesCount = 0,
   savedSitesCount = 0,
   user = null,
   onOpenAuth,
@@ -70,31 +71,27 @@ export default function Navbar({
             <span>Home</span>
           </button>
           
-          <button
-            onClick={() => {
-              if (!user) {
-                onOpenAuth();
-              } else {
-                setCurrentView('catalog');
-              }
-            }}
-            className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
-              currentView === 'catalog' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {currentView === 'catalog' && (
-              <motion.div
-                layoutId="activePill"
-                className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span>30 Templates</span>
-            <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-amber-100 text-amber-800 border border-amber-200/60">
-              30
-            </span>
-          </button>
+          {user && (
+            <button
+              onClick={() => setCurrentView('catalog')}
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
+                currentView === 'catalog' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {currentView === 'catalog' && (
+                <motion.div
+                  layoutId="activePill"
+                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Templates</span>
+              <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-amber-100 text-amber-800 border border-amber-200/60">
+                {templatesCount}
+              </span>
+            </button>
+          )}
 
           <button
             onClick={() => {

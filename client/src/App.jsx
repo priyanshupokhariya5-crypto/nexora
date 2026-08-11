@@ -146,6 +146,7 @@ export default function App() {
         <Navbar
           currentView={currentView}
           setCurrentView={setCurrentView}
+          templatesCount={templates.length}
           savedSitesCount={savedWebsites.length}
           user={user}
           onOpenAuth={() => setIsAuthOpen(true)}

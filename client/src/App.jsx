@@ -65,8 +65,12 @@ export default function App() {
 
   // Load User Specific Websites
   const loadSavedWebsites = async (currentUser = user) => {
+    if (!currentUser) {
+      setSavedWebsites([]);
+      return;
+    }
     try {
-      const endpoint = currentUser ? `/api/websites?userId=${currentUser.id}` : '/api/websites';
+      const endpoint = `/api/websites?userId=${currentUser.id}`;
       const res = await apiFetch(endpoint);
       const data = await res.json();
       if (data.success) {

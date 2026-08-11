@@ -117,7 +117,7 @@ export default function Navbar({
             )}
             <Layers className="w-3.5 h-3.5" />
             <span>My Websites</span>
-            {savedSitesCount > 0 && (
+            {user && (
               <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-slate-200 text-slate-700">
                 {savedSitesCount}
               </span>

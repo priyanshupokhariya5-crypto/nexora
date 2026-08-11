@@ -103,6 +103,9 @@ export default function App() {
         if (!user) {
           setIsAuthOpen(true);
           setCurrentView('landing');
+          if (path !== '/login') {
+            window.history.replaceState(null, '', '/login');
+          }
           return;
         }
 
@@ -150,6 +153,7 @@ export default function App() {
         if (!user) {
           setIsAuthOpen(true);
           setCurrentView('landing');
+          window.history.replaceState(null, '', '/login');
         } else {
           setCurrentView('dashboard');
         }
@@ -161,6 +165,7 @@ export default function App() {
         if (!user) {
           setIsAuthOpen(true);
           setCurrentView('landing');
+          window.history.replaceState(null, '', '/login');
         } else {
           setCurrentView('catalog');
         }
@@ -169,7 +174,17 @@ export default function App() {
 
       // 5. Auth Routes: /login or /register
       if (path === '/login' || path === '/register') {
-        setIsAuthOpen(true);
+        if (!user) {
+          setIsAuthOpen(true);
+          setCurrentView('landing');
+        } else {
+          navigateToView('dashboard', '/dashboard');
+        }
+        return;
+      }
+
+      // 6. Public Landing Page: /
+      if (path === '/' || path === '') {
         setCurrentView('landing');
         return;
       }
@@ -224,13 +239,19 @@ export default function App() {
     setUser(null);
     setSavedWebsites([]);
     setTemplates([]);
-    navigateToView('landing', '/login');
-    setIsAuthOpen(true);
+    setIsAuthOpen(false);
+    navigateToView('landing', '/');
   };
 
   const handleAuthSuccess = (userData) => {
     setUser(userData);
+    setIsAuthOpen(false);
     loadSavedWebsites(userData);
+
+    const path = window.location.pathname;
+    if (path === '/login' || path === '/register' || path === '/') {
+      navigateToView('dashboard', '/dashboard');
+    }
   };
 
   // Render Standalone Published Public Website Page

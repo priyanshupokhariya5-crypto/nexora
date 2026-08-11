@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Mail, Lock, User, ArrowRight, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import { apiFetch } from '../api';
 
@@ -10,7 +10,20 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  useEffect(() => {
+    if (isOpen) {
+      setErrorMsg('');
+      setLoading(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    setErrorMsg('');
+    setLoading(false);
+    if (onClose) onClose();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,8 +45,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       if (data.success) {
         // Save Session
         localStorage.setItem('nexora_user', JSON.stringify(data.user));
-        onAuthSuccess(data.user);
-        onClose();
+        setErrorMsg('');
+        setName('');
+        setEmail('');
+        setPassword('');
+        if (onAuthSuccess) onAuthSuccess(data.user);
+        if (onClose) onClose();
       } else {
         setErrorMsg(data.message || 'Authentication failed.');
       }
@@ -50,7 +67,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
         >
           <X className="w-5 h-5" />

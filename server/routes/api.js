@@ -616,64 +616,114 @@ router.get('/public/:slug', async (req, res) => {
 });
 
 // ==========================================
-// 6. AI ASSISTANT ENDPOINTS (GOOGLE GEMINI API INTEGRATION)
-// ==========================================
+// 6. AI ASSISTANT ENDPOINTS (STREAMING & GENERATION)
+const { GoogleGenAI } = require('@google/genai');
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Nexora AI Assistant System Instruction
+const NEXORA_SYSTEM_INSTRUCTION = `You are Nexora AI, the intelligent assistant for Nexora — a modern human-crafted website builder and SaaS platform.
+You help users create, build, customize, and optimize professional business websites.
+Assist users with:
+- Website creation and template selection across E-Commerce, Gyms, Law Firms, Restaurants, Real Estate, SaaS, and Services
+- Crafting compelling hero section titles, subtitles, and CTA buttons
+- Writing About Us, Services, Features, Testimonials, FAQ, and Contact sections
+- Generating SEO meta titles, meta descriptions, and targeted keywords
+- Writing product copy, value propositions, and headline variations
+- Providing web design suggestions, color palette tips, typography pairings, and guidance for using the Nexora Visual Studio Editor.
+Be concise, friendly, creative, and structured in your responses. Use markdown formatting where helpful.`;
 
-const callGeminiApi = async (action, prompt, currentText = '', targetLang = 'Spanish') => {
+const getGeminiClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.log('ℹ️ GEMINI_API_KEY not configured in environment. Using smart template engine.');
-    return null;
-  }
-
+  if (!apiKey || !apiKey.trim()) return null;
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: { responseMimeType: 'application/json' }
-    });
-
-    let schemaPrompt = '';
-    if (action === 'hero') {
-      schemaPrompt = 'Output JSON Schema: {"heroTitle": "string", "heroSubtitle": "string", "ctaText": "string"}';
-    } else if (action === 'about') {
-      schemaPrompt = 'Output JSON Schema: {"aboutTitle": "string", "aboutDesc": "string"}';
-    } else if (action === 'services') {
-      schemaPrompt = 'Output JSON Schema: {"servicesTitle": "string", "services": [{"title": "string", "price": "string", "desc": "string"}]}';
-    } else if (action === 'faq') {
-      schemaPrompt = 'Output JSON Schema: {"faqTitle": "string", "faqs": [{"question": "string", "answer": "string"}]}';
-    } else if (action === 'seo') {
-      schemaPrompt = 'Output JSON Schema: {"metaTitle": "string", "metaDescription": "string", "keywords": "string"}';
-    } else if (action === 'cta') {
-      schemaPrompt = 'Output JSON Schema: {"ctaText": "string", "ctaSubtext": "string"}';
-    } else if (action === 'rewrite' || action === 'shorten' || action === 'expand') {
-      schemaPrompt = 'Output JSON Schema: {"resultText": "string"}';
-    } else if (action === 'translate') {
-      schemaPrompt = `Output JSON Schema: {"targetLang": "${targetLang}", "resultText": "string"}`;
-    } else {
-      schemaPrompt = 'Output JSON Schema: {"heroTitle": "string", "heroSubtitle": "string", "ctaText": "string"}';
-    }
-
-    const fullPrompt = `You are Nexora AI Assistant, a high-converting website copywriter. Generate professional website copy for a modern business.
-User Action: ${action}
-User Prompt / Business Description: ${prompt}
-Current Text Copy: ${currentText || 'None'}
-Target Language: ${targetLang}
-
-${schemaPrompt}
-Return ONLY valid JSON matching the exact schema specified. Do not include markdown code block formatting or backticks.`;
-
-    const response = await model.generateContent(fullPrompt);
-    const text = response.response.text();
-    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanedText);
+    return new GoogleGenAI({ apiKey: apiKey.trim() });
   } catch (err) {
-    console.error('⚠️ Gemini API execution error, falling back to smart template generator:', err.message);
+    console.error('GoogleGenAI init error:', err.message);
     return null;
   }
 };
+
+async function callGeminiChat(message, conversation = []) {
+  const ai = getGeminiClient();
+  if (!ai) {
+    throw new Error('GEMINI_API_KEY is not configured on the server.');
+  }
+
+  const contents = [];
+  if (Array.isArray(conversation)) {
+    conversation.forEach(msg => {
+      const role = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
+      const text = msg.text || msg.content || msg.message || '';
+      if (text && text.trim()) {
+        contents.push({ role, parts: [{ text: text.trim() }] });
+      }
+    });
+  }
+  contents.push({ role: 'user', parts: [{ text: message.trim() }] });
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: contents,
+    config: {
+      systemInstruction: NEXORA_SYSTEM_INSTRUCTION,
+      temperature: 0.7,
+      maxOutputTokens: 1000
+    }
+  });
+
+  const replyText = response.text || (response.candidates && response.candidates[0]?.content?.parts[0]?.text);
+  if (!replyText) {
+    throw new Error('Empty response received from Gemini.');
+  }
+  return replyText.trim();
+}
+
+async function callGeminiStructuredGenerate(action, prompt, currentText = '', targetLang = 'Spanish') {
+  const ai = getGeminiClient();
+  if (!ai) return null;
+
+  const systemInstruction = `${NEXORA_SYSTEM_INSTRUCTION}\nGenerate structured JSON output for the website builder section tool: "${action}". Return strictly valid JSON only without markdown formatting.`;
+
+  let promptInstruction = `Tool action: ${action}. Business topic / niche prompt: "${prompt}".`;
+  if (currentText) promptInstruction += ` Current text: "${currentText}".`;
+  if (targetLang) promptInstruction += ` Target language: "${targetLang}".`;
+
+  if (action === 'hero') {
+    promptInstruction += ` Return JSON format: {"heroTitle": "...", "heroSubtitle": "...", "ctaText": "..."}`;
+  } else if (action === 'about') {
+    promptInstruction += ` Return JSON format: {"aboutTitle": "...", "aboutDesc": "..."}`;
+  } else if (action === 'services') {
+    promptInstruction += ` Return JSON format: {"servicesTitle": "...", "services": [{"title": "...", "price": "...", "desc": "..."}, ...]}`;
+  } else if (action === 'faq') {
+    promptInstruction += ` Return JSON format: {"faqTitle": "...", "faqs": [{"question": "...", "answer": "..."}, ...]}`;
+  } else if (action === 'seo') {
+    promptInstruction += ` Return JSON format: {"metaTitle": "...", "metaDescription": "...", "keywords": "..."}`;
+  } else if (action === 'cta') {
+    promptInstruction += ` Return JSON format: {"ctaText": "...", "ctaSubtext": "..."}`;
+  } else if (action === 'rewrite' || action === 'shorten' || action === 'expand' || action === 'translate') {
+    promptInstruction += ` Return JSON format: {"resultText": "..."}`;
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptInstruction,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        temperature: 0.7
+      }
+    });
+
+    const text = response.text;
+    if (text) {
+      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleanJson);
+    }
+  } catch (err) {
+    console.error('Gemini structured generate error, falling back to template data:', err.message);
+  }
+  return null;
+}
 
 const generateAiResponseData = (action, prompt, currentText = '', targetLang = 'Spanish') => {
   const p = (prompt || 'Business').trim();
@@ -751,11 +801,51 @@ const generateAiResponseData = (action, prompt, currentText = '', targetLang = '
   }
 };
 
-// Synchronous JSON response endpoint (Powered by Gemini API)
-router.post('/ai/generate', async (req, res) => {
+// Official Gemini AI Chat Endpoint
+router.post('/ai/chat', requireAuth, async (req, res) => {
+  try {
+    const { message, conversation } = req.body;
+
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide a valid text message.' 
+      });
+    }
+
+    if (message.length > 2000) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Message length exceeds the 2000 character limit.' 
+      });
+    }
+
+    try {
+      const reply = await callGeminiChat(message.trim(), conversation || []);
+      return res.json({ success: true, reply });
+    } catch (geminiError) {
+      console.error('Gemini API Error in /api/ai/chat:', geminiError.message);
+      return res.status(500).json({ 
+        success: false, 
+        reply: "Sorry, I'm having trouble connecting right now. Please try again.",
+        message: "Failed to generate AI response."
+      });
+    }
+  } catch (error) {
+    console.error('Server error in /api/ai/chat:', error.message);
+    return res.status(500).json({ 
+      success: false, 
+      reply: "Sorry, I'm having trouble connecting right now. Please try again.",
+      message: error.message 
+    });
+  }
+});
+
+// Synchronous JSON AI generator endpoint
+router.post('/ai/generate', requireAuth, async (req, res) => {
   try {
     const { action, prompt, currentText, targetLang } = req.body;
-    let result = await callGeminiApi(action, prompt, currentText, targetLang);
+    let result = await callGeminiStructuredGenerate(action, prompt, currentText, targetLang);
     if (!result) {
       result = generateAiResponseData(action, prompt, currentText, targetLang);
     }
@@ -765,11 +855,11 @@ router.post('/ai/generate', async (req, res) => {
   }
 });
 
-// SSE Streaming AI Endpoint (Powered by Gemini API)
-router.post('/ai/stream', async (req, res) => {
+// SSE Streaming AI Endpoint
+router.post('/ai/stream', requireAuth, async (req, res) => {
   try {
     const { action, prompt, currentText, targetLang } = req.body;
-    let resultData = await callGeminiApi(action, prompt, currentText, targetLang);
+    let resultData = await callGeminiStructuredGenerate(action, prompt, currentText, targetLang);
     if (!resultData) {
       resultData = generateAiResponseData(action, prompt, currentText, targetLang);
     }

@@ -71,7 +71,13 @@ export default function Navbar({
           </button>
           
           <button
-            onClick={() => setCurrentView('catalog')}
+            onClick={() => {
+              if (!user) {
+                onOpenAuth();
+              } else {
+                setCurrentView('catalog');
+              }
+            }}
             className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
               currentView === 'catalog' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -91,7 +97,13 @@ export default function Navbar({
           </button>
 
           <button
-            onClick={() => setCurrentView('dashboard')}
+            onClick={() => {
+              if (!user) {
+                onOpenAuth();
+              } else {
+                setCurrentView('dashboard');
+              }
+            }}
             className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
               currentView === 'dashboard' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
             }`}

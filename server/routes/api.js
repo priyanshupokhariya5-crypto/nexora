@@ -348,11 +348,51 @@ router.post('/auth/login', async (req, res) => {
   }
 });
 
+// Middleware: Require Authenticated User (JWT Verification)
+const requireAuth = (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.startsWith('Bearer ') 
+      ? authHeader.split(' ')[1] 
+      : req.headers['x-access-token'] || req.body?.token || req.query?.token;
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Authentication token required.' 
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid or expired authentication token.' 
+      });
+    }
+
+    const userId = decoded.id || decoded.userId;
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid token payload.' 
+      });
+    }
+
+    req.authUserId = userId;
+    next();
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Authorization error.' });
+  }
+};
+
 // ==========================================
 // 4. TEMPLATES CATALOG ENDPOINTS (DIRECT MONGODB QUERY)
 // ==========================================
 
-router.get('/templates', async (req, res) => {
+router.get('/templates', requireAuth, async (req, res) => {
   try {
     await seedTemplatesIfEmpty();
     const { category, search } = req.query;
@@ -406,7 +446,7 @@ router.get('/templates', async (req, res) => {
   }
 });
 
-router.get('/templates/:id', async (req, res) => {
+router.get('/templates/:id', requireAuth, async (req, res) => {
   try {
     if (isMongoConnected()) {
       const template = await TemplateModel.findOne({ id: req.params.id });
@@ -421,46 +461,6 @@ router.get('/templates/:id', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-
-// Middleware: Require Authenticated User (JWT Verification)
-const requireAuth = (req, res, next) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.startsWith('Bearer ') 
-      ? authHeader.split(' ')[1] 
-      : req.headers['x-access-token'] || req.body?.token || req.query?.token;
-
-    if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized: Authentication token required.' 
-      });
-    }
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (err) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized: Invalid or expired authentication token.' 
-      });
-    }
-
-    const userId = decoded.id || decoded.userId;
-    if (!userId) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Unauthorized: Invalid token payload.' 
-      });
-    }
-
-    req.authUserId = userId;
-    next();
-  } catch (error) {
-    return res.status(500).json({ success: false, message: 'Authorization error.' });
-  }
-};
 
 // ==========================================
 // 5. WEBSITES CRUD ENDPOINTS (AUTO-SAVE & MONGODB SYNC)

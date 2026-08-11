@@ -1,10 +1,33 @@
 import React, { useState } from 'react';
-import { Search, LayoutGrid, Sparkles, ArrowRight, Check, Eye } from 'lucide-react';
+import { Search, LayoutGrid, Sparkles, ArrowRight, Check, Eye, Lock, UserCheck } from 'lucide-react';
 import { TEMPLATE_CATEGORIES } from '../data/templatesData';
 
-export default function TemplateCatalog({ templates = [], onSelectTemplate }) {
+export default function TemplateCatalog({ templates = [], onSelectTemplate, user = null, onOpenAuth }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  if (!user) {
+    return (
+      <div className="min-h-[75vh] flex flex-col items-center justify-center p-6 bg-slate-50 text-center">
+        <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-brand-100 border border-brand-200 text-brand-600 flex items-center justify-center mx-auto mb-5 shadow-soft-sm">
+            <Lock className="w-7 h-7" />
+          </div>
+          <h2 className="text-2xl font-bold font-display text-slate-900 mb-2">Authentication Required</h2>
+          <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+            Please sign in or create a free Nexora account to access the complete 30+ template catalog and Visual Studio Editor.
+          </p>
+          <button
+            onClick={onOpenAuth}
+            className="w-full py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand-600/25 transition-transform active:scale-95 flex items-center justify-center space-x-2"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span>Sign In To Access Templates</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const filtered = templates.filter(tpl => {
     const matchesCategory = selectedCategory === 'All' || tpl.category.toLowerCase() === selectedCategory.toLowerCase();

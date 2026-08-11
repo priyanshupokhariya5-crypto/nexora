@@ -5,11 +5,11 @@ import {
   Smartphone, Monitor, Palette, Type, Code, Download, Globe, 
   ChevronRight, Star, Heart, Flame, Eye, Layers, Check, Rocket,
   HelpCircle, ChevronDown, MessageSquare, ShieldCheck, Clock, Award,
-  Send, Twitter, Github, Linkedin, Disc as Discord
+  Send, Twitter, Github, Linkedin, Disc as Discord, Lock, UserCheck
 } from 'lucide-react';
 import { TEMPLATE_CATEGORIES } from '../data/templatesData';
 
-export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null }) {
+export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null, onOpenAuth }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [openFaq, setOpenFaq] = useState(null);
@@ -316,113 +316,151 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
       <section className="py-20 md:py-28 bg-slate-50/50 border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="text-center max-w-3xl mx-auto">
-            <span className="text-xs uppercase tracking-widest font-extrabold text-brand-600 font-display">
-              30 Handcrafted Industry Presets
-            </span>
-            <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-display">
-              Tailored For Every Business Industry & Purpose
-            </h2>
-            <p className="mt-4 text-base sm:text-lg text-slate-600">
-              Pick from 30 tailored business templates and customize text, 3 business images, typography, colors, logos, and layout in real-time.
-            </p>
-          </div>
-
-          {/* Category Tabs */}
-          <div className="mt-10 flex items-center justify-center gap-2 overflow-x-auto pb-4 scrollbar-none">
-            {TEMPLATE_CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  activeCategory === cat
-                    ? 'bg-slate-900 text-white shadow-md'
-                    : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200/80'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Templates Grid with Hover Effects */}
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {filteredTemplates.slice(0, 6).map((tpl) => (
-              <motion.div 
-                key={tpl.id}
-                whileHover={{ y: -6 }}
-                className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-soft-md hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between"
-              >
-                <div>
-                  {/* Header Preview Image */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-                    <img 
-                      src={tpl.image} 
-                      alt={tpl.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
-                    />
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-black/20 p-5 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30">
-                          {tpl.category}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow">
-                          {tpl.badge}
-                        </span>
-                      </div>
-
-                      <div>
-                        <span className="text-[10px] font-semibold text-white/80 uppercase tracking-wider">Preset #{tpl.id}</span>
-                        <h3 className="text-xl font-bold text-white font-display leading-tight drop-shadow-sm">
-                          {tpl.title}
-                        </h3>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="p-6">
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                      {tpl.tagline}
-                    </p>
-                    
-                    <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
-                        Font: {tpl.fontFamily}
-                      </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
-                        3 Image Slots
-                      </span>
-                    </div>
-                  </div>
+          {!user ? (
+            /* LOGGED-OUT AUTHENTICATION CTA CARD */
+            <div className="rounded-3xl bg-slate-900 text-white p-8 sm:p-14 text-center relative overflow-hidden shadow-2xl border border-slate-800">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[600px] h-[300px] bg-gradient-to-r from-brand-600/30 to-amber-500/20 blur-3xl pointer-events-none overflow-hidden" />
+              
+              <div className="relative z-10 max-w-2xl mx-auto">
+                <div className="w-14 h-14 rounded-2xl bg-brand-500/20 border border-brand-500/30 text-brand-400 flex items-center justify-center mx-auto mb-5 shadow-lg">
+                  <Lock className="w-7 h-7" />
                 </div>
-
-                {/* Action Button */}
-                <div className="px-6 pb-6 pt-2">
+                
+                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30 uppercase tracking-widest font-display">
+                  Authentication Required
+                </span>
+                
+                <h2 className="text-2xl sm:text-4xl font-extrabold mt-5 font-display text-white tracking-tight">
+                  Sign In to Explore Nexora Templates
+                </h2>
+                
+                <p className="mt-4 text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
+                  Create a free account or sign in to unlock our catalog of 30+ responsive industry templates, live visual studio editor, and instant website publishing.
+                </p>
+                
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <button
-                    onClick={() => onSelectTemplate(tpl)}
-                    className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-brand-600 text-white font-bold text-xs shadow transition-all duration-200 flex items-center justify-center space-x-2 group-hover:shadow-md"
+                    onClick={onOpenAuth}
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-brand-600/30 transition-transform active:scale-95 flex items-center justify-center space-x-2"
                   >
-                    <span>Edit This Preset</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <UserCheck className="w-4 h-4" />
+                    <span>Sign In / Create Free Account</span>
                   </button>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </div>
+          ) : (
+            /* LOGGED-IN TEMPLATES CATALOG SHOWCASE */
+            <>
+              <div className="text-center max-w-3xl mx-auto">
+                <span className="text-xs uppercase tracking-widest font-extrabold text-brand-600 font-display">
+                  30 Handcrafted Industry Presets
+                </span>
+                <h2 className="mt-3 text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight font-display">
+                  Tailored For Every Business Industry & Purpose
+                </h2>
+                <p className="mt-4 text-base sm:text-lg text-slate-600">
+                  Pick from 30 tailored business templates and customize text, 3 business images, typography, colors, logos, and layout in real-time.
+                </p>
+              </div>
 
-          {/* View All Button */}
-          <div className="mt-12 text-center">
-            <button
-              onClick={onExploreCatalog}
-              className="inline-flex items-center space-x-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-sm border border-slate-300 shadow-soft-sm transition-all duration-200"
-            >
-              <LayoutGrid className="w-5 h-5 text-brand-600" />
-              <span>Browse All 30 Business Presets</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+              {/* Category Tabs */}
+              <div className="mt-10 flex items-center justify-center gap-2 overflow-x-auto pb-4 scrollbar-none">
+                {TEMPLATE_CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      activeCategory === cat
+                        ? 'bg-slate-900 text-white shadow-md'
+                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200/80'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Templates Grid with Hover Effects */}
+              <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {filteredTemplates.slice(0, 6).map((tpl) => (
+                  <motion.div 
+                    key={tpl.id}
+                    whileHover={{ y: -6 }}
+                    className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-soft-md hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Header Preview Image */}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
+                        <img 
+                          src={tpl.image} 
+                          alt={tpl.title} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                        />
+                        
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-black/20 p-5 flex flex-col justify-between">
+                          <div className="flex items-center justify-between">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30">
+                              {tpl.category}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow">
+                              {tpl.badge}
+                            </span>
+                          </div>
+
+                          <div>
+                            <span className="text-[10px] font-semibold text-white/80 uppercase tracking-wider">Preset #{tpl.id}</span>
+                            <h3 className="text-xl font-bold text-white font-display leading-tight drop-shadow-sm">
+                              {tpl.title}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="p-6">
+                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                          {tpl.tagline}
+                        </p>
+                        
+                        <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500">
+                          <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
+                            Font: {tpl.fontFamily}
+                          </span>
+                          <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
+                            3 Image Slots
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="px-6 pb-6 pt-2">
+                      <button
+                        onClick={() => onSelectTemplate(tpl)}
+                        className="w-full py-3 rounded-2xl bg-slate-900 hover:bg-brand-600 text-white font-bold text-xs shadow transition-all duration-200 flex items-center justify-center space-x-2 group-hover:shadow-md"
+                      >
+                        <span>Edit This Preset</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* View All Button */}
+              <div className="mt-12 text-center">
+                <button
+                  onClick={onExploreCatalog}
+                  className="inline-flex items-center space-x-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-sm border border-slate-300 shadow-soft-sm transition-all duration-200"
+                >
+                  <LayoutGrid className="w-5 h-5 text-brand-600" />
+                  <span>Browse All 30 Business Presets</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
 
         </div>
       </section>

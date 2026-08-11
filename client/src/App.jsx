@@ -36,14 +36,30 @@ export default function App() {
     return () => window.removeEventListener('popstate', checkPathRoute);
   }, []);
 
-  // Exactly 30 template presets
-  const templates = TEMPLATES_DATA.slice(0, 30);
-
   // User Authentication State
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('nexora_user');
     return saved ? JSON.parse(saved) : null;
   });
+
+  // Exactly 30 template presets (Fetched dynamically only when logged in)
+  const [templates, setTemplates] = useState(TEMPLATES_DATA.slice(0, 30));
+
+  useEffect(() => {
+    if (user) {
+      apiFetch('/api/templates')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.templates?.length > 0) {
+            setTemplates(data.templates);
+          }
+        })
+        .catch(err => console.error('Templates fetch error:', err));
+    } else {
+      setTemplates([]);
+    }
+  }, [user]);
+
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAdminThemeOpen, setIsAdminThemeOpen] = useState(false);
 
@@ -80,7 +96,7 @@ export default function App() {
       setIsAuthOpen(true);
       return;
     }
-    const tpl = templates.find(t => t.id === site.templateId) || templates[0];
+    const tpl = templates.find(t => t.id === site.templateId) || TEMPLATES_DATA[0];
     setSelectedTemplate(tpl);
     setEditingSite(site);
     setCurrentView('editor');
@@ -102,8 +118,9 @@ export default function App() {
     localStorage.removeItem('nexora_user');
     setUser(null);
     setSavedWebsites([]);
-    if (currentView === 'editor') {
-      setCurrentView('catalog');
+    setTemplates([]);
+    if (currentView === 'editor' || currentView === 'catalog' || currentView === 'dashboard') {
+      setCurrentView('landing');
     }
   };
 
@@ -138,8 +155,15 @@ export default function App() {
         <SaaSPage
           templates={templates}
           onSelectTemplate={handleSelectTemplate}
-          onExploreCatalog={() => setCurrentView('catalog')}
+          onExploreCatalog={() => {
+            if (!user) {
+              setIsAuthOpen(true);
+            } else {
+              setCurrentView('catalog');
+            }
+          }}
           user={user}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
       )}
 
@@ -147,6 +171,8 @@ export default function App() {
         <TemplateCatalog
           templates={templates}
           onSelectTemplate={handleSelectTemplate}
+          user={user}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
       )}
 

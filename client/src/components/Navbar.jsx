@@ -94,33 +94,27 @@ export default function Navbar({
             <span>Templates</span>
           </button>
 
-          <button
-            onClick={() => {
-              if (!user) {
-                onOpenAuth();
-              } else {
-                setCurrentView('dashboard');
-              }
-            }}
-            className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
-              currentView === 'dashboard' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {currentView === 'dashboard' && (
-              <motion.div
-                layoutId="activePill"
-                className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <Layers className="w-3.5 h-3.5" />
-            <span>My Websites</span>
-            {user && (
+          {user && (
+            <button
+              onClick={() => setCurrentView('dashboard')}
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
+                currentView === 'dashboard' ? 'text-brand-700' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {currentView === 'dashboard' && (
+                <motion.div
+                  layoutId="activePill"
+                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <Layers className="w-3.5 h-3.5" />
+              <span>My Websites</span>
               <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-slate-200 text-slate-700">
                 {savedSitesCount}
               </span>
-            )}
-          </button>
+            </button>
+          )}
 
         </nav>
 

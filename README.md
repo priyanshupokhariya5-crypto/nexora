@@ -29,7 +29,6 @@ Nexora provides a complete end-to-end full-stack website creation experience:
 - **Visual Website Editor**: Inspect and edit content live in a 3-panel workspace featuring Top Toolbar, Left Navigation Sidebar, Center Viewport Canvas, and Right Inspector Panel.
 - **Full Page & Image Customization**: Edit logo text, brand logo images, hero titles, subtitles, feature lists, service pricing, team stories, contact emails, and 3 distinct business image slots.
 - **Auto-Save & Version History**: Changes auto-save to MongoDB after 800ms of inactivity with complete Undo (`Ctrl+Z`) and Redo (`Ctrl+Y`) history support.
-- **AI Content Generator**: Integrated AI Assistant panel providing Hero, About, Services, FAQ, SEO, CTA, Rewrite, Shorten, Expand, and Translate tools.
 - **1-Click Publishing**: Instant public route generation (`/site/:slug`) hosted on Vercel with automatic view analytics tracking.
 - **User Dashboard**: Manage created website projects, view live analytics, edit sites, or delete projects from a personal workspace.
 
@@ -54,7 +53,7 @@ flowchart TD
 - **User Authentication**: Full-stack registration, login, session persistence, and logout flow.
 - **Interactive User Dashboard**: Workspace grid displaying all saved user websites, total view count, preset categories, and instant action buttons.
 - **3-Panel Visual Editor**:
-  - *Top Toolbar*: Auto-Save status badge, Undo/Redo history, Viewport switcher (Desktop, Tablet, Mobile), Zoom controls, AI Assistant, Preview, and Publish.
+  - *Top Toolbar*: Auto-Save status badge, Undo/Redo history, Viewport switcher (Desktop, Tablet, Mobile), Zoom controls, Preview, and Publish.
   - *Left Sidebar*: Sections inspector, 3 Business Image asset uploader, 30 Preset switcher.
   - *Center Canvas*: Interactive live preview scaled to selected viewport size.
   - *Right Inspector*: Branding swatches, Font selector, Full Page Content editor, Button corner radius controls.
@@ -62,7 +61,6 @@ flowchart TD
 - **Theme & Preset Manager**: Admin Theme Manager allowing administrators to define custom brand color palettes, fonts, and category badges stored in MongoDB.
 - **Instant Website Publishing**: Generates production-ready `/site/:slug` routes handled seamlessly by Vercel SPA rewrites.
 - **Standalone Public Web Pages**: Production viewer rendering published sites with zero editor chrome and custom 404 page fallback.
-- **AI Content Assistant UI**: Floating glass modal with 10 AI generation and translation tools.
 - **Cloud Image Uploads**: Integrated file upload handler supporting Cloudinary API or base64 storage.
 - **Responsive & Accessible UI**: Clean dark mode editor interface paired with white light mode canvas previews.
 
@@ -103,7 +101,6 @@ nexora/
 │   │   │   └── api.js              # Centralized production API client
 │   │   ├── components/
 │   │   │   ├── AdminThemeModal.jsx # Admin Theme Manager modal
-│   │   │   ├── AiAssistantPanel.jsx# 10 AI Assistant tools drawer
 │   │   │   ├── AuthModal.jsx       # Login & Signup modal
 │   │   │   ├── Dashboard.jsx       # User website workspace
 │   │   │   ├── Navbar.jsx          # Glassmorphic header
@@ -214,8 +211,6 @@ The Express backend provides clean RESTful API endpoints:
 | `POST` | `/api/admin/themes` | Save custom admin theme |
 | `DELETE` | `/api/admin/themes/:id` | Delete custom admin theme |
 | `POST` | `/api/upload` | Upload image file (Cloudinary / Base64) |
-| `POST` | `/api/ai/generate` | Generate AI content for 10 tools |
-| `POST` | `/api/ai/stream` | Stream AI content tokens via SSE |
 
 ---
 
@@ -225,7 +220,6 @@ The Express backend provides clean RESTful API endpoints:
 
 - **Landing Page & 30 Templates Showcase**: `[Screenshot Placeholder: Landing Page]`
 - **3-Panel Visual Website Editor**: `[Screenshot Placeholder: 3-Panel Visual Editor]`
-- **AI Assistant Panel**: `[Screenshot Placeholder: AI Assistant Drawer]`
 - **User Dashboard**: `[Screenshot Placeholder: User Workspace]`
 - **Published Public Website**: `[Screenshot Placeholder: Public Site]`
 

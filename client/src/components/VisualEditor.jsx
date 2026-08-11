@@ -8,7 +8,6 @@ import {
   CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3, ExternalLink
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
-import AiAssistantPanel from './AiAssistantPanel';
 import confetti from 'canvas-confetti';
 import { TEMPLATES_DATA } from '../data/templatesData';
 import { apiFetch } from '../api';
@@ -56,11 +55,6 @@ export default function VisualEditor({
   const [saveStatus, setSaveStatus] = useState('saved');
   const [copiedLink, setCopiedLink] = useState(false);
   const [savedSiteData, setSavedSiteData] = useState(initialSite);
-  
-  // AI Assistant state
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   // File Upload State
   const [uploadingSlot, setUploadingSlot] = useState(null); // 'logoImageUrl', 'heroImageUrl', 'aboutImageUrl', 'galleryImageUrl'
@@ -981,16 +975,6 @@ export default function VisualEditor({
 
         {/* Right Toolbar Actions */}
         <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setIsAiModalOpen(true)}
-            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-xs shadow-sm flex items-center space-x-1"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline">AI Assistant</span>
-          </motion.button>
-
           <button
             onClick={() => setIsPreviewMode(!isPreviewMode)}
             className={`hidden md:flex px-3 py-1.5 rounded-xl text-xs font-bold transition-all items-center space-x-1.5 ${
@@ -1074,19 +1058,6 @@ export default function VisualEditor({
           <span className="text-[10px] mt-0.5 font-display">Settings</span>
         </button>
       </nav>
-
-      {/* 4. AI ASSISTANT PANEL DRAWER */}
-      <AiAssistantPanel
-        isOpen={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
-        customState={customState}
-        onApplyAiUpdate={(updates) => {
-          pushToHistory({
-            ...customState,
-            ...updates
-          });
-        }}
-      />
 
     </div>
   );

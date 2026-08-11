@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const { TEMPLATES_DATA } = require('../data/templatesList');
 const Website = require('../models/Website');
 const User = require('../models/User');
@@ -556,7 +557,14 @@ router.get('/websites/:identifier', async (req, res) => {
   try {
     const id = req.params.identifier;
     if (isMongoConnected()) {
-      const site = await Website.findOne({ $or: [{ siteId: id }, { slug: id }] });
+      const isObjId = mongoose.Types.ObjectId.isValid(id);
+      const site = await Website.findOne({
+        $or: [
+          { siteId: id },
+          { slug: id },
+          ...(isObjId ? [{ _id: id }] : [])
+        ]
+      });
       if (!site) return res.status(404).json({ success: false, message: 'Website not found' });
       site.views += 1;
       await site.save();
@@ -564,7 +572,7 @@ router.get('/websites/:identifier', async (req, res) => {
     } else {
       let site = memoryWebsitesStore.get(id);
       if (!site) {
-        site = Array.from(memoryWebsitesStore.values()).find(s => s.slug === id);
+        site = Array.from(memoryWebsitesStore.values()).find(s => s.slug === id || s.siteId === id);
       }
       if (!site) return res.status(404).json({ success: false, message: 'Website not found' });
       site.views = (site.views || 0) + 1;

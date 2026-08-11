@@ -9,6 +9,7 @@ import AdminThemeModal from './components/AdminThemeModal';
 import PublicWebsite from './components/PublicWebsite';
 import { TEMPLATES_DATA } from './data/templatesData';
 import { apiFetch } from './api';
+import { Loader2, AlertTriangle, ArrowLeft, LayoutGrid, Layers } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
@@ -17,24 +18,8 @@ export default function App() {
   const [savedWebsites, setSavedWebsites] = useState([]);
   const [publicSlug, setPublicSlug] = useState(null);
 
-  // Check URL pathname for /site/:slug routing
-  useEffect(() => {
-    const checkPathRoute = () => {
-      const path = window.location.pathname;
-      if (path.startsWith('/site/')) {
-        const slug = path.replace('/site/', '').trim();
-        if (slug) {
-          setPublicSlug(slug);
-          return;
-        }
-      }
-      setPublicSlug(null);
-    };
-
-    checkPathRoute();
-    window.addEventListener('popstate', checkPathRoute);
-    return () => window.removeEventListener('popstate', checkPathRoute);
-  }, []);
+  const [editorLoading, setEditorLoading] = useState(false);
+  const [editorError, setEditorError] = useState(null);
 
   // User Authentication State
   const [user, setUser] = useState(() => {
@@ -42,9 +27,13 @@ export default function App() {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Exactly 30 template presets (Fetched dynamically only when logged in)
+  // Exactly 30 template presets
   const [templates, setTemplates] = useState(TEMPLATES_DATA.slice(0, 30));
 
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminThemeOpen, setIsAdminThemeOpen] = useState(false);
+
+  // Fetch Template Catalog when logged in
   useEffect(() => {
     if (user) {
       apiFetch('/api/templates')
@@ -59,9 +48,6 @@ export default function App() {
       setTemplates([]);
     }
   }, [user]);
-
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isAdminThemeOpen, setIsAdminThemeOpen] = useState(false);
 
   // Load User Specific Websites
   const loadSavedWebsites = async (currentUser = user) => {
@@ -85,6 +71,115 @@ export default function App() {
     loadSavedWebsites(user);
   }, [user]);
 
+  // Helper to change view and sync browser URL
+  const navigateToView = (view, path = null) => {
+    setCurrentView(view);
+    if (path && window.location.pathname !== path) {
+      window.history.pushState(null, '', path);
+    }
+  };
+
+  // Primary URL Route Inspector for initial page load & browser refresh (popstate)
+  useEffect(() => {
+    const checkPathRoute = async () => {
+      const path = window.location.pathname;
+      const search = window.location.search;
+
+      // 1. Standalone Published Site: /site/:slug
+      if (path.startsWith('/site/')) {
+        const slug = path.replace('/site/', '').trim();
+        if (slug) {
+          setPublicSlug(slug);
+          return;
+        }
+      }
+      setPublicSlug(null);
+
+      // 2. Visual Website Editor Route: /editor/...
+      if (path.startsWith('/editor')) {
+        const rawParam = path.replace('/editor', '').replace(/^\/+/, '').trim();
+
+        // If not authenticated, open Auth Login modal
+        if (!user) {
+          setIsAuthOpen(true);
+          setCurrentView('landing');
+          return;
+        }
+
+        // New Site Creation: /editor/new?template=...
+        if (!rawParam || rawParam === 'new') {
+          const queryParams = new URLSearchParams(search);
+          const templateId = queryParams.get('template');
+          const tpl = templates.find(t => t.id === templateId) || TEMPLATES_DATA[0];
+          setSelectedTemplate(tpl);
+          setEditingSite(null);
+          setEditorError(null);
+          setCurrentView('editor');
+          return;
+        }
+
+        // Existing Saved Site Recovery: /editor/:websiteId
+        setEditorLoading(true);
+        setEditorError(null);
+        try {
+          const res = await apiFetch(`/api/websites/${rawParam}`);
+          const data = await res.json();
+          if (data.success && data.website) {
+            const site = data.website;
+            const tpl = templates.find(t => t.id === site.templateId) || TEMPLATES_DATA[0];
+            setSelectedTemplate(tpl);
+            setEditingSite(site);
+            setEditorError(null);
+            setCurrentView('editor');
+          } else {
+            setEditorError(data.message || 'The requested website could not be found.');
+            setCurrentView('editor_error');
+          }
+        } catch (err) {
+          console.error('Editor site recovery error:', err);
+          setEditorError('Failed to load website. Please check network connection.');
+          setCurrentView('editor_error');
+        } finally {
+          setEditorLoading(false);
+        }
+        return;
+      }
+
+      // 3. User Dashboard Route: /dashboard
+      if (path === '/dashboard') {
+        if (!user) {
+          setIsAuthOpen(true);
+          setCurrentView('landing');
+        } else {
+          setCurrentView('dashboard');
+        }
+        return;
+      }
+
+      // 4. Template Catalog Route: /templates
+      if (path === '/templates') {
+        if (!user) {
+          setIsAuthOpen(true);
+          setCurrentView('landing');
+        } else {
+          setCurrentView('catalog');
+        }
+        return;
+      }
+
+      // 5. Auth Routes: /login or /register
+      if (path === '/login' || path === '/register') {
+        setIsAuthOpen(true);
+        setCurrentView('landing');
+        return;
+      }
+    };
+
+    checkPathRoute();
+    window.addEventListener('popstate', checkPathRoute);
+    return () => window.removeEventListener('popstate', checkPathRoute);
+  }, [user]);
+
   const handleSelectTemplate = (template) => {
     if (!user) {
       setIsAuthOpen(true);
@@ -92,7 +187,7 @@ export default function App() {
     }
     setSelectedTemplate(template);
     setEditingSite(null);
-    setCurrentView('editor');
+    navigateToView('editor', `/editor/new?template=${template.id}`);
   };
 
   const handleEditSite = (site) => {
@@ -103,10 +198,11 @@ export default function App() {
     const tpl = templates.find(t => t.id === site.templateId) || TEMPLATES_DATA[0];
     setSelectedTemplate(tpl);
     setEditingSite(site);
-    setCurrentView('editor');
+    navigateToView('editor', `/editor/${site.siteId || site._id}`);
   };
 
   const handleSiteSaved = (newSite) => {
+    setEditingSite(newSite);
     setSavedWebsites(prev => {
       const idx = prev.findIndex(s => s.siteId === newSite.siteId);
       if (idx >= 0) {
@@ -116,6 +212,11 @@ export default function App() {
       }
       return [newSite, ...prev];
     });
+
+    // Update browser URL if first save from /editor/new
+    if (newSite.siteId && window.location.pathname.includes('/editor/new')) {
+      window.history.replaceState(null, '', `/editor/${newSite.siteId}`);
+    }
   };
 
   const handleLogout = () => {
@@ -123,9 +224,8 @@ export default function App() {
     setUser(null);
     setSavedWebsites([]);
     setTemplates([]);
-    if (currentView === 'editor' || currentView === 'catalog' || currentView === 'dashboard') {
-      setCurrentView('landing');
-    }
+    navigateToView('landing', '/login');
+    setIsAuthOpen(true);
   };
 
   const handleAuthSuccess = (userData) => {
@@ -133,9 +233,49 @@ export default function App() {
     loadSavedWebsites(userData);
   };
 
-  // If URL path is /site/:slug, render PublicWebsite standalone page
+  // Render Standalone Published Public Website Page
   if (publicSlug) {
     return <PublicWebsite slug={publicSlug} />;
+  }
+
+  // Render Full-Screen Editor Loading State
+  if (editorLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6">
+        <Loader2 className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+        <h3 className="text-xl font-bold font-display">Loading Nexora Editor...</h3>
+        <p className="text-xs text-slate-400 mt-2">Restoring website workspace state</p>
+      </div>
+    );
+  }
+
+  // Render Full-Screen Editor Error / Not Found State
+  if (currentView === 'editor_error') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center">
+        <div className="w-14 h-14 rounded-3xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mb-4">
+          <AlertTriangle className="w-7 h-7" />
+        </div>
+        <h2 className="text-2xl font-bold font-display text-white mb-2">Website Not Found</h2>
+        <p className="text-xs text-slate-400 max-w-md mb-6">{editorError || 'The requested website editor link could not be loaded.'}</p>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => navigateToView('dashboard', '/dashboard')}
+            className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg transition-colors flex items-center space-x-2"
+          >
+            <Layers className="w-4 h-4" />
+            <span>Go to My Websites</span>
+          </button>
+          <button
+            onClick={() => navigateToView('catalog', '/templates')}
+            className="px-5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors flex items-center space-x-2"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span>Explore Templates</span>
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -145,7 +285,10 @@ export default function App() {
       {currentView !== 'editor' && (
         <Navbar
           currentView={currentView}
-          setCurrentView={setCurrentView}
+          setCurrentView={(v) => {
+            const p = v === 'landing' ? '/' : v === 'catalog' ? '/templates' : v === 'dashboard' ? '/dashboard' : null;
+            navigateToView(v, p);
+          }}
           templatesCount={templates.length}
           savedSitesCount={savedWebsites.length}
           user={user}
@@ -164,7 +307,7 @@ export default function App() {
             if (!user) {
               setIsAuthOpen(true);
             } else {
-              setCurrentView('catalog');
+              navigateToView('catalog', '/templates');
             }
           }}
           user={user}
@@ -187,7 +330,7 @@ export default function App() {
             <h2 className="text-2xl font-bold font-display mb-2">Authentication Required</h2>
             <p className="text-xs text-slate-400 mb-6">Please log in or sign up to access the Nexora Visual Studio Editor.</p>
             <button
-              onClick={() => { setIsAuthOpen(true); setCurrentView('catalog'); }}
+              onClick={() => { setIsAuthOpen(true); navigateToView('catalog', '/templates'); }}
               className="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg"
             >
               Log In To Continue
@@ -200,7 +343,7 @@ export default function App() {
             user={user}
             onRequireAuth={() => setIsAuthOpen(true)}
             onSaveSite={handleSiteSaved}
-            onBack={() => setCurrentView('catalog')}
+            onBack={() => navigateToView('catalog', '/templates')}
           />
         )
       )}
@@ -210,7 +353,7 @@ export default function App() {
           user={user}
           onOpenAuth={() => setIsAuthOpen(true)}
           onEditSite={handleEditSite}
-          onCreateNew={() => setCurrentView('catalog')}
+          onCreateNew={() => navigateToView('catalog', '/templates')}
         />
       )}
 

@@ -29,11 +29,32 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Serve frontend in production mode if built
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+const fs = require('fs');
+
+// Root API Server Status Route
+app.get('/', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected (using in-memory fallback)';
+  res.json({
+    status: 'online',
+    app: 'Nexora SaaS Backend API Server',
+    database: dbStatus,
+    timestamp: new Date()
+  });
+});
+
+// Serve static frontend ONLY IF client/dist exists on disk (prevents ENOENT errors on Render separate backend)
+const clientDistPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path === '/health') {
+      return next();
+    }
+    const indexPath = path.join(clientDistPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    next();
   });
 }
 

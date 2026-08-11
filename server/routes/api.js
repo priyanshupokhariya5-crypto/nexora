@@ -642,6 +642,46 @@ const getGeminiClient = () => {
   }
 };
 
+const extractResponseText = (response) => {
+  if (!response) return '';
+  if (typeof response.text === 'string' && response.text.trim()) {
+    return response.text.trim();
+  }
+  if (typeof response.text === 'function') {
+    const textVal = response.text();
+    if (typeof textVal === 'string' && textVal.trim()) return textVal.trim();
+  }
+  if (response.candidates && response.candidates.length > 0) {
+    const candidate = response.candidates[0];
+    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+      const part = candidate.content.parts[0];
+      if (part && part.text) return part.text.trim();
+    }
+  }
+  return '';
+};
+
+const cleanAndParseJson = (rawText) => {
+  if (!rawText || typeof rawText !== 'string') return null;
+
+  let text = rawText.trim();
+  text = text.replace(/^```(json|javascript|text)?/gi, '').replace(/```$/gi, '').trim();
+
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    text = text.substring(firstBrace, lastBrace + 1);
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('Failed to parse JSON output:', err.message, 'Raw text:', rawText);
+    return null;
+  }
+};
+
 async function callGeminiChat(message, conversation = []) {
   const ai = getGeminiClient();
   if (!ai) {
@@ -654,11 +694,26 @@ async function callGeminiChat(message, conversation = []) {
       const role = (msg.role === 'assistant' || msg.role === 'model') ? 'model' : 'user';
       const text = msg.text || msg.content || msg.message || '';
       if (text && text.trim()) {
-        contents.push({ role, parts: [{ text: text.trim() }] });
+        if (contents.length > 0 && contents[contents.length - 1].role === role) {
+          contents[contents.length - 1].parts[0].text += `\n${text.trim()}`;
+        } else {
+          contents.push({ role, parts: [{ text: text.trim() }] });
+        }
       }
     });
   }
-  contents.push({ role: 'user', parts: [{ text: message.trim() }] });
+
+  if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
+    if (contents[contents.length - 1].parts[0].text !== message.trim()) {
+      contents[contents.length - 1].parts[0].text += `\n${message.trim()}`;
+    }
+  } else {
+    contents.push({ role: 'user', parts: [{ text: message.trim() }] });
+  }
+
+  while (contents.length > 0 && contents[0].role !== 'user') {
+    contents.shift();
+  }
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
@@ -670,11 +725,11 @@ async function callGeminiChat(message, conversation = []) {
     }
   });
 
-  const replyText = response.text || (response.candidates && response.candidates[0]?.content?.parts[0]?.text);
+  const replyText = extractResponseText(response);
   if (!replyText) {
     throw new Error('Empty response received from Gemini.');
   }
-  return replyText.trim();
+  return replyText;
 }
 
 async function callGeminiStructuredGenerate(action, prompt, currentText = '', targetLang = 'Spanish') {
@@ -714,10 +769,9 @@ async function callGeminiStructuredGenerate(action, prompt, currentText = '', ta
       }
     });
 
-    const text = response.text;
-    if (text) {
-      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJson);
+    const rawText = extractResponseText(response);
+    if (rawText) {
+      return cleanAndParseJson(rawText);
     }
   } catch (err) {
     console.error('Gemini structured generate error, falling back to template data:', err.message);

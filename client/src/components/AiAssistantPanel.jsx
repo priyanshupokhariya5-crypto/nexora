@@ -48,7 +48,49 @@ export default function AiAssistantPanel({
     }
   }, [chatMessages, selectedTool]);
 
+  const savedUser = (() => {
+    try {
+      const raw = localStorage.getItem('nexora_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
   if (!isOpen) return null;
+
+  if (!savedUser || !savedUser.token) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="bg-slate-900 rounded-3xl p-8 max-w-md w-full border border-slate-800 shadow-2xl text-center relative"
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div className="w-12 h-12 rounded-2xl bg-brand-600/20 border border-brand-500/30 text-brand-400 flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <h3 className="text-xl font-bold text-white font-display mb-2">Authentication Required</h3>
+          <p className="text-xs text-slate-400 mb-6">
+            Please log in or sign up to your Nexora account to access the Google Gemini AI Assistant.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg transition-colors"
+          >
+            Close & Log In
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleGenerate = async (e) => {
     e.preventDefault();

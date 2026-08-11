@@ -1,7 +1,11 @@
 // Centralized Frontend API Client for Nexora
 // Environment-based API URL configuration supporting VITE_API_URL and local fallback
 
-const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const defaultProdUrl = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+  ? 'https://nexora-740u.onrender.com/api'
+  : 'http://localhost:5000/api';
+
+const rawApiUrl = import.meta.env.VITE_API_URL || defaultProdUrl;
 
 // Remove trailing slashes from base URL
 const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');

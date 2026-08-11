@@ -44,7 +44,7 @@ export default function App() {
     }
   }, [user, isAuthOpen]);
 
-  // Fetch Template Catalog when logged in
+  // Fetch Template Catalog when logged in (falls back gracefully to static TEMPLATES_DATA)
   useEffect(() => {
     if (user) {
       apiFetch('/api/templates')
@@ -55,8 +55,6 @@ export default function App() {
           }
         })
         .catch(err => console.error('Templates fetch error:', err));
-    } else {
-      setTemplates([]);
     }
   }, [user]);
 
@@ -259,7 +257,6 @@ export default function App() {
     localStorage.removeItem('nexora_user');
     setUser(null);
     setSavedWebsites([]);
-    setTemplates([]);
     setIsAuthOpen(false);
     navigateToView('landing', '/');
   };

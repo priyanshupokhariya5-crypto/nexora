@@ -18,18 +18,24 @@ const isMongoConnected = () => {
   return mongoose.connection.readyState === 1;
 };
 
-// Seed MongoDB with 30 templates automatically if collection is empty
+// Seed / Sync MongoDB with the 30 redesigned templates automatically
 const seedTemplatesIfEmpty = async () => {
   try {
     if (isMongoConnected()) {
-      const count = await TemplateModel.countDocuments();
-      if (count === 0) {
-        await TemplateModel.insertMany(TEMPLATES_DATA);
-        console.log('🌱 Seeded 30 templates into MongoDB "templates" collection');
+      // Upsert all 30 redesigned templates to ensure MongoDB always has fresh template data
+      for (const tpl of TEMPLATES_DATA) {
+        await TemplateModel.findOneAndUpdate(
+          { id: tpl.id },
+          { $set: tpl },
+          { upsert: true, new: true }
+        );
       }
+      // Remove any legacy template documents no longer present in TEMPLATES_DATA
+      const currentIds = TEMPLATES_DATA.map(t => t.id);
+      await TemplateModel.deleteMany({ id: { $nin: currentIds } });
     }
   } catch (err) {
-    console.error('Template seeding error:', err.message);
+    console.error('Template sync error:', err.message);
   }
 };
 

@@ -7,7 +7,7 @@ import {
   HelpCircle, ChevronDown, MessageSquare, ShieldCheck, Clock, Award,
   Send, Twitter, Github, Linkedin, Disc as Discord, Lock, UserCheck
 } from 'lucide-react';
-import { TEMPLATE_CATEGORIES } from '../data/templatesData';
+import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
 
 export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null, onOpenAuth }) {
   const [activeCategory, setActiveCategory] = useState('All');
@@ -16,8 +16,10 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
-  const filteredTemplates = templates.filter(t => 
-    activeCategory === 'All' ? true : t.category.toLowerCase() === activeCategory.toLowerCase()
+  const activeTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
+
+  const filteredTemplates = activeTemplates.filter(t => 
+    activeCategory === 'All' ? true : t.category?.toLowerCase() === activeCategory.toLowerCase()
   );
 
   const toggleFaq = (index) => {

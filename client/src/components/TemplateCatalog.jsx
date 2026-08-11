@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Search, LayoutGrid, Sparkles, ArrowRight, Check, Eye, Lock, UserCheck } from 'lucide-react';
-import { TEMPLATE_CATEGORIES } from '../data/templatesData';
+import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
 
 export default function TemplateCatalog({ templates = [], onSelectTemplate, user = null, onOpenAuth }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const activeTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
 
   if (!user) {
     return (
@@ -29,7 +31,7 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
     );
   }
 
-  const filtered = templates.filter(tpl => {
+  const filtered = activeTemplates.filter(tpl => {
     const matchesCategory = selectedCategory === 'All' || tpl.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = searchQuery === '' || 
       tpl.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,7 +49,7 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
         <div className="text-center max-w-3xl mx-auto">
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-bold mb-4 shadow-soft-sm">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>{templates.length || 30} Professional Industry Presets</span>
+            <span>{activeTemplates.length || 30} Professional Industry Presets</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 font-display">
@@ -75,7 +77,7 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
 
           {/* Count */}
           <div className="text-xs font-semibold text-slate-500">
-            Showing <strong className="text-slate-900 font-bold">{filtered.length}</strong> of {templates.length} Presets
+            Showing <strong className="text-slate-900 font-bold">{filtered.length}</strong> of {activeTemplates.length} Presets
           </div>
         </div>
 

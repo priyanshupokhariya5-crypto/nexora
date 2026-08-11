@@ -23,15 +23,26 @@ export default function App() {
 
   // User Authentication State
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('nexora_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('nexora_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
   });
+
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminThemeOpen, setIsAdminThemeOpen] = useState(false);
 
   // Exactly 30 template presets
   const [templates, setTemplates] = useState(TEMPLATES_DATA.slice(0, 30));
 
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isAdminThemeOpen, setIsAdminThemeOpen] = useState(false);
+  // FAILSAFE EFFECT: Authenticated users must NEVER have an active auth modal
+  useEffect(() => {
+    if (user && isAuthOpen) {
+      setIsAuthOpen(false);
+    }
+  }, [user, isAuthOpen]);
 
   // Fetch Template Catalog when logged in
   useEffect(() => {
@@ -118,6 +129,7 @@ export default function App() {
           setEditingSite(null);
           setEditorError(null);
           setCurrentView('editor');
+          setIsAuthOpen(false);
           return;
         }
 
@@ -134,6 +146,7 @@ export default function App() {
             setEditingSite(site);
             setEditorError(null);
             setCurrentView('editor');
+            setIsAuthOpen(false);
           } else {
             setEditorError(data.message || 'The requested website could not be found.');
             setCurrentView('editor_error');
@@ -156,6 +169,7 @@ export default function App() {
           window.history.replaceState(null, '', '/login');
         } else {
           setCurrentView('dashboard');
+          setIsAuthOpen(false);
         }
         return;
       }
@@ -168,6 +182,7 @@ export default function App() {
           window.history.replaceState(null, '', '/login');
         } else {
           setCurrentView('catalog');
+          setIsAuthOpen(false);
         }
         return;
       }
@@ -178,6 +193,7 @@ export default function App() {
           setIsAuthOpen(true);
           setCurrentView('landing');
         } else {
+          setIsAuthOpen(false);
           navigateToView('dashboard', '/dashboard');
         }
         return;
@@ -186,6 +202,9 @@ export default function App() {
       // 6. Public Landing Page: /
       if (path === '/' || path === '') {
         setCurrentView('landing');
+        if (user) {
+          setIsAuthOpen(false);
+        }
         return;
       }
     };
@@ -202,6 +221,7 @@ export default function App() {
     }
     setSelectedTemplate(template);
     setEditingSite(null);
+    setIsAuthOpen(false);
     navigateToView('editor', `/editor/new?template=${template.id}`);
   };
 
@@ -213,6 +233,7 @@ export default function App() {
     const tpl = templates.find(t => t.id === site.templateId) || TEMPLATES_DATA[0];
     setSelectedTemplate(tpl);
     setEditingSite(site);
+    setIsAuthOpen(false);
     navigateToView('editor', `/editor/${site.siteId || site._id}`);
   };
 

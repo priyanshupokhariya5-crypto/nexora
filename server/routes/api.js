@@ -716,7 +716,7 @@ async function callGeminiChat(message, conversation = []) {
   }
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.5-flash',
     contents: contents,
     config: {
       systemInstruction: NEXORA_SYSTEM_INSTRUCTION,
@@ -760,7 +760,7 @@ async function callGeminiStructuredGenerate(action, prompt, currentText = '', ta
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       contents: promptInstruction,
       config: {
         systemInstruction,
@@ -878,18 +878,37 @@ router.post('/ai/chat', requireAuth, async (req, res) => {
       const reply = await callGeminiChat(message.trim(), conversation || []);
       return res.json({ success: true, reply });
     } catch (geminiError) {
-      console.error('Gemini API Error in /api/ai/chat:', geminiError.message);
-      return res.status(500).json({ 
+      console.error('Gemini API Error in /api/ai/chat:', geminiError.message || geminiError);
+      
+      const errMsg = geminiError.message || '';
+      let statusCode = 500;
+      let userReply = "Sorry, I'm having trouble connecting to Gemini right now. Please try again.";
+
+      if (errMsg.includes('401') || errMsg.includes('API_KEY_INVALID') || errMsg.includes('unauthorized')) {
+        statusCode = 401;
+        userReply = "Gemini API key authentication failed. Please check the server configuration.";
+      } else if (errMsg.includes('403') || errMsg.includes('PERMISSION_DENIED')) {
+        statusCode = 403;
+        userReply = "Access denied to Gemini API. Please check project permissions.";
+      } else if (errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('rate limit')) {
+        statusCode = 429;
+        userReply = "Gemini rate limit exceeded. Please wait a moment before retrying.";
+      } else if (errMsg.includes('404') || errMsg.includes('NOT_FOUND') || errMsg.includes('no longer available')) {
+        statusCode = 404;
+        userReply = "Selected Gemini model is unavailable. Please check backend model configuration.";
+      }
+
+      return res.status(statusCode).json({ 
         success: false, 
-        reply: "Sorry, I'm having trouble connecting right now. Please try again.",
-        message: "Failed to generate AI response."
+        reply: userReply,
+        message: errMsg || "Failed to generate AI response."
       });
     }
   } catch (error) {
     console.error('Server error in /api/ai/chat:', error.message);
     return res.status(500).json({ 
       success: false, 
-      reply: "Sorry, I'm having trouble connecting right now. Please try again.",
+      reply: "Internal server error occurred while processing AI chat request.",
       message: error.message 
     });
   }

@@ -45,7 +45,7 @@ const seedTemplatesIfEmpty = async () => {
 
 router.post('/upload', async (req, res) => {
   try {
-    const { image } = req.body; // base64 string or image data URL
+    const { image, filename } = req.body; // base64 string or image data URL
 
     if (!image) {
       return res.status(400).json({ success: false, message: 'No image data provided for upload.' });
@@ -72,7 +72,39 @@ router.post('/upload', async (req, res) => {
       });
     }
 
-    // Out-of-the-box fallback: Return data URL / base64 image
+    // Local Disk Fallback: Save to server/uploads/ directory
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const uploadsDir = path.join(__dirname, '../uploads');
+
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      if (typeof image === 'string' && image.startsWith('data:image/')) {
+        const matches = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+          const base64Data = matches[2];
+          const uniqueName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+          const filePath = path.join(uploadsDir, uniqueName);
+          fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+
+          const localUrl = `/uploads/${uniqueName}`;
+          return res.json({
+            success: true,
+            provider: 'local',
+            url: localUrl,
+            message: 'Image saved locally to server uploads folder!'
+          });
+        }
+      }
+    } catch (diskErr) {
+      console.warn('Local disk save notice, falling back to data URL:', diskErr.message);
+    }
+
+    // Direct data URL fallback
     return res.json({
       success: true,
       provider: 'base64',

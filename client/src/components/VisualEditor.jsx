@@ -514,47 +514,81 @@ export default function VisualEditor({
     img.src = cleanUrl;
   };
 
-  const handleModalFileUpload = (e) => {
-    const file = e.target.files[0];
+  const compressImage = (file, maxWidth = 1920, maxHeight = 1080, quality = 0.85) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL(file.type || 'image/jpeg', quality));
+        };
+        img.onerror = () => resolve(event.target.result);
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleModalFileUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       setImageModalError('Unsupported file type. Please select a JPG, PNG, WEBP, or GIF image.');
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      setImageModalError('Image file is too large. Please select an image under 10MB.');
+      if (e.target) e.target.value = '';
       return;
     }
 
     setImageModalLoading(true);
     setImageModalError('');
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64Data = reader.result;
-      try {
-        const res = await apiFetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Data })
-        });
+    try {
+      // 1. Compress oversized images to max 1920x1080 at 85% quality
+      const compressedDataUrl = await compressImage(file, 1920, 1080, 0.85);
+
+      // 2. Set instant live preview so user receives immediate visual feedback
+      setImageModalPreview(compressedDataUrl);
+
+      // 3. Post to backend upload endpoint
+      const res = await apiFetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: compressedDataUrl, filename: file.name })
+      });
+
+      if (res.ok) {
         const data = await res.json();
         if (data.success && data.url) {
           setImageModalPreview(data.url);
           setImageModalUrlInput(data.url);
           setImageModalError('');
-        } else {
-          setImageModalPreview(base64Data);
         }
-      } catch (err) {
-        setImageModalPreview(base64Data);
-      } finally {
-        setImageModalLoading(false);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Backend upload notice (using optimized image preview):', err);
+      setImageModalError('');
+    } finally {
+      setImageModalLoading(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   const handleApplyModalImage = () => {

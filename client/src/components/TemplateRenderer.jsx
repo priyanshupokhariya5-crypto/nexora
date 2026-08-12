@@ -224,7 +224,7 @@ export default function TemplateRenderer({
     fitMode = 'auto'
   }) => {
     const safeSlotKey = typeof slotKey === 'string' ? slotKey : '';
-    const rawSrc = src || (safeSlotKey ? customData?.[safeSlotKey] : null) || template?.image || '';
+    const rawSrc = (safeSlotKey && customData?.[safeSlotKey]) || src || template?.image || '';
     const currentSrc = getImageUrl(rawSrc, template?.image || '');
     const userFitMode = (safeSlotKey && customData?.[`${safeSlotKey}_fitMode`]) || fitMode;
     const userPosition = (safeSlotKey && customData?.[`${safeSlotKey}_position`]) || 'center';

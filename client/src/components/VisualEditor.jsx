@@ -820,6 +820,16 @@ export default function VisualEditor({
         updatedTestimonials[idx] = { ...updatedTestimonials[idx], [prop]: imageModalPreview };
         nextState.testimonials = updatedTestimonials;
       }
+    } else if (activeImageSlot.startsWith('custom_sec_')) {
+      const parts = activeImageSlot.split('_');
+      const secId = `${parts[0]}_${parts[1]}_${parts[2]}`;
+      const updatedCustomSecs = (nextState.customSections || []).map(sec => {
+        if (sec.id === secId) {
+          return { ...sec, imageUrl: imageModalPreview };
+        }
+        return sec;
+      });
+      nextState.customSections = updatedCustomSecs;
     }
 
     // 3. Single atomic history push and state update

@@ -191,7 +191,7 @@ export default function TemplateRenderer({
     return fallback;
   };
 
-  // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing & Defensive Error Guards
+  // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing & Position Controls
   const EditableImage = ({ 
     slotKey = '', 
     src, 
@@ -204,11 +204,14 @@ export default function TemplateRenderer({
     const rawSrc = src || (safeSlotKey ? customData?.[safeSlotKey] : null) || template?.image || '';
     const currentSrc = getImageUrl(rawSrc, template?.image || '');
     const userFitMode = (safeSlotKey && customData?.[`${safeSlotKey}_fitMode`]) || fitMode;
+    const userPosition = (safeSlotKey && customData?.[`${safeSlotKey}_position`]) || 'center';
     const userAlt = (safeSlotKey && customData?.[`${safeSlotKey}_alt`]) || (typeof alt === 'string' ? alt : '');
 
     let fitClass = 'object-contain';
     if (userFitMode === 'cover') {
       fitClass = 'object-cover';
+    } else if (userFitMode === 'fill') {
+      fitClass = 'object-fill';
     } else if (userFitMode === 'contain') {
       fitClass = 'object-contain';
     } else {
@@ -219,7 +222,13 @@ export default function TemplateRenderer({
       }
     }
 
-    const responsiveImgClass = `max-w-full w-full h-auto min-w-0 ${fitClass} ${className}`;
+    let positionClass = 'object-center';
+    if (userPosition === 'top') positionClass = 'object-top';
+    else if (userPosition === 'bottom') positionClass = 'object-bottom';
+    else if (userPosition === 'left') positionClass = 'object-left';
+    else if (userPosition === 'right') positionClass = 'object-right';
+
+    const responsiveImgClass = `max-w-full w-full h-auto min-w-0 ${fitClass} ${positionClass} ${className}`;
 
     if (!isEditMode) {
       return <img src={currentSrc} alt={userAlt} className={responsiveImgClass} style={style} loading="lazy" />;

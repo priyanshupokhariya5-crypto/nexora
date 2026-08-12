@@ -1,4 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove
+} from '@dnd-kit/sortable';
+import SortableCanvasSection from './SortableCanvasSection';
 import { 
   Zap, ShieldCheck, Leaf, Clock, Award, Flame, TrendingUp, Briefcase, 
   Cpu, Sprout, GlassWater, Key, Eye, Shield, Palette, Sparkles, Globe, 
@@ -88,6 +101,28 @@ export default function TemplateRenderer({
   const fontFamily = customData.fontFamily || customFont || template.fontFamily || 'sans';
   const bgTheme = customData.bgTheme || customBg || template.bgTheme || 'light';
   const sectionsOrder = customData.sectionsOrder || data.sectionsOrder || template.sectionsOrder || ['hero', 'features', 'about', 'services', 'pricing', 'testimonials', 'contact'];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5
+      }
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      const oldIndex = sectionsOrder.indexOf(active.id);
+      const newIndex = sectionsOrder.indexOf(over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(sectionsOrder, oldIndex, newIndex);
+        if (onSectionReorder) {
+          onSectionReorder(newOrder);
+        }
+      }
+    }
+  };
 
   // Multi-Layout Variants System
   const heroStyle = customData.heroStyle || data.heroStyle || template.heroStyle || 'split-arched';
@@ -994,6 +1029,71 @@ export default function TemplateRenderer({
 
                 return null;
             };
+
+            const customSecsMap = (customData.customSections || []).reduce((acc, sec) => { acc[sec.id] = sec; return acc; }, {});
+
+            const getSectionTitle = (sectionKey, secObj) => {
+              if (secObj && secObj.title) return secObj.title;
+              if (typeof sectionKey === 'string') {
+                if (sectionKey === 'hero') return 'Hero Section';
+                if (sectionKey === 'about') return 'About Section';
+                if (sectionKey === 'services') return 'Services Section';
+                if (sectionKey === 'features') return 'Features Section';
+                if (sectionKey === 'pricing') return 'Pricing Section';
+                if (sectionKey === 'testimonials') return 'Testimonials Section';
+                if (sectionKey === 'contact') return 'Contact Section';
+                if (sectionKey === 'gallery') return 'Gallery Section';
+                if (sectionKey.startsWith('custom_hero_')) return 'Hero Banner';
+                if (sectionKey.startsWith('custom_portfolio_')) return 'Selected Works';
+                if (sectionKey.startsWith('custom_cta_')) return 'Call To Action';
+                if (sectionKey.startsWith('custom_team_')) return 'Team Showcase';
+                if (sectionKey.startsWith('custom_faq_')) return 'FAQ Section';
+                if (sectionKey.startsWith('custom_button_')) return 'Action Button';
+                if (sectionKey.startsWith('custom_image_')) return 'Image Showcase';
+                if (sectionKey.startsWith('custom_text_')) return 'Text Section';
+                if (sectionKey.startsWith('custom_sec_')) return 'Custom Section';
+                return sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1) + ' Section';
+              }
+              return 'Content Section';
+            };
+
+            if (isEditMode) {
+              return (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={sectionsOrder}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <main className="space-y-0 min-h-[400px]">
+                      {sectionsOrder.map((section, secIdx) => {
+                        const secObj = customSecsMap[section];
+                        const title = getSectionTitle(section, secObj);
+                        const content = renderSectionNode(section, secIdx);
+                        if (!content) return null;
+
+                        return (
+                          <SortableCanvasSection
+                            key={section}
+                            id={section}
+                            index={secIdx}
+                            title={title}
+                            isEditMode={isEditMode}
+                            onDuplicate={onSectionDuplicate}
+                            onDelete={onSectionDelete}
+                          >
+                            {content}
+                          </SortableCanvasSection>
+                        );
+                      })}
+                    </main>
+                  </SortableContext>
+                </DndContext>
+              );
+            }
 
             return (
               <main>

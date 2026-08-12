@@ -994,17 +994,11 @@ export default function VisualEditor({
                     </div>
 
                     <div className="flex items-center space-x-1 flex-shrink-0">
-                      <button onClick={() => handleMoveSection(i, 'up')} disabled={i === 0} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white disabled:opacity-30">
-                        <MoveUp className="w-3 h-3" />
+                      <button onClick={() => handleDuplicateSection(i)} className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors" title="Duplicate Section">
+                        <DuplicateIcon className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleMoveSection(i, 'down')} disabled={i === (customState.sectionsOrder || []).length - 1} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white disabled:opacity-30">
-                        <MoveDown className="w-3 h-3" />
-                      </button>
-                      <button onClick={() => handleDuplicateSection(i)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white" title="Duplicate">
-                        <DuplicateIcon className="w-3 h-3" />
-                      </button>
-                      <button onClick={() => handleDeleteSection(i)} className="p-1 hover:bg-red-500/20 rounded text-slate-400 hover:text-red-400" title="Delete">
-                        <Trash2 className="w-3 h-3" />
+                      <button onClick={() => handleDeleteSection(i)} className="p-1.5 hover:bg-red-500/20 rounded-lg text-slate-400 hover:text-red-400 transition-colors" title="Delete Section">
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>

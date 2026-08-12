@@ -587,12 +587,8 @@ export default function VisualEditor({
   };
 
   const handleModalFileUpload = async (e) => {
-    console.log("FILE INPUT TRIGGERED");
     const file = e.target.files?.[0];
-    console.log("SELECTED FILE:", file);
-    console.log("FILE NAME:", file?.name);
-    console.log("FILE TYPE:", file?.type);
-    console.log("FILE SIZE:", file?.size);
+    console.log("UPLOAD STEP 1 - FILE RECEIVED", file);
 
     if (!file) return;
 
@@ -612,42 +608,49 @@ export default function VisualEditor({
     setImageModalError('');
 
     try {
-      // 1. Instant local object URL preview for immediate feedback
+      console.log("UPLOAD STEP 2 - BEFORE FORMDATA");
       const instantLocalUrl = URL.createObjectURL(file);
       setImageModalPreview(instantLocalUrl);
 
-      // 2. Build FormData with field name 'image'
       const formData = new FormData();
       formData.append('image', file);
+      console.log("UPLOAD STEP 3 - FORMDATA CREATED");
 
       for (const [key, value] of formData.entries()) {
-        console.log("FORM DATA ENTRY:", key, value);
+        console.log("FORMDATA ENTRY:", key, value);
       }
 
-      // 3. Post to backend upload endpoint
+      console.log("UPLOAD STEP 4 - BEFORE API REQUEST");
       const res = await apiFetch('/api/upload', {
         method: 'POST',
         body: formData
       });
+
+      console.log("UPLOAD STEP 5 - API RESPONSE", res);
 
       if (!res.ok) {
         throw new Error(`Server returned HTTP status ${res.status}`);
       }
 
       const data = await res.json();
-      console.log("UPLOAD BACKEND RESPONSE:", data);
+      console.log("UPLOAD BACKEND RESPONSE DATA:", data);
 
       if (data.success && (data.url || data.imageUrl)) {
         const returnedUrl = data.url || data.imageUrl;
+        console.log("UPLOAD STEP 6 - IMAGE URL", returnedUrl);
+
         const resolvedUrl = getImageUrl(returnedUrl);
+        console.log("UPLOAD STEP 7 - STATE UPDATE", resolvedUrl);
+
         setImageModalPreview(resolvedUrl);
         setImageModalUrlInput(resolvedUrl);
         setImageModalError('');
+        console.log("UPLOAD STEP 8 - UPLOAD COMPLETE");
       } else {
         throw new Error(data.message || 'Image upload failed.');
       }
     } catch (err) {
-      console.error('Image upload failed:', err);
+      console.error("IMAGE UPLOAD ERROR:", err);
       setImageModalError('Image upload failed. Please try again.');
     } finally {
       setImageModalLoading(false);

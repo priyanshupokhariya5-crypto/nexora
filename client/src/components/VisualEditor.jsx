@@ -633,14 +633,16 @@ export default function VisualEditor({
       }
 
       const data = await res.json();
-      console.log("UPLOAD BACKEND RESPONSE DATA:", data);
+      console.log("DIRECT UPLOAD RESPONSE:", data);
+      console.log("DIRECT UPLOAD URL:", data.url);
+      console.log("DIRECT UPLOAD IMAGE URL:", data.imageUrl);
 
       if (data.success && (data.url || data.imageUrl)) {
         const returnedUrl = data.url || data.imageUrl;
-        console.log("UPLOAD STEP 6 - IMAGE URL", returnedUrl);
-
         const resolvedUrl = getImageUrl(returnedUrl);
-        console.log("UPLOAD STEP 7 - STATE UPDATE", resolvedUrl);
+
+        console.log("RETURNED URL:", returnedUrl);
+        console.log("RESOLVED IMAGE URL:", resolvedUrl);
 
         setImageModalPreview(resolvedUrl);
         setImageModalUrlInput(resolvedUrl);

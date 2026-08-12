@@ -17,6 +17,12 @@ const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
 export const getApiUrl = (endpoint) => {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
+  // If endpoint is a static upload asset like /uploads/..., resolve directly against server origin URL
+  if (cleanEndpoint.startsWith('/uploads/')) {
+    const originUrl = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${originUrl}${cleanEndpoint}`;
+  }
+
   // If base URL ends with '/api' and endpoint starts with '/api/', strip duplicate '/api' from endpoint
   if (API_BASE_URL.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
     return `${API_BASE_URL}${cleanEndpoint.substring(4)}`;

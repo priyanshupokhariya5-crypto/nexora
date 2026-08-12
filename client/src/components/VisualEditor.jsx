@@ -53,6 +53,39 @@ const SECTION_PRESETS = [
   { type: 'custom_box', name: 'Custom Box Section', icon: Box, desc: 'Container cards with text, image, and button' }
 ];
 
+class EditorErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('Editor Error Boundary caught an error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-slate-900 border border-slate-800 rounded-3xl text-center text-white my-8 max-w-xl mx-auto shadow-2xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold font-display">Canvas Rendering Interrupted</h3>
+          <p className="text-xs text-slate-400">An unexpected error occurred while rendering the template canvas. Your website edits are safely preserved.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md"
+          >
+            Reset Canvas View
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function VisualEditor({ 
   template, 
   initialSite = null,
@@ -429,13 +462,25 @@ export default function VisualEditor({
   const [imageModalError, setImageModalError] = useState('');
   const [imageModalLoading, setImageModalLoading] = useState(false);
 
+  const getImageUrl = (imgData, fallback = '') => {
+    if (!imgData) return fallback;
+    if (typeof imgData === 'string') return imgData;
+    if (typeof imgData === 'object') {
+      return imgData.src || imgData.url || imgData.imageUrl || fallback;
+    }
+    return fallback;
+  };
+
   const triggerImageUpload = (slotKey) => {
-    setActiveImageSlot(slotKey);
-    const existingUrl = customState[slotKey] || template.defaultData?.[slotKey] || template.image;
+    if (!slotKey) return;
+    const safeSlot = typeof slotKey === 'string' ? slotKey : '';
+    setActiveImageSlot(safeSlot);
+    const rawExisting = customState[safeSlot] || template.defaultData?.[safeSlot] || template.image;
+    const existingUrl = getImageUrl(rawExisting, template.image || '');
     setImageModalPreview(existingUrl);
     setImageModalUrlInput(typeof existingUrl === 'string' && existingUrl.startsWith('http') ? existingUrl : '');
-    setImageModalAltInput(customState[`${slotKey}_alt`] || '');
-    setImageModalFitMode(customState[`${slotKey}_fitMode`] || 'contain');
+    setImageModalAltInput(typeof customState[`${safeSlot}_alt`] === 'string' ? customState[`${safeSlot}_alt`] : '');
+    setImageModalFitMode(customState[`${safeSlot}_fitMode`] || 'contain');
     setImageModalError('');
     setImageModalTab('upload');
     setShowImageModal(true);
@@ -969,22 +1014,24 @@ export default function VisualEditor({
         style={{ transform: isMobile ? 'none' : `scale(${zoomLevel / 100})` }}
       >
         <div className={`bg-white text-slate-900 w-full max-w-full ${isMobile ? 'rounded-2xl border border-slate-800 shadow-xl overflow-hidden' : 'rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[600px] sm:min-h-[800px]'}`}>
-          <TemplateRenderer
-            template={template}
-            customData={customState}
-            accentColor={customState.accentColor}
-            fontFamily={customState.fontFamily}
-            bgTheme={customState.bgTheme}
-            viewportMode={isMobile ? 'full' : viewportMode}
-            activePath={editorActivePage}
-            onNavigate={(path) => setEditorActivePage(path)}
-            isEditMode={!isPreviewMode}
-            onUpdateContent={handleUpdateContent}
-            onTriggerImageUpload={(slot) => triggerImageUpload(slot)}
-            onSectionMove={(idx, dir) => handleMoveSection(idx, dir)}
-            onSectionDuplicate={(idx) => handleDuplicateSection(idx)}
-            onSectionDelete={(idx) => handleDeleteSection(idx)}
-          />
+          <EditorErrorBoundary>
+            <TemplateRenderer
+              template={template}
+              customData={customState}
+              accentColor={customState.accentColor}
+              fontFamily={customState.fontFamily}
+              bgTheme={customState.bgTheme}
+              viewportMode={isMobile ? 'full' : viewportMode}
+              activePath={editorActivePage}
+              onNavigate={(path) => setEditorActivePage(path)}
+              isEditMode={!isPreviewMode}
+              onUpdateContent={handleUpdateContent}
+              onTriggerImageUpload={(slot) => triggerImageUpload(slot)}
+              onSectionMove={(idx, dir) => handleMoveSection(idx, dir)}
+              onSectionDuplicate={(idx) => handleDuplicateSection(idx)}
+              onSectionDelete={(idx) => handleDeleteSection(idx)}
+            />
+          </EditorErrorBoundary>
         </div>
       </div>
     </div>

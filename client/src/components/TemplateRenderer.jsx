@@ -181,18 +181,30 @@ export default function TemplateRenderer({
     );
   };
 
-  // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing
+  // Defensive helper function to safely extract string image URL from strings or objects
+  const getImageUrl = (imgData, fallback = '') => {
+    if (!imgData) return fallback;
+    if (typeof imgData === 'string') return imgData;
+    if (typeof imgData === 'object') {
+      return imgData.src || imgData.url || imgData.imageUrl || fallback;
+    }
+    return fallback;
+  };
+
+  // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing & Defensive Error Guards
   const EditableImage = ({ 
-    slotKey, 
+    slotKey = '', 
     src, 
     alt = '', 
     className = '', 
     style = {},
     fitMode = 'auto'
   }) => {
-    const currentSrc = src || template.image;
-    const userFitMode = customData?.[`${slotKey}_fitMode`] || fitMode;
-    const userAlt = customData?.[`${slotKey}_alt`] || alt;
+    const safeSlotKey = typeof slotKey === 'string' ? slotKey : '';
+    const rawSrc = src || (safeSlotKey ? customData?.[safeSlotKey] : null) || template?.image || '';
+    const currentSrc = getImageUrl(rawSrc, template?.image || '');
+    const userFitMode = (safeSlotKey && customData?.[`${safeSlotKey}_fitMode`]) || fitMode;
+    const userAlt = (safeSlotKey && customData?.[`${safeSlotKey}_alt`]) || (typeof alt === 'string' ? alt : '');
 
     let fitClass = 'object-contain';
     if (userFitMode === 'cover') {
@@ -200,7 +212,7 @@ export default function TemplateRenderer({
     } else if (userFitMode === 'contain') {
       fitClass = 'object-contain';
     } else {
-      if (slotKey.includes('logo') || slotKey.includes('about') || slotKey.includes('gallery')) {
+      if (safeSlotKey && (safeSlotKey.includes('logo') || safeSlotKey.includes('about') || safeSlotKey.includes('gallery'))) {
         fitClass = 'object-contain';
       } else {
         fitClass = 'object-cover sm:object-contain';
@@ -213,15 +225,25 @@ export default function TemplateRenderer({
       return <img src={currentSrc} alt={userAlt} className={responsiveImgClass} style={style} loading="lazy" />;
     }
 
+    const handleClick = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (onTriggerImageUpload && safeSlotKey) {
+        onTriggerImageUpload(safeSlotKey);
+      }
+    };
+
     return (
       <div 
-        onClick={() => onTriggerImageUpload && onTriggerImageUpload(slotKey)}
+        onClick={handleClick}
         className="relative group/img cursor-pointer max-w-full w-full h-full min-w-0 flex items-center justify-center overflow-hidden"
         title="Click to edit/replace image"
       >
         <img src={currentSrc} alt={userAlt} className={`${responsiveImgClass} transition-opacity group-hover/img:opacity-85`} style={style} />
         <div className="opacity-0 group-hover/img:opacity-100 absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center transition-opacity z-20 rounded-inherit">
-          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5">
+          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5 pointer-events-none">
             <span>📷 Edit / Replace Image</span>
           </span>
         </div>

@@ -39,47 +39,107 @@ const seedTemplatesIfEmpty = async () => {
   }
 };
 
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    const uniqueName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const uploadMiddleware = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024 }
+});
+
 // ==========================================
-// 1. CLOUDINARY & IMAGE UPLOAD ENDPOINT
+// 1. CLOUDINARY & IMAGE UPLOAD ENDPOINT (Supports FormData & Base64)
 // ==========================================
 
-router.post('/upload', async (req, res) => {
-  try {
-    const { image, filename } = req.body; // base64 string or image data URL
-
-    if (!image) {
-      return res.status(400).json({ success: false, message: 'No image data provided for upload.' });
+router.post('/upload', (req, res, next) => {
+  uploadMiddleware.any()(req, res, (err) => {
+    if (err) {
+      console.warn('Multer parse notice:', err.message);
     }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const uploadedFile = (req.files && req.files.length > 0) ? req.files[0] : req.file;
 
-    // Check if Cloudinary credentials are set in environment
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-      const cloudinary = require('cloudinary').v2;
-      cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET
-      });
+    // A. Handle Multipart FormData File Upload
+    if (uploadedFile) {
+      const localUrl = `/uploads/${uploadedFile.filename}`;
 
-      const uploadResponse = await cloudinary.uploader.upload(image, {
-        folder: 'nexora_uploads'
-      });
+      // Check Cloudinary
+      if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+        try {
+          const cloudinary = require('cloudinary').v2;
+          cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+          });
+
+          const uploadResponse = await cloudinary.uploader.upload(uploadedFile.path, {
+            folder: 'nexora_uploads'
+          });
+
+          return res.json({
+            success: true,
+            provider: 'cloudinary',
+            url: uploadResponse.secure_url,
+            imageUrl: uploadResponse.secure_url,
+            message: 'Image uploaded successfully to Cloudinary!'
+          });
+        } catch (cErr) {
+          console.warn('Cloudinary upload notice, using local server file:', cErr.message);
+        }
+      }
 
       return res.json({
         success: true,
-        provider: 'cloudinary',
-        url: uploadResponse.secure_url,
-        message: 'Image uploaded successfully to Cloudinary!'
+        provider: 'local',
+        url: localUrl,
+        imageUrl: localUrl,
+        message: 'Image uploaded successfully!'
       });
     }
 
-    // Local Disk Fallback: Save to server/uploads/ directory
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const uploadsDir = path.join(__dirname, '../uploads');
+    // B. Handle Base64 JSON Upload Payload
+    const { image } = req.body || {};
+    if (image) {
+      if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+        const cloudinary = require('cloudinary').v2;
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET
+        });
 
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          folder: 'nexora_uploads'
+        });
+
+        return res.json({
+          success: true,
+          provider: 'cloudinary',
+          url: uploadResponse.secure_url,
+          imageUrl: uploadResponse.secure_url,
+          message: 'Image uploaded successfully to Cloudinary!'
+        });
       }
 
       if (typeof image === 'string' && image.startsWith('data:image/')) {
@@ -96,22 +156,24 @@ router.post('/upload', async (req, res) => {
             success: true,
             provider: 'local',
             url: localUrl,
+            imageUrl: localUrl,
             message: 'Image saved locally to server uploads folder!'
           });
         }
       }
-    } catch (diskErr) {
-      console.warn('Local disk save notice, falling back to data URL:', diskErr.message);
+
+      return res.json({
+        success: true,
+        provider: 'base64',
+        url: image,
+        imageUrl: image,
+        message: 'Image payload processed successfully!'
+      });
     }
 
-    // Direct data URL fallback
-    return res.json({
-      success: true,
-      provider: 'base64',
-      url: image,
-      message: 'Image uploaded successfully!'
-    });
+    return res.status(400).json({ success: false, message: 'No image file or image data provided for upload.' });
   } catch (error) {
+    console.error('Upload handler error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

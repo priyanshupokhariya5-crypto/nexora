@@ -12,7 +12,7 @@ import {
 import TemplateRenderer from './TemplateRenderer';
 import confetti from 'canvas-confetti';
 import { TEMPLATES_DATA } from '../data/templatesData';
-import { apiFetch } from '../api';
+import { apiFetch, getApiUrl } from '../api';
 
 const CURATED_COLORS = [
   { name: 'Royal Blue', hex: '#2551e8' },
@@ -465,11 +465,17 @@ export default function VisualEditor({
 
   const getImageUrl = (imgData, fallback = '') => {
     if (!imgData) return fallback;
-    if (typeof imgData === 'string') return imgData;
-    if (typeof imgData === 'object') {
-      return imgData.src || imgData.url || imgData.imageUrl || fallback;
+    let rawUrl = fallback;
+    if (typeof imgData === 'string') rawUrl = imgData;
+    else if (typeof imgData === 'object') {
+      rawUrl = imgData.src || imgData.url || imgData.imageUrl || fallback;
     }
-    return fallback;
+    if (!rawUrl) return fallback;
+
+    if (typeof rawUrl === 'string' && rawUrl.startsWith('/uploads/')) {
+      return getApiUrl(rawUrl);
+    }
+    return rawUrl;
   };
 
   const triggerImageUpload = (slotKey) => {
@@ -561,29 +567,56 @@ export default function VisualEditor({
     setImageModalError('');
 
     try {
-      // 1. Compress oversized images to max 1920x1080 at 85% quality
-      const compressedDataUrl = await compressImage(file, 1920, 1080, 0.85);
+      // 1. Instant local object URL preview for 0ms delay
+      const instantLocalUrl = URL.createObjectURL(file);
+      setImageModalPreview(instantLocalUrl);
 
-      // 2. Set instant live preview so user receives immediate visual feedback
-      setImageModalPreview(compressedDataUrl);
+      // 2. Try FormData multipart/form-data upload first
+      const formData = new FormData();
+      formData.append('image', file);
 
-      // 3. Post to backend upload endpoint
       const res = await apiFetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && (data.url || data.imageUrl)) {
+          const returnedUrl = data.url || data.imageUrl;
+          const resolvedUrl = getImageUrl(returnedUrl);
+          setImageModalPreview(resolvedUrl);
+          setImageModalUrlInput(resolvedUrl);
+          setImageModalError('');
+          return;
+        }
+      }
+
+      // 3. Fallback: Compress and post JSON payload if FormData fails
+      const compressedDataUrl = await compressImage(file, 1920, 1080, 0.85);
+      const jsonRes = await apiFetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: compressedDataUrl, filename: file.name })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.url) {
-          setImageModalPreview(data.url);
-          setImageModalUrlInput(data.url);
+      if (jsonRes.ok) {
+        const data = await jsonRes.json();
+        if (data.success && (data.url || data.imageUrl)) {
+          const returnedUrl = data.url || data.imageUrl;
+          const resolvedUrl = getImageUrl(returnedUrl);
+          setImageModalPreview(resolvedUrl);
+          setImageModalUrlInput(resolvedUrl);
           setImageModalError('');
+          return;
         }
       }
+
+      // 4. Final fallback: Use local compressed data URL
+      setImageModalPreview(compressedDataUrl);
+      setImageModalError('');
     } catch (err) {
-      console.warn('Backend upload notice (using optimized image preview):', err);
+      console.warn('Image upload pipeline notice (retaining preview):', err);
       setImageModalError('');
     } finally {
       setImageModalLoading(false);

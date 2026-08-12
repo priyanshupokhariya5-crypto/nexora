@@ -7,6 +7,23 @@ import {
   Wrench, DollarSign, Volume2, Coffee, Check, Mail, Phone, MapPin, ArrowRight,
   Star, MessageSquare, Send, Quote, Sparkle
 } from 'lucide-react';
+import { getApiUrl } from '../api';
+
+  // Defensive helper function to safely extract & resolve string image URL from strings or objects
+  const getImageUrl = (imgData, fallback = '') => {
+    if (!imgData) return fallback;
+    let rawUrl = fallback;
+    if (typeof imgData === 'string') rawUrl = imgData;
+    else if (typeof imgData === 'object') {
+      rawUrl = imgData.src || imgData.url || imgData.imageUrl || fallback;
+    }
+    if (!rawUrl) return fallback;
+
+    if (typeof rawUrl === 'string' && rawUrl.startsWith('/uploads/')) {
+      return getApiUrl(rawUrl);
+    }
+    return rawUrl;
+  };
 
 const ICON_MAP = {
   Zap, ShieldCheck, Leaf, Clock, Award, Flame, TrendingUp, Briefcase, 
@@ -181,14 +198,20 @@ export default function TemplateRenderer({
     );
   };
 
-  // Defensive helper function to safely extract string image URL from strings or objects
+  // Defensive helper function to safely extract & resolve string image URL from strings or objects
   const getImageUrl = (imgData, fallback = '') => {
     if (!imgData) return fallback;
-    if (typeof imgData === 'string') return imgData;
-    if (typeof imgData === 'object') {
-      return imgData.src || imgData.url || imgData.imageUrl || fallback;
+    let rawUrl = fallback;
+    if (typeof imgData === 'string') rawUrl = imgData;
+    else if (typeof imgData === 'object') {
+      rawUrl = imgData.src || imgData.url || imgData.imageUrl || fallback;
     }
-    return fallback;
+    if (!rawUrl) return fallback;
+
+    if (typeof rawUrl === 'string' && rawUrl.startsWith('/uploads/')) {
+      return getApiUrl(rawUrl);
+    }
+    return rawUrl;
   };
 
   // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing & Position Controls

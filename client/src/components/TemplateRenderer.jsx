@@ -762,7 +762,7 @@ export default function TemplateRenderer({
 
                 // Custom Section / Custom Box / Custom Block Renderer
                 if (typeof section === 'object' || (typeof section === 'string' && section.startsWith('custom_'))) {
-                  const secObj = typeof section === 'object' ? section : (data.customSections || []).find(s => s.id === section);
+                  const secObj = typeof section === 'object' ? section : ((customData.customSections || data.customSections || []).find(s => s.id === section));
                   if (!secObj) return null;
 
                   const secType = secObj.type || (typeof section === 'string' ? section.split('_')[1] : 'custom');
@@ -1030,7 +1030,7 @@ export default function TemplateRenderer({
                 return null;
             };
 
-            const customSecsMap = (customData.customSections || []).reduce((acc, sec) => { acc[sec.id] = sec; return acc; }, {});
+            const customSecsMap = (customData.customSections || data.customSections || []).reduce((acc, sec) => { if (sec && sec.id) acc[sec.id] = sec; return acc; }, {});
 
             const getSectionTitle = (sectionKey, secObj) => {
               if (secObj && secObj.title) return secObj.title;

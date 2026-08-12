@@ -8,7 +8,7 @@ import {
   ChevronRight, ChevronDown, Wand2, SlidersHorizontal, Square, MoveUp, MoveDown, 
   CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3, ExternalLink, Plus,
   Copy as DuplicateIcon, Trash2, EyeOff, LayoutGrid, Box, MessageSquare, HelpCircle,
-  Users, Award, PhoneCall, Zap, MousePointer
+  Users, Award, PhoneCall, Zap, MousePointer, Mail, Star
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import confetti from 'canvas-confetti';
@@ -1103,6 +1103,33 @@ export default function VisualEditor({
                 <MousePointer className="w-4 h-4 text-emerald-400" />
                 <p className="text-xs font-bold text-white">+ Add Button</p>
                 <p className="text-[9px] text-slate-400">Styled CTA button</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('hero')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Box className="w-4 h-4 text-cyan-400" />
+                <p className="text-xs font-bold text-white">+ Add Hero Banner</p>
+                <p className="text-[9px] text-slate-400">Cinematic headline block</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('portfolio')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Award className="w-4 h-4 text-amber-400" />
+                <p className="text-xs font-bold text-white">+ Add Selected Works</p>
+                <p className="text-[9px] text-slate-400">Portfolio & case studies</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('cta')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <PhoneCall className="w-4 h-4 text-rose-400" />
+                <p className="text-xs font-bold text-white">+ Add CTA</p>
+                <p className="text-[9px] text-slate-400">Call to action banner</p>
               </button>
             </div>
 

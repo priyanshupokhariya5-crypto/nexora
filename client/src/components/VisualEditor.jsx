@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Monitor, Tablet, Smartphone, Save, Download, Globe, 
@@ -1285,6 +1286,113 @@ export default function VisualEditor({
     </div>
   );
 
+  // Real-Viewport Device Frame Component for Visual Editor Canvas Isolation
+  const DeviceFrame = ({ mode, children }) => {
+    const iframeRef = useRef(null);
+    const [mountNode, setMountNode] = useState(null);
+
+    const isDesktop = mode === 'desktop' || mode === 'full';
+
+    useEffect(() => {
+      if (isDesktop) return;
+
+      const iframe = iframeRef.current;
+      if (!iframe) return;
+
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) return;
+
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              html, body {
+                margin: 0;
+                padding: 0;
+                background-color: #ffffff;
+                min-height: 100vh;
+                overflow-x: hidden;
+              }
+              ::-webkit-scrollbar { width: 6px; }
+              ::-webkit-scrollbar-track { background: #f1f5f9; }
+              ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+            </style>
+          </head>
+          <body>
+            <div id="iframe-root" style="width:100%; min-height:100vh;"></div>
+          </body>
+        </html>
+      `);
+      doc.close();
+
+      const head = doc.head;
+
+      // Copy all parent document stylesheets and font tags to iframe head
+      Array.from(document.querySelectorAll('style, link[rel="stylesheet"], link[rel="preconnect"]')).forEach((node) => {
+        head.appendChild(node.cloneNode(true));
+      });
+
+      const rootNode = doc.getElementById('iframe-root');
+      setMountNode(rootNode);
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeName === 'STYLE' || (node.nodeName === 'LINK' && node.rel === 'stylesheet')) {
+              head.appendChild(node.cloneNode(true));
+            }
+          });
+        });
+      });
+
+      observer.observe(document.head, { childList: true });
+
+      return () => {
+        observer.disconnect();
+      };
+    }, [mode, isDesktop]);
+
+    if (isDesktop) {
+      return (
+        <div className="w-full max-w-full bg-white text-slate-900 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[800px]">
+          {children}
+        </div>
+      );
+    }
+
+    const targetWidth = mode === 'mobile' ? '390px' : '768px';
+    const deviceTitle = mode === 'mobile' ? 'Mobile Viewport (390px)' : 'Tablet Viewport (768px)';
+
+    return (
+      <div 
+        className="mx-auto my-3 flex flex-col items-center transition-all duration-300 w-full"
+        style={{ width: targetWidth, maxWidth: '100%' }}
+      >
+        <div className="w-full bg-slate-900 border border-slate-800 rounded-t-2xl py-1.5 px-4 flex items-center justify-between text-slate-300 text-[10px] font-mono font-bold select-none shadow-md">
+          <span className="flex items-center space-x-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>{deviceTitle}</span>
+          </span>
+          <span className="text-slate-500 text-[9px] uppercase tracking-wider">Isolated Real Canvas</span>
+        </div>
+
+        <div className="w-full bg-white border-x border-b border-slate-800 rounded-b-2xl shadow-2xl overflow-hidden h-[760px] relative">
+          <iframe
+            ref={iframeRef}
+            className="w-full h-full border-none block bg-white"
+            title={deviceTitle}
+          >
+            {mountNode && ReactDOM.createPortal(children, mountNode)}
+          </iframe>
+        </div>
+      </div>
+    );
+  };
+
   const renderCenterCanvasContent = (isMobile) => (
     <div className={`w-full flex flex-col items-center justify-start ${isMobile ? 'p-2' : ''}`}>
       
@@ -1307,10 +1415,10 @@ export default function VisualEditor({
       )}
 
       <div 
-        className="w-full transition-all duration-300 origin-top flex justify-center"
+        className="w-full transition-all duration-300 flex justify-center"
         style={{ transform: isMobile ? 'none' : `scale(${zoomLevel / 100})` }}
       >
-        <div className={`bg-white text-slate-900 w-full max-w-full ${isMobile ? 'rounded-2xl border border-slate-800 shadow-xl overflow-hidden' : 'rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[600px] sm:min-h-[800px]'}`}>
+        <DeviceFrame mode={isMobile ? 'mobile' : viewportMode}>
           <EditorErrorBoundary>
             <TemplateRenderer
               template={template}
@@ -1318,7 +1426,7 @@ export default function VisualEditor({
               accentColor={customState.accentColor}
               fontFamily={customState.fontFamily}
               bgTheme={customState.bgTheme}
-              viewportMode={isMobile ? 'full' : viewportMode}
+              viewportMode={isMobile ? 'mobile' : viewportMode}
               activePath={editorActivePage}
               onNavigate={(path) => setEditorActivePage(path)}
               isEditMode={!isPreviewMode}
@@ -1329,7 +1437,7 @@ export default function VisualEditor({
               onSectionDelete={(idx) => handleDeleteSection(idx)}
             />
           </EditorErrorBoundary>
-        </div>
+        </DeviceFrame>
       </div>
     </div>
   );

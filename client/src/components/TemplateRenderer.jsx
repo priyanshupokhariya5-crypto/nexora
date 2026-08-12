@@ -391,10 +391,16 @@ export default function TemplateRenderer({
         <div>
           {/* NAVBAR */}
           <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/90' : 'border-slate-200/80 bg-white/90'} sticky top-0 z-40 backdrop-blur-md`}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
-              <a href="#" onClick={(e) => handleLinkClick(e, '/')} className="flex items-center space-x-2.5 cursor-pointer min-w-0 max-w-[65%] sm:max-w-none">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 min-w-0 w-full">
+              
+              {/* Brand Logo + Brand Name Container */}
+              <a 
+                href="#" 
+                onClick={(e) => handleLinkClick(e, '/')} 
+                className="flex items-center space-x-2.5 cursor-pointer min-w-0 flex-1 lg:flex-initial max-w-[70%] sm:max-w-xs lg:max-w-sm mr-2"
+              >
                 {logoImage ? (
-                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[120px] sm:max-w-[150px] object-contain rounded-md flex-shrink-0" />
+                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[100px] sm:max-w-[130px] object-contain rounded-md flex-shrink-0" />
                 ) : isEditMode ? (
                   <div 
                     onClick={(e) => {
@@ -420,10 +426,16 @@ export default function TemplateRenderer({
                     {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <EditableText fieldKey="logoText" value={data.logoText || template.title} tagName="span" className="font-extrabold text-base sm:text-lg tracking-tight font-display truncate block min-w-0" />
+                <EditableText 
+                  fieldKey="logoText" 
+                  value={data.logoText || template.title} 
+                  tagName="span" 
+                  className="font-extrabold text-sm sm:text-base lg:text-lg tracking-tight font-display truncate block min-w-0" 
+                />
               </a>
 
-              <nav className="hidden md:flex space-x-6 text-xs font-semibold opacity-90">
+              {/* Desktop Navigation Links */}
+              <nav className={`${viewportMode === 'mobile' ? 'hidden' : 'hidden lg:flex'} items-center space-x-5 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -431,7 +443,7 @@ export default function TemplateRenderer({
                       key={idx} 
                       href={link.href} 
                       onClick={(e) => handleLinkClick(e, link.href)}
-                      className={`hover:opacity-100 transition-all ${isLinkActive ? 'font-extrabold border-b-2' : 'opacity-70'}`}
+                      className={`hover:opacity-100 transition-all whitespace-nowrap ${isLinkActive ? 'font-extrabold border-b-2' : 'opacity-70'}`}
                       style={isLinkActive ? { borderColor: accentColor } : {}}
                     >
                       <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />
@@ -440,20 +452,22 @@ export default function TemplateRenderer({
                 })}
               </nav>
 
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Header Actions (CTA + Mobile Hamburger Toggle) */}
+              <div className="flex items-center space-x-2 flex-shrink-0 ml-auto">
+                {/* Desktop CTA Button */}
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer" 
+                  className={`${viewportMode === 'mobile' ? 'hidden' : 'hidden sm:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
                 </a>
 
-                {/* Mobile Menu Toggle Button */}
+                {/* Mobile Hamburger Toggle Button */}
                 <button
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                  className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+                  className={`${viewportMode === 'mobile' ? 'flex' : 'lg:hidden flex'} items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[36px]`}
                   aria-label="Toggle navigation menu"
                 >
                   <span className="text-lg font-bold leading-none">{mobileNavOpen ? '✕' : '☰'}</span>
@@ -463,7 +477,7 @@ export default function TemplateRenderer({
 
             {/* Collapsible Mobile Navigation Drawer */}
             {mobileNavOpen && (
-              <div className={`md:hidden border-t ${isDark ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} px-4 py-3 space-y-2 font-medium text-xs shadow-lg animate-fade-in`}>
+              <div className={`border-t ${isDark ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} px-4 py-4 space-y-2.5 font-medium text-xs shadow-xl animate-fade-in w-full min-w-0 max-w-full`}>
                 {defaultNavLinks.map((link, idx) => (
                   <a
                     key={idx}
@@ -472,15 +486,30 @@ export default function TemplateRenderer({
                       setMobileNavOpen(false);
                       handleLinkClick(e, link.href);
                     }}
-                    className={`block px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`block px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()))
-                        ? 'bg-brand-600 text-white'
+                        ? 'bg-brand-600 text-white shadow-sm'
                         : 'hover:bg-slate-200/50'
                     }`}
                   >
                     <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />
                   </a>
                 ))}
+
+                {/* Mobile CTA Button Inside Drawer */}
+                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                  <a
+                    href={data.ctaLink || "/contact"}
+                    onClick={(e) => {
+                      setMobileNavOpen(false);
+                      handleLinkClick(e, data.ctaLink || "/contact");
+                    }}
+                    className="block w-full text-center px-4 py-3 rounded-xl text-xs font-bold text-white shadow-md transition-transform active:scale-95 cursor-pointer"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
+                  </a>
+                </div>
               </div>
             )}
           </header>

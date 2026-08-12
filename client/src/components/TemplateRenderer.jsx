@@ -229,6 +229,9 @@ export default function TemplateRenderer({
     const userFitMode = (safeSlotKey && customData?.[`${safeSlotKey}_fitMode`]) || fitMode;
     const userPosition = (safeSlotKey && customData?.[`${safeSlotKey}_position`]) || 'center';
     const userAlt = (safeSlotKey && customData?.[`${safeSlotKey}_alt`]) || (typeof alt === 'string' ? alt : '');
+    const userWidth = (safeSlotKey && customData?.[`${safeSlotKey}_width`]);
+    const userHeight = (safeSlotKey && customData?.[`${safeSlotKey}_height`]);
+    const userAlign = (safeSlotKey && customData?.[`${safeSlotKey}_align`]) || 'center';
 
     let fitClass = 'object-contain';
     if (userFitMode === 'cover') {
@@ -251,10 +254,25 @@ export default function TemplateRenderer({
     else if (userPosition === 'left') positionClass = 'object-left';
     else if (userPosition === 'right') positionClass = 'object-right';
 
-    const responsiveImgClass = `max-w-full w-full h-auto min-w-0 ${fitClass} ${positionClass} ${className}`;
+    let alignClass = 'justify-center text-center';
+    if (userAlign === 'left') alignClass = 'justify-start text-left';
+    else if (userAlign === 'right') alignClass = 'justify-end text-right';
+
+    const customDimensionStyle = {
+      ...style,
+      width: userWidth ? `${userWidth}px` : (style.width || undefined),
+      height: userHeight ? `${userHeight}px` : (style.height || undefined),
+      maxWidth: '100%'
+    };
+
+    const responsiveImgClass = `max-w-full ${userWidth ? '' : 'w-full'} ${userHeight ? '' : 'h-auto'} min-w-0 ${fitClass} ${positionClass} ${className}`;
 
     if (!isEditMode) {
-      return <img src={currentSrc} alt={userAlt} className={responsiveImgClass} style={style} loading="lazy" />;
+      return (
+        <div className={`w-full flex items-center ${alignClass}`}>
+          <img src={currentSrc} alt={userAlt} className={responsiveImgClass} style={customDimensionStyle} loading="lazy" />
+        </div>
+      );
     }
 
     const handleClick = (e) => {
@@ -268,16 +286,19 @@ export default function TemplateRenderer({
     };
 
     return (
-      <div 
-        onClick={handleClick}
-        className="relative group/img cursor-pointer max-w-full w-full h-full min-w-0 flex items-center justify-center overflow-hidden"
-        title="Click to edit/replace image"
-      >
-        <img src={currentSrc} alt={userAlt} className={`${responsiveImgClass} transition-opacity group-hover/img:opacity-85`} style={style} />
-        <div className="opacity-0 group-hover/img:opacity-100 absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center transition-opacity z-20 rounded-inherit">
-          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5 pointer-events-none">
-            <span>📷 Edit / Replace Image</span>
-          </span>
+      <div className={`w-full flex items-center ${alignClass}`}>
+        <div 
+          onClick={handleClick}
+          className="relative group/img cursor-pointer max-w-full min-w-0 flex items-center justify-center overflow-hidden rounded-inherit"
+          style={customDimensionStyle}
+          title="Click to edit/replace image"
+        >
+          <img src={currentSrc} alt={userAlt} className={`${responsiveImgClass} transition-opacity group-hover/img:opacity-85`} style={customDimensionStyle} />
+          <div className="opacity-0 group-hover/img:opacity-100 absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center transition-opacity z-20 rounded-inherit">
+            <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5 pointer-events-none">
+              <span>📷 Edit / Replace Image</span>
+            </span>
+          </div>
         </div>
       </div>
     );

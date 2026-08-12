@@ -459,9 +459,38 @@ export default function VisualEditor({
   const [imageModalAltInput, setImageModalAltInput] = useState('');
   const [imageModalFitMode, setImageModalFitMode] = useState('contain');
   const [imageModalPosition, setImageModalPosition] = useState('center');
+  const [imageModalAlign, setImageModalAlign] = useState('center');
+  const [imageModalWidth, setImageModalWidth] = useState('');
+  const [imageModalHeight, setImageModalHeight] = useState('');
+  const [imageModalLockAspect, setImageModalLockAspect] = useState(true);
+  const [imageOriginalRatio, setImageOriginalRatio] = useState(1);
   const [imageModalPreview, setImageModalPreview] = useState('');
   const [imageModalError, setImageModalError] = useState('');
   const [imageModalLoading, setImageModalLoading] = useState(false);
+
+  const handleWidthChange = (val) => {
+    const numVal = parseInt(val, 10);
+    if (isNaN(numVal) || numVal <= 0) {
+      setImageModalWidth('');
+      return;
+    }
+    setImageModalWidth(numVal);
+    if (imageModalLockAspect && imageOriginalRatio > 0) {
+      setImageModalHeight(Math.round(numVal / imageOriginalRatio));
+    }
+  };
+
+  const handleHeightChange = (val) => {
+    const numVal = parseInt(val, 10);
+    if (isNaN(numVal) || numVal <= 0) {
+      setImageModalHeight('');
+      return;
+    }
+    setImageModalHeight(numVal);
+    if (imageModalLockAspect && imageOriginalRatio > 0) {
+      setImageModalWidth(Math.round(numVal * imageOriginalRatio));
+    }
+  };
 
   const getImageUrl = (imgData, fallback = '') => {
     if (!imgData) return fallback;
@@ -489,6 +518,10 @@ export default function VisualEditor({
     setImageModalAltInput(typeof customState[`${safeSlot}_alt`] === 'string' ? customState[`${safeSlot}_alt`] : '');
     setImageModalFitMode(customState[`${safeSlot}_fitMode`] || 'contain');
     setImageModalPosition(customState[`${safeSlot}_position`] || 'center');
+    setImageModalAlign(customState[`${safeSlot}_align`] || 'center');
+    setImageModalWidth(customState[`${safeSlot}_width`] || '');
+    setImageModalHeight(customState[`${safeSlot}_height`] || '');
+    setImageModalLockAspect(true);
     setImageModalError('');
     setImageModalTab('upload');
     setShowImageModal(true);
@@ -640,6 +673,15 @@ export default function VisualEditor({
     if (imageModalPosition) {
       handleTextChange(`${activeImageSlot}_position`, imageModalPosition);
     }
+    if (imageModalAlign) {
+      handleTextChange(`${activeImageSlot}_align`, imageModalAlign);
+    }
+    if (imageModalWidth !== undefined) {
+      handleTextChange(`${activeImageSlot}_width`, imageModalWidth);
+    }
+    if (imageModalHeight !== undefined) {
+      handleTextChange(`${activeImageSlot}_height`, imageModalHeight);
+    }
 
     setShowImageModal(false);
     setActiveImageSlot('');
@@ -745,14 +787,6 @@ export default function VisualEditor({
           }`}
         >
           Pages
-        </button>
-        <button
-          onClick={() => setLeftTab('assets')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            leftTab === 'assets' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Images
         </button>
       </div>
 
@@ -890,45 +924,6 @@ export default function VisualEditor({
                   </button>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {leftTab === 'assets' && (
-          <div className="space-y-4">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              Business Image Uploads
-            </span>
-            <div className="space-y-3">
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-300">Image 1: Hero Banner</label>
-                  <button onClick={() => triggerImageUpload('heroImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
-                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
-                  </button>
-                </div>
-                <input type="text" value={customState.heroImageUrl || ''} onChange={(e) => handleTextChange('heroImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
-              </div>
-
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-300">Image 2: Brand Story</label>
-                  <button onClick={() => triggerImageUpload('aboutImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
-                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
-                  </button>
-                </div>
-                <input type="text" value={customState.aboutImageUrl || ''} onChange={(e) => handleTextChange('aboutImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
-              </div>
-
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-300">Image 3: Showcase</label>
-                  <button onClick={() => triggerImageUpload('galleryImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
-                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
-                  </button>
-                </div>
-                <input type="text" value={customState.galleryImageUrl || ''} onChange={(e) => handleTextChange('galleryImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
-              </div>
             </div>
           </div>
         )}
@@ -1398,6 +1393,95 @@ export default function VisualEditor({
               </div>
             )}
 
+            {/* Dimensions & Alignment Controls */}
+            <div className="space-y-2 p-3 bg-slate-950/80 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-200">Image Dimensions (Canvas px)</span>
+                <label className="flex items-center space-x-1.5 cursor-pointer text-[11px] text-slate-300 font-medium select-none">
+                  <input
+                    type="checkbox"
+                    checked={imageModalLockAspect}
+                    onChange={(e) => setImageModalLockAspect(e.target.checked)}
+                    className="rounded border-slate-700 bg-slate-900 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span>Lock Aspect Ratio</span>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 mb-1">Width (px)</label>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => handleWidthChange(Math.max(20, (parseInt(imageModalWidth, 10) || 300) - 20))}
+                      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-bold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      value={imageModalWidth}
+                      onChange={(e) => handleWidthChange(e.target.value)}
+                      placeholder="Auto"
+                      className="w-full px-2 py-1 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-center"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleWidthChange((parseInt(imageModalWidth, 10) || 300) + 20)}
+                      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-400 mb-1">Height (px)</label>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => handleHeightChange(Math.max(20, (parseInt(imageModalHeight, 10) || 200) - 20))}
+                      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-bold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      value={imageModalHeight}
+                      onChange={(e) => handleHeightChange(e.target.value)}
+                      placeholder="Auto"
+                      className="w-full px-2 py-1 text-xs rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-center"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleHeightChange((parseInt(imageModalHeight, 10) || 200) + 20)}
+                      className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Alignment Selector */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 mb-1">Canvas Alignment</label>
+                <div className="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+                  {['left', 'center', 'right'].map(align => (
+                    <button
+                      key={align}
+                      type="button"
+                      onClick={() => setImageModalAlign(align)}
+                      className={`py-1 rounded-lg text-[11px] font-bold capitalize text-center transition-all ${imageModalAlign === align ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                    >
+                      {align}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* Image Fit Controls */}
             <div className="space-y-1.5">
               <label className="block text-[11px] font-semibold text-slate-300">Image Fit Mode</label>
@@ -1471,6 +1555,11 @@ export default function VisualEditor({
                   <img
                     src={imageModalPreview}
                     alt={imageModalAltInput || 'Preview'}
+                    onLoad={(e) => {
+                      if (e.target.naturalWidth && e.target.naturalHeight) {
+                        setImageOriginalRatio(e.target.naturalWidth / e.target.naturalHeight);
+                      }
+                    }}
                     className={`max-w-full max-h-full ${imageModalFitMode === 'cover' ? 'object-cover w-full h-full' : imageModalFitMode === 'fill' ? 'object-fill w-full h-full' : 'object-contain'} object-${imageModalPosition} rounded-xl shadow-md transition-all`}
                     onError={() => setImageModalError('Unable to load this image. Please check the URL.')}
                   />

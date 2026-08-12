@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Reorder, useDragControls } from 'framer-motion';
 import { 
   Zap, ShieldCheck, Leaf, Clock, Award, Flame, TrendingUp, Briefcase, 
   Cpu, Sprout, GlassWater, Key, Eye, Shield, Palette, Sparkles, Globe, 
@@ -307,71 +306,25 @@ export default function TemplateRenderer({
     );
   };
 
-  // Helper Component: Draggable Section Wrapper with Canvas Drag Handle
-  const DraggableSectionWrapper = ({ 
-    sectionKey, 
-    index, 
-    title, 
-    isEditMode, 
-    children 
-  }) => {
-    const dragControls = useDragControls();
-
-    if (!isEditMode) {
-      return <>{children}</>;
-    }
-
+  // Helper Component: Section Hover Toolbar
+  const SectionToolbar = ({ index, title }) => {
+    if (!isEditMode) return null;
     return (
-      <Reorder.Item
-        value={sectionKey}
-        id={sectionKey}
-        dragControls={dragControls}
-        dragListener={false}
-        className="relative group/sec transition-all duration-200 select-none hover:outline-2 hover:outline-dashed hover:outline-brand-500/50 hover:outline-offset-[-2px] rounded-xl my-1"
-      >
-        {/* Floating Section Toolbar with Drag Handle */}
-        <div className="opacity-0 group-hover/sec:opacity-100 absolute top-3 right-6 z-40 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl p-1.5 text-white flex items-center space-x-1.5 shadow-2xl transition-opacity">
-          {/* Dedicated Drag Handle Button */}
-          <button
-            type="button"
-            onPointerDown={(e) => {
-              if (dragControls) dragControls.start(e);
-            }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 active:bg-brand-600 rounded-lg text-[10px] font-extrabold uppercase text-amber-300 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none"
-            title="Click & Drag to reorder section"
-          >
-            <span className="text-xs font-mono font-black">⋮⋮</span>
-            <span>Drag</span>
-          </button>
-
-          <span className="text-[10px] font-extrabold uppercase text-slate-300 px-1.5 truncate max-w-[120px]">
-            {title}
-          </span>
-
-          {onSectionDuplicate && (
-            <button 
-              type="button"
-              onClick={() => onSectionDuplicate(index)} 
-              className="p-1 hover:bg-slate-800 rounded text-slate-300 transition-colors" 
-              title="Duplicate Section"
-            >
-              📋
-            </button>
-          )}
-          {onSectionDelete && (
-            <button 
-              type="button"
-              onClick={() => onSectionDelete(index)} 
-              className="p-1 hover:bg-red-500/20 rounded text-red-400 transition-colors" 
-              title="Delete Section"
-            >
-              🗑
-            </button>
-          )}
-        </div>
-
-        {children}
-      </Reorder.Item>
+      <div className="opacity-0 group-hover/sec:opacity-100 absolute top-2 right-4 z-40 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-1 text-white flex items-center space-x-1 shadow-2xl transition-opacity">
+        <span className="text-[10px] font-extrabold uppercase text-slate-400 px-2 truncate max-w-[100px]">{title}</span>
+        <button onClick={() => onSectionMove && onSectionMove(index, 'up')} disabled={index === 0} className="p-1 hover:bg-slate-800 rounded text-slate-300 disabled:opacity-30" title="Move Up">
+          ↑
+        </button>
+        <button onClick={() => onSectionMove && onSectionMove(index, 'down')} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Move Down">
+          ↓
+        </button>
+        <button onClick={() => onSectionDuplicate && onSectionDuplicate(index)} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Duplicate Section">
+          📋
+        </button>
+        <button onClick={() => onSectionDelete && onSectionDelete(index)} className="p-1 hover:bg-red-500/20 rounded text-red-400" title="Delete Section">
+          🗑
+        </button>
+      </div>
     );
   };
 
@@ -1041,67 +994,6 @@ export default function TemplateRenderer({
 
                 return null;
             };
-
-            const customSecsMap = (customData.customSections || []).reduce((acc, sec) => { acc[sec.id] = sec; return acc; }, {});
-
-            const getSectionTitle = (sectionKey, secObj) => {
-              if (secObj && secObj.title) return secObj.title;
-              if (typeof sectionKey === 'string') {
-                if (sectionKey === 'hero') return 'Hero Section';
-                if (sectionKey === 'about') return 'About Section';
-                if (sectionKey === 'services') return 'Services Section';
-                if (sectionKey === 'features') return 'Features Section';
-                if (sectionKey === 'pricing') return 'Pricing Section';
-                if (sectionKey === 'testimonials') return 'Testimonials Section';
-                if (sectionKey === 'contact') return 'Contact Section';
-                if (sectionKey === 'gallery') return 'Gallery Section';
-                if (sectionKey.startsWith('custom_hero_')) return 'Hero Banner';
-                if (sectionKey.startsWith('custom_portfolio_')) return 'Selected Works';
-                if (sectionKey.startsWith('custom_cta_')) return 'Call To Action';
-                if (sectionKey.startsWith('custom_team_')) return 'Team Showcase';
-                if (sectionKey.startsWith('custom_faq_')) return 'FAQ Section';
-                if (sectionKey.startsWith('custom_button_')) return 'Action Button';
-                if (sectionKey.startsWith('custom_image_')) return 'Image Showcase';
-                if (sectionKey.startsWith('custom_text_')) return 'Text Section';
-                if (sectionKey.startsWith('custom_sec_')) return 'Custom Section';
-                return sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1) + ' Section';
-              }
-              return 'Content Section';
-            };
-
-            if (isEditMode) {
-              return (
-                <Reorder.Group
-                  axis="y"
-                  values={sectionsOrder}
-                  onReorder={(newOrder) => {
-                    if (onSectionReorder) {
-                      onSectionReorder(newOrder);
-                    }
-                  }}
-                  className="space-y-0 min-h-[400px]"
-                >
-                  {sectionsOrder.map((section, secIdx) => {
-                    const secObj = customSecsMap[section];
-                    const title = getSectionTitle(section, secObj);
-                    const content = renderSectionNode(section, secIdx);
-                    if (!content) return null;
-
-                    return (
-                      <DraggableSectionWrapper
-                        key={section}
-                        sectionKey={section}
-                        index={secIdx}
-                        title={title}
-                        isEditMode={isEditMode}
-                      >
-                        {content}
-                      </DraggableSectionWrapper>
-                    );
-                  })}
-                </Reorder.Group>
-              );
-            }
 
             return (
               <main>

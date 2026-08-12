@@ -588,10 +588,21 @@ export default function VisualEditor({
 
   const handleModalFileUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
+    console.log("IMAGE FILE SELECTED:", file);
+    console.log("FILE NAME:", file?.name);
+    console.log("FILE TYPE:", file?.type);
+    console.log("FILE SIZE:", file?.size);
+
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setImageModalError('Unsupported file type. Please select a JPG, PNG, WEBP, or GIF image.');
+      setImageModalError('Please upload JPG, PNG, JPEG or WEBP.');
+      if (e.target) e.target.value = '';
+      return;
+    }
+
+    if (file.size > 25 * 1024 * 1024) {
+      setImageModalError('Image size is too large. Max allowed size is 25MB.');
       if (e.target) e.target.value = '';
       return;
     }
@@ -600,57 +611,43 @@ export default function VisualEditor({
     setImageModalError('');
 
     try {
-      // 1. Instant local object URL preview for 0ms delay
+      // 1. Instant local object URL preview for immediate feedback
       const instantLocalUrl = URL.createObjectURL(file);
       setImageModalPreview(instantLocalUrl);
 
-      // 2. Try FormData multipart/form-data upload first
+      // 2. Build FormData with field name 'image'
       const formData = new FormData();
       formData.append('image', file);
 
+      for (const [key, value] of formData.entries()) {
+        console.log("FORM DATA ENTRY:", key, value);
+      }
+
+      // 3. Post to backend upload endpoint
       const res = await apiFetch('/api/upload', {
         method: 'POST',
         body: formData
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && (data.url || data.imageUrl)) {
-          const returnedUrl = data.url || data.imageUrl;
-          const resolvedUrl = getImageUrl(returnedUrl);
-          setImageModalPreview(resolvedUrl);
-          setImageModalUrlInput(resolvedUrl);
-          setImageModalError('');
-          return;
-        }
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP status ${res.status}`);
       }
 
-      // 3. Fallback: Compress and post JSON payload if FormData fails
-      const compressedDataUrl = await compressImage(file, 1920, 1080, 0.85);
-      const jsonRes = await apiFetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: compressedDataUrl, filename: file.name })
-      });
+      const data = await res.json();
+      console.log("UPLOAD BACKEND RESPONSE:", data);
 
-      if (jsonRes.ok) {
-        const data = await jsonRes.json();
-        if (data.success && (data.url || data.imageUrl)) {
-          const returnedUrl = data.url || data.imageUrl;
-          const resolvedUrl = getImageUrl(returnedUrl);
-          setImageModalPreview(resolvedUrl);
-          setImageModalUrlInput(resolvedUrl);
-          setImageModalError('');
-          return;
-        }
+      if (data.success && (data.url || data.imageUrl)) {
+        const returnedUrl = data.url || data.imageUrl;
+        const resolvedUrl = getImageUrl(returnedUrl);
+        setImageModalPreview(resolvedUrl);
+        setImageModalUrlInput(resolvedUrl);
+        setImageModalError('');
+      } else {
+        throw new Error(data.message || 'Image upload failed.');
       }
-
-      // 4. Final fallback: Use local compressed data URL
-      setImageModalPreview(compressedDataUrl);
-      setImageModalError('');
     } catch (err) {
-      console.warn('Image upload pipeline notice (retaining preview):', err);
-      setImageModalError('');
+      console.error('Image upload failed:', err);
+      setImageModalError('Image upload failed. Please try again.');
     } finally {
       setImageModalLoading(false);
       if (e.target) e.target.value = '';

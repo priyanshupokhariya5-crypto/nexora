@@ -65,25 +65,26 @@ const uploadMiddleware = multer({
 });
 
 // ==========================================
-// 1. CLOUDINARY & IMAGE UPLOAD ENDPOINT (Supports FormData & Base64)
+// 1. CLOUDINARY & IMAGE UPLOAD ENDPOINT (FormData Multer Upload)
 // ==========================================
 
 router.post('/upload', (req, res, next) => {
-  uploadMiddleware.any()(req, res, (err) => {
+  uploadMiddleware.single('image')(req, res, (err) => {
     if (err) {
-      console.warn('Multer parse notice:', err.message);
+      console.warn('Multer upload notice:', err.message);
     }
     next();
   });
 }, async (req, res) => {
-  try {
-    const uploadedFile = (req.files && req.files.length > 0) ? req.files[0] : req.file;
+  console.log('UPLOAD ROUTE HIT');
+  console.log('REQ.FILE:', req.file);
 
-    // A. Handle Multipart FormData File Upload
+  try {
+    const uploadedFile = req.file || (req.files && req.files.length > 0 ? req.files[0] : null);
+
     if (uploadedFile) {
       const localUrl = `/uploads/${uploadedFile.filename}`;
 
-      // Check Cloudinary
       if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
         try {
           const cloudinary = require('cloudinary').v2;
@@ -105,7 +106,7 @@ router.post('/upload', (req, res, next) => {
             message: 'Image uploaded successfully to Cloudinary!'
           });
         } catch (cErr) {
-          console.warn('Cloudinary upload notice, using local server file:', cErr.message);
+          console.warn('Cloudinary upload notice, using local file URL:', cErr.message);
         }
       }
 
@@ -118,62 +119,9 @@ router.post('/upload', (req, res, next) => {
       });
     }
 
-    // B. Handle Base64 JSON Upload Payload
-    const { image } = req.body || {};
-    if (image) {
-      if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-        const cloudinary = require('cloudinary').v2;
-        cloudinary.config({
-          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-          api_key: process.env.CLOUDINARY_API_KEY,
-          api_secret: process.env.CLOUDINARY_API_SECRET
-        });
-
-        const uploadResponse = await cloudinary.uploader.upload(image, {
-          folder: 'nexora_uploads'
-        });
-
-        return res.json({
-          success: true,
-          provider: 'cloudinary',
-          url: uploadResponse.secure_url,
-          imageUrl: uploadResponse.secure_url,
-          message: 'Image uploaded successfully to Cloudinary!'
-        });
-      }
-
-      if (typeof image === 'string' && image.startsWith('data:image/')) {
-        const matches = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
-        if (matches) {
-          const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-          const base64Data = matches[2];
-          const uniqueName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
-          const filePath = path.join(uploadsDir, uniqueName);
-          fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-
-          const localUrl = `/uploads/${uniqueName}`;
-          return res.json({
-            success: true,
-            provider: 'local',
-            url: localUrl,
-            imageUrl: localUrl,
-            message: 'Image saved locally to server uploads folder!'
-          });
-        }
-      }
-
-      return res.json({
-        success: true,
-        provider: 'base64',
-        url: image,
-        imageUrl: image,
-        message: 'Image payload processed successfully!'
-      });
-    }
-
-    return res.status(400).json({ success: false, message: 'No image file or image data provided for upload.' });
+    return res.status(400).json({ success: false, message: 'No image file uploaded.' });
   } catch (error) {
-    console.error('Upload handler error:', error);
+    console.error('Upload route error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

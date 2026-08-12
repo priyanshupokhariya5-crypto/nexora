@@ -719,41 +719,178 @@ export default function TemplateRenderer({
                   const secObj = typeof section === 'object' ? section : (data.customSections || []).find(s => s.id === section);
                   if (!secObj) return null;
 
+                  const secType = secObj.type || (typeof section === 'string' ? section.split('_')[1] : 'custom');
+
                   return (
                     <section 
                       key={secObj.id || secIdx} 
-                      className="relative group/sec py-16 px-4 sm:px-6 border-y border-slate-200/60 transition-all" 
+                      className="relative group/sec py-16 px-4 sm:px-6 border-y border-slate-200/60 transition-all overflow-hidden" 
                       style={{ backgroundColor: secObj.backgroundColor || (isDark ? '#0f172a' : '#ffffff'), color: secObj.textColor || (isDark ? '#f8fafc' : '#0f172a') }}
                     >
-                      <SectionToolbar index={secIdx} title={secObj.title || "Custom Section"} />
+                      <SectionToolbar index={secIdx} title={secObj.title || `${secType.toUpperCase()} Section`} />
                       <div className="max-w-6xl mx-auto">
                         {secObj.title && (
                           <div className="text-center max-w-2xl mx-auto mb-10">
                             <span className="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-sm inline-block mb-3" style={{ backgroundColor: accentColor }}>
-                              {secObj.badge || 'Custom Section'}
+                              {secObj.badge || `${secType.toUpperCase()}`}
                             </span>
                             <EditableText fieldKey={`custom_sec_${secObj.id}_title`} value={secObj.title} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display block" />
                             {secObj.subtitle && <EditableText fieldKey={`custom_sec_${secObj.id}_subtitle`} value={secObj.subtitle} tagName="p" className="mt-3 text-xs sm:text-sm opacity-80 leading-relaxed block" multiline />}
                           </div>
                         )}
 
-                        {secObj.items && secObj.items.length > 0 && (
+                        {/* TYPE 1: IMAGE SHOWCASE SECTION */}
+                        {secType === 'image' && (
+                          <div className="my-6 max-w-4xl mx-auto flex items-center justify-center">
+                            <EditableImage 
+                              slotKey={`custom_sec_${secObj.id}_image`} 
+                              src={secObj.imageUrl || template.image} 
+                              alt={secObj.alt || 'Section Image'} 
+                              className="rounded-3xl shadow-2xl overflow-hidden max-w-full" 
+                            />
+                          </div>
+                        )}
+
+                        {/* TYPE 2: CONTACT & DIRECT INQUIRY SECTION */}
+                        {secType === 'contact' && (
+                          <div className="grid lg:grid-cols-2 gap-8 my-6">
+                            <div className="space-y-4 p-6 rounded-3xl bg-slate-900/60 border border-slate-800">
+                              <h3 className="text-xl font-bold font-display text-white">Direct Communication</h3>
+                              <p className="text-xs opacity-75 leading-relaxed">Reach out to our team for bookings, consultations, or direct quotes.</p>
+                              <div className="space-y-3 pt-2 text-xs">
+                                <div className="flex items-center space-x-3 text-slate-300">
+                                  <Mail className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_email`} value={secObj.email || 'contact@brand.com'} />
+                                </div>
+                                <div className="flex items-center space-x-3 text-slate-300">
+                                  <Phone className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_phone`} value={secObj.phone || '+1 (555) 234-5678'} />
+                                </div>
+                                <div className="flex items-center space-x-3 text-slate-300">
+                                  <MapPin className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_address`} value={secObj.address || '123 Innovation Way, Suite 400'} />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className={`p-6 sm:p-8 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-md space-y-4`}>
+                              <h4 className="text-base font-bold font-display">{secObj.formTitle || 'Send Direct Message'}</h4>
+                              <div>
+                                <label className="block text-[10px] font-bold opacity-70 mb-1">Your Name</label>
+                                <input type="text" placeholder="John Doe" disabled className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950/40 border border-slate-700/60 text-white" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold opacity-70 mb-1">Your Email</label>
+                                <input type="email" placeholder="john@example.com" disabled className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950/40 border border-slate-700/60 text-white" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold opacity-70 mb-1">Message</label>
+                                <textarea rows="3" placeholder="How can we assist you?" disabled className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950/40 border border-slate-700/60 text-white resize-none"></textarea>
+                              </div>
+                              <button type="button" className="w-full py-3 rounded-xl font-bold text-xs text-white shadow-md" style={{ backgroundColor: accentColor }}>
+                                Submit Message
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TYPE 3: TESTIMONIALS SECTION */}
+                        {secType === 'testimonials' && (
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+                            {(secObj.items || []).map((item, itemIdx) => (
+                              <div key={itemIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex flex-col justify-between`}>
+                                <div>
+                                  <div className="flex items-center space-x-1 text-amber-400 mb-3">
+                                    <Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" />
+                                  </div>
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_text`} value={item.text} tagName="p" className="text-xs italic opacity-80 leading-relaxed block" multiline />
+                                </div>
+                                <div className="mt-4 pt-3 border-t border-slate-100/60 flex items-center space-x-3">
+                                  {item.avatarUrl && <EditableImage slotKey={`custom_sec_${secObj.id}_item_${itemIdx}_avatar`} src={item.avatarUrl} alt={item.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />}
+                                  <div>
+                                    <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_name`} value={item.name} tagName="h4" className="text-xs font-bold font-display block" />
+                                    <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_role`} value={item.role} tagName="p" className="text-[10px] opacity-60 block" />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* TYPE 4: FAQ ACCORDION SECTION */}
+                        {secType === 'faq' && (
+                          <div className="max-w-3xl mx-auto space-y-3 my-6">
+                            {(secObj.items || []).map((item, itemIdx) => (
+                              <div key={itemIdx} className={`p-5 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm space-y-2`}>
+                                <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_q`} value={item.question || item.title} tagName="h4" className="text-sm font-bold font-display block text-brand-400" />
+                                <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_a`} value={item.answer || item.desc} tagName="p" className="text-xs opacity-80 leading-relaxed block" multiline />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* TYPE 5: GALLERY SECTION */}
+                        {secType === 'gallery' && (
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 my-6">
+                            {(secObj.items || []).map((item, itemIdx) => (
+                              <div key={itemIdx} className="rounded-2xl overflow-hidden shadow-lg aspect-[4/3] bg-slate-900 relative">
+                                <EditableImage slotKey={`custom_sec_${secObj.id}_item_${itemIdx}_img`} src={item.imageUrl || template.image} alt={item.caption || 'Gallery Image'} className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* TYPE 6: TEAM SECTION */}
+                        {secType === 'team' && (
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+                            {(secObj.items || []).map((item, itemIdx) => (
+                              <div key={itemIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm text-center space-y-3`}>
+                                <EditableImage slotKey={`custom_sec_${secObj.id}_item_${itemIdx}_photo`} src={item.imageUrl || template.image} alt={item.name} className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-brand-500 shadow-md" />
+                                <div>
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_name`} value={item.name} tagName="h4" className="text-sm font-bold font-display block" />
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_role`} value={item.role} tagName="p" className="text-[11px] font-bold text-brand-400 block" />
+                                </div>
+                                <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_bio`} value={item.bio} tagName="p" className="text-xs opacity-75 leading-relaxed block" multiline />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* TYPE 7: STANDALONE BUTTON BLOCK */}
+                        {secType === 'button' && (
+                          <div className="text-center my-6">
+                            <a 
+                              href={secObj.buttonLink || '/contact'} 
+                              onClick={(e) => handleLinkClick(e, secObj.buttonLink || '/contact')} 
+                              className="px-8 py-3.5 rounded-2xl text-white font-bold text-xs shadow-xl transition-transform hover:scale-105 inline-block" 
+                              style={{ backgroundColor: accentColor }}
+                            >
+                              <EditableText fieldKey={`custom_sec_${secObj.id}_btnText`} value={secObj.buttonText || 'Explore Services'} />
+                            </a>
+                          </div>
+                        )}
+
+                        {/* TYPE 8: DEFAULT CONTAINER GRID (Services / Features / Generic Cards) */}
+                        {(!secType || ['services', 'features', 'cta', 'custom', 'custom_box'].includes(secType)) && secObj.items && secObj.items.length > 0 && (
                           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {secObj.items.map((item, itemIdx) => (
                               <div key={itemIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex flex-col justify-between`} style={{ backgroundColor: item.backgroundColor, borderColor: item.borderColor }}>
                                 <div>
                                   {item.imageUrl && (
                                     <div className="aspect-[16/10] rounded-xl overflow-hidden mb-4 bg-slate-900">
-                                      <img src={item.imageUrl} alt={item.title || 'Card Image'} className="w-full h-full object-cover" />
+                                      <EditableImage slotKey={`custom_sec_${secObj.id}_item_${itemIdx}_cardimg`} src={item.imageUrl} alt={item.title || 'Card Image'} className="w-full h-full object-cover" />
                                     </div>
                                   )}
-                                  <h3 className="text-base font-bold font-display">{item.title}</h3>
-                                  <p className="mt-2 text-xs opacity-75 leading-relaxed">{item.description || item.desc}</p>
+                                  <div className="flex justify-between items-start mb-2">
+                                    <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_title`} value={item.title} tagName="h3" className="text-base font-bold font-display block" />
+                                    {item.price && <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white ml-2 flex-shrink-0" style={{ backgroundColor: accentColor }}>{item.price}</span>}
+                                  </div>
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_desc`} value={item.description || item.desc} tagName="p" className="mt-2 text-xs opacity-75 leading-relaxed block" multiline />
                                 </div>
                                 {item.buttonText && (
                                   <div className="mt-4 pt-3 border-t border-slate-100/50">
                                     <a href={item.buttonLink || '/contact'} onClick={(e) => handleLinkClick(e, item.buttonLink || '/contact')} className="inline-block px-4 py-2 rounded-xl text-white font-bold text-xs shadow-sm" style={{ backgroundColor: accentColor }}>
-                                      {item.buttonText}
+                                      <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_btnText`} value={item.buttonText} />
                                     </a>
                                   </div>
                                 )}

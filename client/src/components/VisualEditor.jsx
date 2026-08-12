@@ -356,16 +356,131 @@ export default function VisualEditor({
     const newSecId = `custom_${presetType}_${Date.now()}`;
     const sections = [...(customState.sectionsOrder || []), newSecId];
 
-    const newSecObj = {
+    let newSecObj = {
       id: newSecId,
       type: presetType,
-      title: `${presetType.toUpperCase()} Section`,
-      subtitle: 'Customizable section layout block',
-      items: [
-        { title: 'Headline Title 1', desc: 'Detailed description for this custom block.', buttonText: 'Explore', buttonLink: '/services' },
-        { title: 'Headline Title 2', desc: 'Detailed description for this custom block.', buttonText: 'Inquire', buttonLink: '/contact' }
-      ]
+      title: `${presetType.charAt(0).toUpperCase() + presetType.slice(1)} Section`,
+      subtitle: 'Customizable section layout block'
     };
+
+    if (presetType === 'image') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Image Showcase',
+        subtitle: 'Visual media highlight block',
+        imageUrl: template.image,
+        alt: 'Custom Image Showcase',
+        width: '',
+        height: '',
+        fitMode: 'contain',
+        position: 'center',
+        align: 'center'
+      };
+    } else if (presetType === 'text') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Custom Title Block',
+        subtitle: 'Add your detailed paragraph text here. Customize font, colors, and layout directly on the canvas.',
+        alignment: 'center'
+      };
+    } else if (presetType === 'button') {
+      newSecObj = {
+        ...newSecObj,
+        title: '',
+        subtitle: '',
+        buttonText: 'Explore Offerings',
+        buttonLink: '/contact',
+        alignment: 'center'
+      };
+    } else if (presetType === 'contact') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Contact & Direct Inquiries',
+        subtitle: 'Reach out to our team for custom questions, bookings, or visits.',
+        email: 'contact@brand.com',
+        phone: '+1 (555) 234-5678',
+        address: '123 Innovation Way, Suite 400',
+        formTitle: 'Send Direct Message'
+      };
+    } else if (presetType === 'services') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Our Core Services',
+        subtitle: 'Explore our specialized packages and professional offerings.',
+        items: [
+          { title: 'Premium Service Package', desc: 'Comprehensive service delivery tailored to your business needs.', price: '$199', tag: 'Popular' },
+          { title: 'Standard Consulting', desc: 'Expert guidance and step-by-step strategic planning.', price: '$99', tag: 'Essential' }
+        ]
+      };
+    } else if (presetType === 'features') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Why Choose Us',
+        subtitle: 'Key capabilities and advantages that set us apart.',
+        items: [
+          { title: 'Verified Quality', desc: 'Highest industry standards with rigorous quality checks.', icon: 'ShieldCheck' },
+          { title: 'Fast Turnaround', desc: 'Quick project delivery and responsive customer support.', icon: 'Zap' },
+          { title: 'Eco-Friendly Practices', desc: 'Sustainable and environmentally conscious operations.', icon: 'Leaf' }
+        ]
+      };
+    } else if (presetType === 'testimonials') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Client Testimonials',
+        subtitle: 'Real feedback and reviews from our valued clients.',
+        items: [
+          { name: 'Sarah Jenkins', role: 'Operations Lead', text: 'Exceptional service and outstanding attention to detail!', stars: 5, avatarUrl: template.image },
+          { name: 'Michael Chen', role: 'Founder & CEO', text: 'Transformed our workflow completely. Highly recommended!', stars: 5, avatarUrl: template.image }
+        ]
+      };
+    } else if (presetType === 'faq') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Frequently Asked Questions',
+        subtitle: 'Find answers to common questions about our services.',
+        items: [
+          { question: 'How do I get started with your service?', answer: 'Simply reach out via our contact form or book an initial consultation.' },
+          { question: 'What is your typical turnaround time?', answer: 'Most projects are completed within 3 to 5 business days.' }
+        ]
+      };
+    } else if (presetType === 'gallery') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Visual Photo Gallery',
+        subtitle: 'A visual showcase of our recent work and atmosphere.',
+        items: [
+          { imageUrl: template.image, caption: 'Showcase Photo 1' },
+          { imageUrl: template.image, caption: 'Showcase Photo 2' },
+          { imageUrl: template.image, caption: 'Showcase Photo 3' }
+        ]
+      };
+    } else if (presetType === 'team') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Meet Our Team',
+        subtitle: 'Dedicated professionals committed to your success.',
+        items: [
+          { name: 'Alex Rivera', role: 'Head of Design', bio: 'Over 10 years of experience crafting digital experiences.', imageUrl: template.image },
+          { name: 'Elena Rostova', role: 'Chief Strategist', bio: 'Specializes in brand development and growth strategy.', imageUrl: template.image }
+        ]
+      };
+    } else if (presetType === 'cta') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Ready To Elevate Your Business?',
+        subtitle: 'Get in touch with our team today for a free consultation.',
+        buttonText: 'Get Started Now',
+        buttonLink: '/contact'
+      };
+    } else {
+      newSecObj = {
+        ...newSecObj,
+        items: [
+          { title: 'Headline Title 1', desc: 'Detailed description for this custom block.', buttonText: 'Explore', buttonLink: '/services' },
+          { title: 'Headline Title 2', desc: 'Detailed description for this custom block.', buttonText: 'Inquire', buttonLink: '/contact' }
+        ]
+      };
+    }
 
     const customSecs = [...(customState.customSections || []), newSecObj];
     setShowAddSectionModal(false);
@@ -872,16 +987,16 @@ export default function VisualEditor({
 
             <div className="grid grid-cols-2 gap-2.5">
               <button
-                onClick={() => handleAddCustomText('heading')}
+                onClick={() => handleAddPresetSection('text')}
                 className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
               >
                 <Type className="w-4 h-4 text-amber-400" />
-                <p className="text-xs font-bold text-white">+ Add Heading</p>
-                <p className="text-[9px] text-slate-400">Insert custom title block</p>
+                <p className="text-xs font-bold text-white">+ Add Text</p>
+                <p className="text-[9px] text-slate-400">Heading & paragraph block</p>
               </button>
 
               <button
-                onClick={() => triggerImageUpload('heroImageUrl')}
+                onClick={() => handleAddPresetSection('image')}
                 className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
               >
                 <ImageIcon className="w-4 h-4 text-emerald-400" />
@@ -890,19 +1005,73 @@ export default function VisualEditor({
               </button>
 
               <button
-                onClick={handleAddCustomBox}
+                onClick={() => handleAddPresetSection('contact')}
                 className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
               >
-                <Box className="w-4 h-4 text-brand-400" />
-                <p className="text-xs font-bold text-white">+ Add Box Card</p>
-                <p className="text-[9px] text-slate-400">Container card with text/button</p>
+                <Mail className="w-4 h-4 text-sky-400" />
+                <p className="text-xs font-bold text-white">+ Add Contact</p>
+                <p className="text-[9px] text-slate-400">Inquiry form & details</p>
               </button>
 
               <button
-                onClick={handleAddCustomButton}
+                onClick={() => handleAddPresetSection('services')}
                 className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
               >
-                <MousePointer className="w-4 h-4 text-purple-400" />
+                <Layers className="w-4 h-4 text-brand-400" />
+                <p className="text-xs font-bold text-white">+ Add Services</p>
+                <p className="text-[9px] text-slate-400">Service package cards</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('features')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Zap className="w-4 h-4 text-amber-400" />
+                <p className="text-xs font-bold text-white">+ Add Features</p>
+                <p className="text-[9px] text-slate-400">Capability grid cards</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('testimonials')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Star className="w-4 h-4 text-yellow-400" />
+                <p className="text-xs font-bold text-white">+ Add Reviews</p>
+                <p className="text-[9px] text-slate-400">Testimonials & ratings</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('faq')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Sliders className="w-4 h-4 text-purple-400" />
+                <p className="text-xs font-bold text-white">+ Add FAQ</p>
+                <p className="text-[9px] text-slate-400">Questions & answers</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('gallery')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <ImageIcon className="w-4 h-4 text-pink-400" />
+                <p className="text-xs font-bold text-white">+ Add Gallery</p>
+                <p className="text-[9px] text-slate-400">Multi-photo showcase</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('team')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <FileText className="w-4 h-4 text-indigo-400" />
+                <p className="text-xs font-bold text-white">+ Add Team</p>
+                <p className="text-[9px] text-slate-400">Member profiles & roles</p>
+              </button>
+
+              <button
+                onClick={() => handleAddPresetSection('button')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <MousePointer className="w-4 h-4 text-emerald-400" />
                 <p className="text-xs font-bold text-white">+ Add Button</p>
                 <p className="text-[9px] text-slate-400">Styled CTA button</p>
               </button>

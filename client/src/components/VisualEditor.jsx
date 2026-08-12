@@ -219,6 +219,68 @@ export default function VisualEditor({
     });
   };
 
+  const handleUpdateContent = (keyPath, value) => {
+    if (keyPath.startsWith('feature_')) {
+      const parts = keyPath.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2];
+      const updatedFeatures = [...(customState.features || template.defaultData?.features || [])];
+      if (updatedFeatures[idx]) {
+        updatedFeatures[idx] = { ...updatedFeatures[idx], [prop]: value };
+        pushToHistory({ ...customState, features: updatedFeatures });
+        return;
+      }
+    }
+    if (keyPath.startsWith('service_')) {
+      const parts = keyPath.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2];
+      const updatedServices = [...(customState.services || template.defaultData?.services || [])];
+      if (updatedServices[idx]) {
+        updatedServices[idx] = { ...updatedServices[idx], [prop]: value };
+        pushToHistory({ ...customState, services: updatedServices });
+        return;
+      }
+    }
+    if (keyPath.startsWith('testimonial_')) {
+      const parts = keyPath.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2];
+      const updatedTestimonials = [...(customState.testimonials || template.defaultData?.testimonials || [])];
+      if (updatedTestimonials[idx]) {
+        updatedTestimonials[idx] = { ...updatedTestimonials[idx], [prop]: value };
+        pushToHistory({ ...customState, testimonials: updatedTestimonials });
+        return;
+      }
+    }
+    if (keyPath.startsWith('navLink_')) {
+      const parts = keyPath.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2];
+      const updatedNavLinks = [...(customState.navLinks || template.defaultData?.navLinks || [])];
+      if (updatedNavLinks[idx]) {
+        updatedNavLinks[idx] = { ...updatedNavLinks[idx], [prop]: value };
+        pushToHistory({ ...customState, navLinks: updatedNavLinks });
+        return;
+      }
+    }
+    if (keyPath.startsWith('custom_sec_')) {
+      const parts = keyPath.split('_');
+      const secId = parts[2];
+      const prop = parts[3];
+      const updatedCustomSecs = (customState.customSections || []).map(sec => {
+        if (sec.id === secId) {
+          return { ...sec, [prop]: value };
+        }
+        return sec;
+      });
+      pushToHistory({ ...customState, customSections: updatedCustomSecs });
+      return;
+    }
+
+    handleTextChange(keyPath, value);
+  };
+
   const handleMoveSection = (index, direction) => {
     const sections = [...(customState.sectionsOrder || [])];
     const targetIdx = direction === 'up' ? index - 1 : index + 1;
@@ -813,6 +875,12 @@ export default function VisualEditor({
             viewportMode={isMobile ? 'full' : viewportMode}
             activePath={editorActivePage}
             onNavigate={(path) => setEditorActivePage(path)}
+            isEditMode={!isPreviewMode}
+            onUpdateContent={handleUpdateContent}
+            onTriggerImageUpload={(slot) => triggerImageUpload(slot)}
+            onSectionMove={(idx, dir) => handleMoveSection(idx, dir)}
+            onSectionDuplicate={(idx) => handleDuplicateSection(idx)}
+            onSectionDelete={(idx) => handleDeleteSection(idx)}
           />
         </div>
       </div>

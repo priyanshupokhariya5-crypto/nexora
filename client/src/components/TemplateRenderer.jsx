@@ -25,7 +25,13 @@ export default function TemplateRenderer({
   viewportMode = 'desktop',
   activePath = '/',
   onNavigate = null,
-  baseRoute = ''
+  baseRoute = '',
+  isEditMode = false,
+  onUpdateContent = null,
+  onTriggerImageUpload = null,
+  onSectionMove = null,
+  onSectionDuplicate = null,
+  onSectionDelete = null
 }) {
   const [formSent, setFormSent] = useState(false);
   const [internalPath, setInternalPath] = useState(activePath || '/');
@@ -97,6 +103,134 @@ export default function TemplateRenderer({
     return <IconComp className="w-5 h-5" />;
   };
 
+  // Helper Component: Inline Canvas Text Editor
+  const EditableText = ({ 
+    fieldKey, 
+    value, 
+    tagName: Tag = 'span', 
+    className = '', 
+    style = {}, 
+    multiline = false,
+    placeholder = 'Click to edit text...'
+  }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [localValue, setLocalValue] = useState(value || '');
+
+    useEffect(() => {
+      setLocalValue(value || '');
+    }, [value]);
+
+    if (!isEditMode) {
+      return <Tag className={className} style={style}>{value}</Tag>;
+    }
+
+    const handleBlur = () => {
+      setIsEditing(false);
+      if (onUpdateContent && localValue !== value) {
+        onUpdateContent(fieldKey, localValue);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (!multiline && e.key === 'Enter') {
+        e.preventDefault();
+        e.target.blur();
+      }
+    };
+
+    if (isEditing) {
+      if (multiline) {
+        return (
+          <textarea
+            autoFocus
+            rows={3}
+            value={localValue}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onBlur={handleBlur}
+            className={`w-full p-2 bg-slate-900/90 text-white rounded-xl border-2 border-brand-500 font-inherit text-inherit leading-inherit focus:outline-none shadow-xl ${className}`}
+            style={style}
+          />
+        );
+      }
+      return (
+        <input
+          autoFocus
+          type="text"
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className={`w-full p-1 bg-slate-900/90 text-white rounded-lg border-2 border-brand-500 font-inherit text-inherit leading-inherit focus:outline-none shadow-xl ${className}`}
+          style={style}
+        />
+      );
+    }
+
+    return (
+      <Tag
+        onClick={() => setIsEditing(true)}
+        className={`relative group/txt inline-block hover:ring-2 hover:ring-brand-500/80 hover:bg-brand-500/10 rounded-lg px-1 -mx-1 transition-all cursor-pointer ${className}`}
+        style={style}
+        title="Click to edit text directly on canvas"
+      >
+        <span>{value || placeholder}</span>
+        <span className="opacity-0 group-hover/txt:opacity-100 absolute -top-3 -right-2 bg-brand-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-lg pointer-events-none z-30 transition-opacity flex items-center space-x-0.5">
+          <span>✎ Edit</span>
+        </span>
+      </Tag>
+    );
+  };
+
+  // Helper Component: Inline Canvas Image Editor
+  const EditableImage = ({ 
+    slotKey, 
+    src, 
+    alt = '', 
+    className = '', 
+    style = {} 
+  }) => {
+    if (!isEditMode) {
+      return <img src={src} alt={alt} className={className} style={style} />;
+    }
+
+    return (
+      <div 
+        onClick={() => onTriggerImageUpload && onTriggerImageUpload(slotKey)}
+        className="relative group/img cursor-pointer inline-block w-full h-full"
+        title="Click to replace image"
+      >
+        <img src={src} alt={alt} className={`${className} transition-opacity group-hover/img:opacity-80`} style={style} />
+        <div className="opacity-0 group-hover/img:opacity-100 absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center transition-opacity z-20 rounded-inherit">
+          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1">
+            <span>📷 Replace Image</span>
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // Helper Component: Section Hover Toolbar
+  const SectionToolbar = ({ index, title }) => {
+    if (!isEditMode) return null;
+    return (
+      <div className="opacity-0 group-hover/sec:opacity-100 absolute top-2 right-4 z-40 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-1 text-white flex items-center space-x-1 shadow-2xl transition-opacity">
+        <span className="text-[10px] font-extrabold uppercase text-slate-400 px-2 truncate max-w-[100px]">{title}</span>
+        <button onClick={() => onSectionMove && onSectionMove(index, 'up')} disabled={index === 0} className="p-1 hover:bg-slate-800 rounded text-slate-300 disabled:opacity-30" title="Move Up">
+          ↑
+        </button>
+        <button onClick={() => onSectionMove && onSectionMove(index, 'down')} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Move Down">
+          ↓
+        </button>
+        <button onClick={() => onSectionDuplicate && onSectionDuplicate(index)} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Duplicate Section">
+          📋
+        </button>
+        <button onClick={() => onSectionDelete && onSectionDelete(index)} className="p-1 hover:bg-red-500/20 rounded text-red-400" title="Delete Section">
+          🗑
+        </button>
+      </div>
+    );
+  };
+
   const viewportStyles = {
     desktop: 'w-full max-w-full',
     tablet: 'max-w-[768px] mx-auto border-x border-slate-300 shadow-2xl rounded-2xl overflow-hidden my-4',
@@ -164,13 +298,13 @@ export default function TemplateRenderer({
             <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
               <a href="#" onClick={(e) => handleLinkClick(e, '/')} className="flex items-center space-x-3 cursor-pointer">
                 {logoImage ? (
-                  <img src={logoImage} alt="Brand Logo" className="h-8 max-w-[150px] object-contain rounded-md" />
+                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-8 max-w-[150px] object-contain rounded-md" />
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm" style={{ backgroundColor: accentColor }}>
                     {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="font-extrabold text-lg tracking-tight font-display">{data.logoText || template.title}</span>
+                <EditableText fieldKey="logoText" value={data.logoText || template.title} tagName="span" className="font-extrabold text-lg tracking-tight font-display" />
               </a>
 
               <nav className="hidden md:flex space-x-6 text-xs font-semibold opacity-90">
@@ -184,7 +318,7 @@ export default function TemplateRenderer({
                       className={`hover:opacity-100 transition-all ${isLinkActive ? 'font-extrabold border-b-2' : 'opacity-70'}`}
                       style={isLinkActive ? { borderColor: accentColor } : {}}
                     >
-                      {link.label}
+                      <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />
                     </a>
                   );
                 })}
@@ -196,7 +330,7 @@ export default function TemplateRenderer({
                 className="px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer" 
                 style={{ backgroundColor: accentColor }}
               >
-                {data.ctaText || 'Contact Us'}
+                <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
               </a>
             </div>
           </header>
@@ -206,29 +340,23 @@ export default function TemplateRenderer({
           {/* ========================================== */}
           {currentRoute === 'home' && (
             <main>
-              {sectionsOrder.map((section) => {
+              {sectionsOrder.map((section, secIdx) => {
                 if (section === 'hero') {
                   if (heroStyle === 'cinematic-full') {
                     return (
-                      <section key="hero" className="relative min-h-[520px] md:min-h-[640px] flex items-center justify-center text-white px-4 sm:px-6 overflow-hidden bg-slate-950">
-                        <img src={heroImage} alt="Hero Cinematic" className="absolute inset-0 w-full h-full object-cover opacity-45" />
+                      <section key="hero" className="relative group/sec min-h-[520px] md:min-h-[640px] flex items-center justify-center text-white px-4 sm:px-6 overflow-hidden bg-slate-950">
+                        <SectionToolbar index={secIdx} title="Hero Section" />
+                        <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Cinematic" className="absolute inset-0 w-full h-full object-cover opacity-45" />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                         <div className="relative z-10 max-w-4xl mx-auto text-center py-16">
                           <span className="inline-block px-4 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 mb-6 text-amber-300">
-                            {template.badge || 'Official Site'}
+                            <EditableText fieldKey="heroBadge" value={template.badge || 'Official Site'} />
                           </span>
-                          <h1 className="text-3xl sm:text-6xl font-extrabold leading-tight font-display tracking-tight text-white">
-                            {data.heroTitle || template.defaultData?.heroTitle}
-                          </h1>
-                          <p className="mt-6 text-sm sm:text-lg max-w-2xl mx-auto text-slate-200 leading-relaxed">
-                            {data.heroSubtitle || template.defaultData?.heroSubtitle}
-                          </p>
+                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-3xl sm:text-6xl font-extrabold leading-tight font-display tracking-tight text-white block" multiline />
+                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-6 text-sm sm:text-lg max-w-2xl mx-auto text-slate-200 leading-relaxed block" multiline />
                           <div className="mt-8 flex flex-wrap justify-center gap-4">
                             <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-8 py-4 rounded-2xl text-white font-bold text-xs shadow-2xl transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
-                              {data.ctaText || 'Get Started'}
-                            </a>
-                            <a href="/about" onClick={(e) => handleLinkClick(e, '/about')} className="px-8 py-4 rounded-2xl font-semibold text-xs border border-white/30 backdrop-blur-sm hover:bg-white/10 text-white transition-colors">
-                              Explore Experience
+                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started'} />
                             </a>
                           </div>
                         </div>
@@ -238,29 +366,26 @@ export default function TemplateRenderer({
 
                   if (heroStyle === 'bento-hero') {
                     return (
-                      <section key="hero" className="py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <section key="hero" className="relative group/sec py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                        <SectionToolbar index={secIdx} title="Hero Section" />
                         <div className="grid lg:grid-cols-3 gap-6">
                           <div className={`lg:col-span-2 p-8 sm:p-12 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 text-white border-slate-800'} flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
                             <div>
                               <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-white/10 text-brand-300 border border-white/10 mb-4">
-                                {template.badge || 'Platform'}
+                                <EditableText fieldKey="heroBadge" value={template.badge || 'Platform'} />
                               </span>
-                              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight font-display text-white">
-                                {data.heroTitle || template.defaultData?.heroTitle}
-                              </h1>
-                              <p className="mt-4 text-sm opacity-80 leading-relaxed text-slate-300 max-w-xl">
-                                {data.heroSubtitle || template.defaultData?.heroSubtitle}
-                              </p>
+                              <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-3xl sm:text-5xl font-extrabold leading-tight font-display text-white block" multiline />
+                              <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-sm opacity-80 leading-relaxed text-slate-300 max-w-xl block" multiline />
                             </div>
                             <div className="mt-8 flex flex-wrap gap-4">
                               <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 py-3.5 rounded-2xl text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
-                                {data.ctaText || 'Get Started'}
+                                <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started'} />
                               </a>
                             </div>
                           </div>
                           <div className="space-y-6">
-                            <div className="rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-slate-900 border border-slate-200/40 relative group">
-                              <img src={heroImage} alt="Hero Bento" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-slate-900 border border-slate-200/40 relative">
+                              <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Bento" className="w-full h-full object-cover" />
                             </div>
                             <div className={`p-6 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex items-center justify-between`}>
                               <div>
@@ -280,27 +405,24 @@ export default function TemplateRenderer({
 
                   if (heroStyle === 'asymmetric-editorial') {
                     return (
-                      <section key="hero" className="py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <section key="hero" className="relative group/sec py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+                        <SectionToolbar index={secIdx} title="Hero Section" />
                         <div className="border-b border-slate-200/80 pb-12">
                           <span className="text-[11px] font-mono uppercase tracking-widest font-bold opacity-60 block mb-3">
-                            — {template.badge || 'Established Studio'}
+                            — <EditableText fieldKey="heroBadge" value={template.badge || 'Established Studio'} />
                           </span>
-                          <h1 className="text-3xl sm:text-6xl font-extrabold font-serif max-w-4xl leading-tight">
-                            {data.heroTitle || template.defaultData?.heroTitle}
-                          </h1>
+                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-3xl sm:text-6xl font-extrabold font-serif max-w-4xl leading-tight block" multiline />
                         </div>
                         <div className="grid md:grid-cols-12 gap-8 pt-8 items-start">
                           <div className="md:col-span-5 space-y-4">
-                            <p className="text-sm opacity-80 leading-relaxed font-sans">
-                              {data.heroSubtitle || template.defaultData?.heroSubtitle}
-                            </p>
+                            <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="text-sm opacity-80 leading-relaxed font-sans block" multiline />
                             <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="inline-block px-7 py-3.5 rounded-xl text-white font-bold text-xs shadow-md" style={{ backgroundColor: accentColor }}>
-                              {data.ctaText || 'Inquire Now'}
+                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Inquire Now'} />
                             </a>
                           </div>
                           <div className="md:col-span-7">
                             <div className="rounded-2xl overflow-hidden aspect-[16/10] shadow-xl bg-slate-900">
-                              <img src={heroImage} alt="Editorial Hero" className="w-full h-full object-cover" />
+                              <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Editorial Hero" className="w-full h-full object-cover" />
                             </div>
                           </div>
                         </div>
@@ -310,39 +432,19 @@ export default function TemplateRenderer({
 
                   if (heroStyle === 'dark-minimal') {
                     return (
-                      <section key="hero" className="py-20 md:py-28 px-4 sm:px-6 bg-slate-950 text-white">
+                      <section key="hero" className="relative group/sec py-20 md:py-28 px-4 sm:px-6 bg-slate-950 text-white">
+                        <SectionToolbar index={secIdx} title="Hero Section" />
                         <div className="max-w-5xl mx-auto text-center">
                           <span className="px-3.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest bg-slate-900 text-brand-400 border border-slate-800 inline-block mb-6">
-                            {template.badge || 'Professional Brand'}
+                            <EditableText fieldKey="heroBadge" value={template.badge || 'Professional Brand'} />
                           </span>
-                          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight font-display text-slate-100">
-                            {data.heroTitle || template.defaultData?.heroTitle}
-                          </h1>
-                          <p className="mt-6 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                            {data.heroSubtitle || template.defaultData?.heroSubtitle}
-                          </p>
+                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-4xl sm:text-6xl font-extrabold tracking-tight font-display text-slate-100 block" multiline />
+                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-6 text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed block" multiline />
                           <div className="mt-10 flex justify-center gap-4">
                             <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-8 py-4 rounded-xl font-bold text-xs text-white shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: accentColor }}>
-                              {data.ctaText || 'Get In Touch'}
+                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Get In Touch'} />
                             </a>
                           </div>
-                        </div>
-                      </section>
-                    );
-                  }
-
-                  if (heroStyle === 'magazine-split') {
-                    return (
-                      <section key="hero" className="py-12 md:py-16 px-4 sm:px-6 max-w-6xl mx-auto">
-                        <div className="text-center max-w-3xl mx-auto mb-10">
-                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 block mb-2">{template.badge || 'Lookbook'}</span>
-                          <h1 className="text-3xl sm:text-5xl font-serif font-extrabold">{data.heroTitle}</h1>
-                          <p className="mt-3 text-xs sm:text-sm opacity-75">{data.heroSubtitle}</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="rounded-2xl overflow-hidden aspect-[3/4] shadow-md"><img src={heroImage} className="w-full h-full object-cover" alt="Strip 1" /></div>
-                          <div className="rounded-2xl overflow-hidden aspect-[3/4] shadow-md md:-translate-y-4"><img src={aboutImage} className="w-full h-full object-cover" alt="Strip 2" /></div>
-                          <div className="rounded-2xl overflow-hidden aspect-[3/4] shadow-md"><img src={galleryImage} className="w-full h-full object-cover" alt="Strip 3" /></div>
                         </div>
                       </section>
                     );
@@ -350,20 +452,21 @@ export default function TemplateRenderer({
 
                   if (heroStyle === 'compact-left') {
                     return (
-                      <section key="hero" className="py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <section key="hero" className="relative group/sec py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                        <SectionToolbar index={secIdx} title="Hero Section" />
                         <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-8 sm:p-12 grid md:grid-cols-2 gap-8 items-center">
                           <div>
                             <span className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white text-slate-800 border border-slate-200 inline-block mb-4">
-                              {template.badge || 'Verified Clinic'}
+                              <EditableText fieldKey="heroBadge" value={template.badge || 'Verified Clinic'} />
                             </span>
-                            <h1 className="text-3xl sm:text-4xl font-extrabold font-display">{data.heroTitle}</h1>
-                            <p className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed">{data.heroSubtitle}</p>
+                            <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-3xl sm:text-4xl font-extrabold font-display block" multiline />
+                            <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed block" multiline />
                             <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="mt-6 inline-block px-6 py-3 rounded-xl text-white font-bold text-xs" style={{ backgroundColor: accentColor }}>
-                              {data.ctaText || 'Schedule Visit'}
+                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Schedule Visit'} />
                             </a>
                           </div>
                           <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-lg bg-slate-900">
-                            <img src={heroImage} alt="Compact Hero" className="w-full h-full object-cover" />
+                            <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Compact Hero" className="w-full h-full object-cover" />
                           </div>
                         </div>
                       </section>
@@ -372,30 +475,30 @@ export default function TemplateRenderer({
 
                   // Default Hero: Arched Split
                   return (
-                    <section key="hero" className="relative py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto overflow-hidden">
+                    <section key="hero" className="relative group/sec py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto overflow-hidden">
+                      <SectionToolbar index={secIdx} title="Hero Section" />
                       <div className="grid md:grid-cols-2 gap-10 items-center">
                         <div>
                           <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-slate-100 text-slate-800 border border-slate-200/80 shadow-xs">
-                            {template.badge || 'Official Business Site'}
+                            <EditableText fieldKey="heroBadge" value={template.badge || 'Official Business Site'} />
                           </span>
-                          <h1 className="text-3xl sm:text-5xl font-extrabold mt-4 leading-tight font-display tracking-tight">
-                            {data.heroTitle || template.defaultData?.heroTitle}
-                          </h1>
-                          <p className="mt-4 text-sm sm:text-base opacity-80 leading-relaxed font-sans">
-                            {data.heroSubtitle || template.defaultData?.heroSubtitle}
-                          </p>
-                          <div className="mt-8 flex flex-wrap gap-4 items-center">
-                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 py-3.5 rounded-2xl text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
-                              {data.ctaText || 'Get In Touch'}
-                            </a>
-                            <a href="/about" onClick={(e) => handleLinkClick(e, '/about')} className={`px-6 py-3.5 rounded-2xl font-semibold text-xs border transition-colors ${isDark ? 'border-slate-800 hover:bg-slate-900 text-slate-200' : 'border-slate-200 hover:bg-slate-50 text-slate-700'}`}>
-                              Learn More
+                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-3xl sm:text-5xl font-extrabold mt-4 leading-tight font-display tracking-tight block" multiline />
+                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-sm sm:text-base opacity-80 leading-relaxed font-sans block" multiline />
+                          <div className="mt-8 flex flex-wrap items-center gap-4">
+                            <a 
+                              href={data.ctaLink || "/contact"} 
+                              onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
+                              className="px-8 py-4 rounded-2xl font-bold text-xs text-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-0.5 cursor-pointer" 
+                              style={{ backgroundColor: accentColor }}
+                            >
+                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started Now'} />
                             </a>
                           </div>
                         </div>
-                        <div className="relative flex justify-center">
-                          <div className="overflow-hidden shadow-2xl border border-slate-200/50 aspect-[4/3] w-full max-w-md bg-slate-900 group rounded-t-[140px] rounded-b-3xl">
-                            <img src={heroImage} alt="Hero Banner" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+
+                        <div className="relative">
+                          <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 relative z-10">
+                            <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Media" className="w-full h-full object-cover" />
                           </div>
                         </div>
                       </div>
@@ -405,19 +508,20 @@ export default function TemplateRenderer({
 
                 if (section === 'features') {
                   return (
-                    <section key="features" className={`py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-900/60' : 'bg-slate-50/70'} border-y border-slate-200/60`}>
+                    <section key="features" className={`relative group/sec py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-900/60' : 'bg-slate-50/70'} border-y border-slate-200/60`}>
+                      <SectionToolbar index={secIdx} title="Features Section" />
                       <div className="max-w-6xl mx-auto">
                         <div className="text-center max-w-2xl mx-auto mb-10">
-                          <h2 className="text-2xl sm:text-4xl font-extrabold font-display">{data.featuresTitle || 'Why Choose Us'}</h2>
+                          <EditableText fieldKey="featuresTitle" value={data.featuresTitle || 'Why Choose Us'} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display block" />
                         </div>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {(data.features || []).slice(0, 3).map((feat, idx) => (
-                            <div key={idx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm`}>
+                          {(data.features || []).slice(0, 6).map((feat, fIdx) => (
+                            <div key={fIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm`}>
                               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white mb-4 shadow-sm" style={{ backgroundColor: accentColor }}>
                                 {renderIcon(feat.icon)}
                               </div>
-                              <h3 className="text-base font-bold font-display">{feat.title}</h3>
-                              <p className="mt-2 text-xs opacity-75 leading-relaxed">{feat.desc}</p>
+                              <EditableText fieldKey={`feature_${fIdx}_title`} value={feat.title} tagName="h3" className="text-base font-bold font-display block" />
+                              <EditableText fieldKey={`feature_${fIdx}_desc`} value={feat.desc} tagName="p" className="mt-2 text-xs opacity-75 leading-relaxed block" multiline />
                             </div>
                           ))}
                         </div>
@@ -428,17 +532,18 @@ export default function TemplateRenderer({
 
                 if (section === 'about') {
                   return (
-                    <section key="about" className="py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                    <section key="about" className="relative group/sec py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <SectionToolbar index={secIdx} title="About Section" />
                       <div className="grid md:grid-cols-2 gap-10 items-center">
                         <div className="overflow-hidden shadow-2xl border border-slate-200/50 aspect-[4/3] w-full max-w-md bg-slate-900 rounded-3xl mx-auto">
-                          <img src={aboutImage} alt="About Story" className="w-full h-full object-cover" />
+                          <EditableImage slotKey="aboutImageUrl" src={aboutImage} alt="About Story" className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-sm inline-block mb-3" style={{ backgroundColor: accentColor }}>
                             Our Story
                           </span>
-                          <h2 className="text-2xl sm:text-4xl font-extrabold font-display leading-tight">{data.aboutTitle || 'Built With Passion'}</h2>
-                          <p className="mt-4 text-xs sm:text-sm opacity-80 leading-relaxed font-sans">{data.aboutDesc}</p>
+                          <EditableText fieldKey="aboutTitle" value={data.aboutTitle || 'Built With Passion'} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display leading-tight block" />
+                          <EditableText fieldKey="aboutDesc" value={data.aboutDesc || template.defaultData?.aboutDesc} tagName="p" className="mt-4 text-xs sm:text-sm opacity-80 leading-relaxed font-sans block" multiline />
                           <a href="/about" onClick={(e) => handleLinkClick(e, '/about')} className="mt-6 inline-block text-xs font-bold underline" style={{ color: accentColor }}>
                             Read Full Story &rarr;
                           </a>
@@ -450,28 +555,29 @@ export default function TemplateRenderer({
 
                 if (section === 'services') {
                   return (
-                    <section key="services" className={`py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-900/60' : 'bg-slate-50/70'} border-y border-slate-200/60`}>
+                    <section key="services" className={`relative group/sec py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-900/60' : 'bg-slate-50/70'} border-y border-slate-200/60`}>
+                      <SectionToolbar index={secIdx} title="Services Section" />
                       <div className="max-w-6xl mx-auto">
                         <div className="flex justify-between items-end mb-10">
                           <div>
                             <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Showcase</span>
-                            <h2 className="text-2xl sm:text-4xl font-extrabold font-display mt-1">{data.servicesTitle || 'Featured Offerings'}</h2>
+                            <EditableText fieldKey="servicesTitle" value={data.servicesTitle || 'Featured Offerings'} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display mt-1 block" />
                           </div>
                           <a href="/services" onClick={(e) => handleLinkClick(e, '/services')} className="text-xs font-bold underline hidden sm:inline-block">
                             View All Offerings &rarr;
                           </a>
                         </div>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {(data.services || []).slice(0, 3).map((serv, idx) => (
-                            <div key={idx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex flex-col justify-between`}>
+                          {(data.services || []).slice(0, 6).map((serv, sIdx) => (
+                            <div key={sIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex flex-col justify-between`}>
                               <div>
                                 <div className="flex justify-between items-start mb-3">
-                                  <h3 className="text-base font-bold font-display">{serv.title}</h3>
+                                  <EditableText fieldKey={`service_${sIdx}_title`} value={serv.title} tagName="h3" className="text-base font-bold font-display" />
                                   <span className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white flex-shrink-0 ml-2" style={{ backgroundColor: accentColor }}>
-                                    {serv.price}
+                                    <EditableText fieldKey={`service_${sIdx}_price`} value={serv.price} />
                                   </span>
                                 </div>
-                                <p className="text-xs opacity-75 leading-relaxed">{serv.desc}</p>
+                                <EditableText fieldKey={`service_${sIdx}_desc`} value={serv.desc} tagName="p" className="text-xs opacity-75 leading-relaxed block" multiline />
                               </div>
                               <div className="mt-4 pt-3 border-t border-slate-100/50 flex items-center justify-between text-[11px] font-bold opacity-80">
                                 <span>{serv.tag || 'Showcase'}</span>
@@ -490,20 +596,21 @@ export default function TemplateRenderer({
 
                 if (section === 'testimonials') {
                   return (
-                    <section key="testimonials" className="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+                    <section key="testimonials" className="relative group/sec py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <SectionToolbar index={secIdx} title="Testimonials Section" />
                       <div className="text-center max-w-2xl mx-auto mb-10">
-                        <h2 className="text-2xl sm:text-4xl font-extrabold font-display">{data.testimonialsTitle || 'Client Feedback'}</h2>
+                        <EditableText fieldKey="testimonialsTitle" value={data.testimonialsTitle || 'Client Feedback'} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display block" />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                        {(data.testimonials || []).slice(0, 2).map((item, idx) => (
-                          <div key={idx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm`}>
+                        {(data.testimonials || []).slice(0, 4).map((item, tIdx) => (
+                          <div key={tIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm`}>
                             <div className="flex items-center space-x-1 text-amber-400 mb-3">
                               <Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" /><Star className="w-4 h-4 fill-amber-400" />
                             </div>
-                            <p className="text-xs italic opacity-80 leading-relaxed">"{item.text}"</p>
+                            <EditableText fieldKey={`testimonial_${tIdx}_text`} value={item.text} tagName="p" className="text-xs italic opacity-80 leading-relaxed block" multiline />
                             <div className="mt-4 pt-3 border-t border-slate-100/60">
-                              <h4 className="text-xs font-bold font-display">{item.name}</h4>
-                              <p className="text-[10px] opacity-60 font-medium">{item.role}</p>
+                              <EditableText fieldKey={`testimonial_${tIdx}_name`} value={item.name} tagName="h4" className="text-xs font-bold font-display block" />
+                              <EditableText fieldKey={`testimonial_${tIdx}_role`} value={item.role} tagName="p" className="text-[10px] opacity-60 font-medium block" />
                             </div>
                           </div>
                         ))}
@@ -519,18 +626,19 @@ export default function TemplateRenderer({
 
                   return (
                     <section 
-                      key={secObj.id || idx} 
-                      className="py-16 px-4 sm:px-6 border-y border-slate-200/60 transition-all" 
+                      key={secObj.id || secIdx} 
+                      className="relative group/sec py-16 px-4 sm:px-6 border-y border-slate-200/60 transition-all" 
                       style={{ backgroundColor: secObj.backgroundColor || (isDark ? '#0f172a' : '#ffffff'), color: secObj.textColor || (isDark ? '#f8fafc' : '#0f172a') }}
                     >
+                      <SectionToolbar index={secIdx} title={secObj.title || "Custom Section"} />
                       <div className="max-w-6xl mx-auto">
                         {secObj.title && (
                           <div className="text-center max-w-2xl mx-auto mb-10">
                             <span className="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-sm inline-block mb-3" style={{ backgroundColor: accentColor }}>
                               {secObj.badge || 'Custom Section'}
                             </span>
-                            <h2 className="text-2xl sm:text-4xl font-extrabold font-display">{secObj.title}</h2>
-                            {secObj.subtitle && <p className="mt-3 text-xs sm:text-sm opacity-80 leading-relaxed">{secObj.subtitle}</p>}
+                            <EditableText fieldKey={`custom_sec_${secObj.id}_title`} value={secObj.title} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display block" />
+                            {secObj.subtitle && <EditableText fieldKey={`custom_sec_${secObj.id}_subtitle`} value={secObj.subtitle} tagName="p" className="mt-3 text-xs sm:text-sm opacity-80 leading-relaxed block" multiline />}
                           </div>
                         )}
 
@@ -870,8 +978,8 @@ export default function TemplateRenderer({
         <footer className={`py-12 sm:py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-950 text-slate-200 border-t border-slate-900' : 'bg-slate-900 text-white'} w-full max-w-full overflow-hidden mt-16`}>
           <div className="max-w-6xl mx-auto pb-12 border-b border-slate-800 flex flex-col md:flex-row justify-between gap-8">
             <div>
-              <span className="font-extrabold text-xl tracking-tight font-display">{data.logoText || template.title}</span>
-              <p className="mt-2 text-xs opacity-75 max-w-sm leading-relaxed">{template.tagline || template.defaultData?.heroSubtitle}</p>
+              <EditableText fieldKey="footerTitle" value={data.footerTitle || data.logoText || template.title} tagName="span" className="font-extrabold text-xl tracking-tight font-display" />
+              <EditableText fieldKey="footerTagline" value={data.footerTagline || template.tagline || template.defaultData?.heroSubtitle} tagName="p" className="mt-2 text-xs opacity-75 max-w-sm leading-relaxed block" multiline />
             </div>
             <div className="flex flex-wrap gap-8 text-xs font-semibold">
               <div>
@@ -879,20 +987,22 @@ export default function TemplateRenderer({
                 <ul className="space-y-2">
                   {defaultNavLinks.map((link, idx) => (
                     <li key={idx}>
-                      <a href={link.href} onClick={(e) => handleLinkClick(e, link.href)} className="hover:underline opacity-80 hover:opacity-100">{link.label}</a>
+                      <a href={link.href} onClick={(e) => handleLinkClick(e, link.href)} className="hover:underline opacity-80 hover:opacity-100">
+                        <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />
+                      </a>
                     </li>
                   ))}
                 </ul>
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Contact</p>
-                <p className="opacity-80">{data.contactEmail || 'contact@business.com'}</p>
-                <p className="opacity-80 mt-1">{data.contactPhone || '+1 (800) 555-0199'}</p>
+                <EditableText fieldKey="contactEmail" value={data.contactEmail || 'contact@business.com'} tagName="p" className="opacity-80 block" />
+                <EditableText fieldKey="contactPhone" value={data.contactPhone || '+1 (800) 555-0199'} tagName="p" className="opacity-80 mt-1 block" />
               </div>
             </div>
           </div>
           <div className="max-w-6xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] opacity-70 gap-2 sm:gap-4 w-full max-w-full">
-            <p className="text-center sm:text-left break-words">{data.footerText || `© 2026 ${data.logoText || template.title}. All rights reserved.`}</p>
+            <EditableText fieldKey="copyrightText" value={data.copyrightText || data.footerText || `© 2026 ${data.logoText || template.title}. All rights reserved.`} tagName="p" className="text-center sm:text-left break-words block" />
             <p className="mt-2 sm:mt-0 font-mono text-center sm:text-right flex-shrink-0">Built with Nexora</p>
           </div>
         </footer>

@@ -1433,6 +1433,7 @@ export default function VisualEditor({
               onUpdateContent={handleUpdateContent}
               onTriggerImageUpload={(slot) => triggerImageUpload(slot)}
               onSectionMove={(idx, dir) => handleMoveSection(idx, dir)}
+              onSectionReorder={(newSections) => pushToHistory({ ...customState, sectionsOrder: newSections })}
               onSectionDuplicate={(idx) => handleDuplicateSection(idx)}
               onSectionDelete={(idx) => handleDeleteSection(idx)}
             />

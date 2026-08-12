@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Reorder, useDragControls } from 'framer-motion';
 import { 
   Zap, ShieldCheck, Leaf, Clock, Award, Flame, TrendingUp, Briefcase, 
   Cpu, Sprout, GlassWater, Key, Eye, Shield, Palette, Sparkles, Globe, 
@@ -47,6 +48,7 @@ export default function TemplateRenderer({
   onUpdateContent = null,
   onTriggerImageUpload = null,
   onSectionMove = null,
+  onSectionReorder = null,
   onSectionDuplicate = null,
   onSectionDelete = null
 }) {
@@ -305,25 +307,71 @@ export default function TemplateRenderer({
     );
   };
 
-  // Helper Component: Section Hover Toolbar
-  const SectionToolbar = ({ index, title }) => {
-    if (!isEditMode) return null;
+  // Helper Component: Draggable Section Wrapper with Canvas Drag Handle
+  const DraggableSectionWrapper = ({ 
+    sectionKey, 
+    index, 
+    title, 
+    isEditMode, 
+    children 
+  }) => {
+    const dragControls = useDragControls();
+
+    if (!isEditMode) {
+      return <>{children}</>;
+    }
+
     return (
-      <div className="opacity-0 group-hover/sec:opacity-100 absolute top-2 right-4 z-40 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-xl p-1 text-white flex items-center space-x-1 shadow-2xl transition-opacity">
-        <span className="text-[10px] font-extrabold uppercase text-slate-400 px-2 truncate max-w-[100px]">{title}</span>
-        <button onClick={() => onSectionMove && onSectionMove(index, 'up')} disabled={index === 0} className="p-1 hover:bg-slate-800 rounded text-slate-300 disabled:opacity-30" title="Move Up">
-          ↑
-        </button>
-        <button onClick={() => onSectionMove && onSectionMove(index, 'down')} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Move Down">
-          ↓
-        </button>
-        <button onClick={() => onSectionDuplicate && onSectionDuplicate(index)} className="p-1 hover:bg-slate-800 rounded text-slate-300" title="Duplicate Section">
-          📋
-        </button>
-        <button onClick={() => onSectionDelete && onSectionDelete(index)} className="p-1 hover:bg-red-500/20 rounded text-red-400" title="Delete Section">
-          🗑
-        </button>
-      </div>
+      <Reorder.Item
+        value={sectionKey}
+        id={sectionKey}
+        dragControls={dragControls}
+        dragListener={false}
+        className="relative group/sec transition-all duration-200 select-none hover:outline-2 hover:outline-dashed hover:outline-brand-500/50 hover:outline-offset-[-2px] rounded-xl my-1"
+      >
+        {/* Floating Section Toolbar with Drag Handle */}
+        <div className="opacity-0 group-hover/sec:opacity-100 absolute top-3 right-6 z-40 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-xl p-1.5 text-white flex items-center space-x-1.5 shadow-2xl transition-opacity">
+          {/* Dedicated Drag Handle Button */}
+          <button
+            type="button"
+            onPointerDown={(e) => {
+              if (dragControls) dragControls.start(e);
+            }}
+            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 active:bg-brand-600 rounded-lg text-[10px] font-extrabold uppercase text-amber-300 flex items-center space-x-1 cursor-grab active:cursor-grabbing select-none"
+            title="Click & Drag to reorder section"
+          >
+            <span className="text-xs font-mono font-black">⋮⋮</span>
+            <span>Drag</span>
+          </button>
+
+          <span className="text-[10px] font-extrabold uppercase text-slate-300 px-1.5 truncate max-w-[120px]">
+            {title}
+          </span>
+
+          {onSectionDuplicate && (
+            <button 
+              type="button"
+              onClick={() => onSectionDuplicate(index)} 
+              className="p-1 hover:bg-slate-800 rounded text-slate-300 transition-colors" 
+              title="Duplicate Section"
+            >
+              📋
+            </button>
+          )}
+          {onSectionDelete && (
+            <button 
+              type="button"
+              onClick={() => onSectionDelete(index)} 
+              className="p-1 hover:bg-red-500/20 rounded text-red-400 transition-colors" 
+              title="Delete Section"
+            >
+              🗑
+            </button>
+          )}
+        </div>
+
+        {children}
+      </Reorder.Item>
     );
   };
 
@@ -517,172 +565,98 @@ export default function TemplateRenderer({
           {/* ========================================== */}
           {/* VIEW ROUTE 1: HOME PAGE (MULTI-SECTION SHOWCASE) */}
           {/* ========================================== */}
-          {currentRoute === 'home' && (
-            <main>
-              {sectionsOrder.map((section, secIdx) => {
-                if (section === 'hero') {
-                  if (heroStyle === 'cinematic-full') {
-                    return (
-                      <section key="hero" className="relative group/sec min-h-[440px] sm:min-h-[520px] md:min-h-[640px] flex items-center justify-center text-white px-4 sm:px-6 overflow-hidden bg-slate-950">
-                        <SectionToolbar index={secIdx} title="Hero Section" />
-                        <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Cinematic" className="absolute inset-0 w-full h-full object-cover opacity-45" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                        <div className="relative z-10 max-w-4xl mx-auto text-center py-12 sm:py-16">
-                          <span className="inline-block px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 mb-4 sm:mb-6 text-amber-300">
-                            <EditableText fieldKey="heroBadge" value={template.badge || 'Official Site'} />
-                          </span>
-                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-display tracking-tight text-white block break-words" multiline />
-                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 sm:mt-6 text-xs sm:text-base lg:text-lg max-w-2xl mx-auto text-slate-200 leading-relaxed block break-words" multiline />
-                          <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
-                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-white font-bold text-xs shadow-2xl transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
+          {currentRoute === 'home' && (() => {
+            const renderSectionNode = (section, secIdx) => {
+              if (section === 'hero') {
+                if (heroStyle === 'cinematic-full') {
+                  return (
+                    <section key="hero" className="relative group/sec min-h-[440px] sm:min-h-[520px] md:min-h-[640px] flex items-center justify-center text-white px-4 sm:px-6 overflow-hidden bg-slate-950">
+                      <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Cinematic" className="absolute inset-0 w-full h-full object-cover opacity-45" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                      <div className="relative z-10 max-w-4xl mx-auto text-center py-12 sm:py-16">
+                        <span className="inline-block px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 mb-4 sm:mb-6 text-amber-300">
+                          <EditableText fieldKey="heroBadge" value={template.badge || 'Official Site'} />
+                        </span>
+                        <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-display tracking-tight text-white block break-words" multiline />
+                        <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 sm:mt-6 text-xs sm:text-base lg:text-lg max-w-2xl mx-auto text-slate-200 leading-relaxed block break-words" multiline />
+                        <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+                          <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 sm:px-8 py-3 sm:py-4 rounded-2xl text-white font-bold text-xs shadow-2xl transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
+                            <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started'} />
+                          </a>
+                        </div>
+                      </div>
+                    </section>
+                  );
+                }
+
+                if (heroStyle === 'bento-hero') {
+                  return (
+                    <section key="hero" className="relative group/sec py-8 sm:py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <div className={`lg:col-span-2 p-5 sm:p-8 lg:p-12 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 text-white border-slate-800'} flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
+                          <div>
+                            <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-white/10 text-brand-300 border border-white/10 mb-4">
+                              <EditableText fieldKey="heroBadge" value={template.badge || 'Platform'} />
+                            </span>
+                            <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight font-display text-white block break-words" multiline />
+                            <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-sm opacity-80 leading-relaxed text-slate-300 max-w-xl block break-words" multiline />
+                          </div>
+                          <div className="mt-6 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
+                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 py-3 sm:py-3.5 rounded-2xl text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
                               <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started'} />
                             </a>
                           </div>
                         </div>
-                      </section>
-                    );
-                  }
-
-                  if (heroStyle === 'bento-hero') {
-                    return (
-                      <section key="hero" className="relative group/sec py-8 sm:py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
-                        <SectionToolbar index={secIdx} title="Hero Section" />
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                          <div className={`lg:col-span-2 p-5 sm:p-8 lg:p-12 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-900 text-white border-slate-800'} flex flex-col justify-between shadow-2xl relative overflow-hidden`}>
+                        <div className="space-y-4 sm:space-y-6">
+                          <div className="rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-slate-900 border border-slate-200/40 relative">
+                            <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Bento" className="w-full h-full object-cover" />
+                          </div>
+                          <div className={`p-4 sm:p-6 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex items-center justify-between`}>
                             <div>
-                              <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-white/10 text-brand-300 border border-white/10 mb-4">
-                                <EditableText fieldKey="heroBadge" value={template.badge || 'Platform'} />
-                              </span>
-                              <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight font-display text-white block break-words" multiline />
-                              <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-sm opacity-80 leading-relaxed text-slate-300 max-w-xl block break-words" multiline />
+                              <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Proven Results</p>
+                              <p className="text-xl sm:text-2xl font-extrabold font-display">99.8%</p>
+                              <p className="text-[11px] sm:text-xs opacity-75">Client Satisfaction Score</p>
                             </div>
-                            <div className="mt-6 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
-                              <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 py-3 sm:py-3.5 rounded-2xl text-white font-bold text-xs shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: accentColor }}>
-                                <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started'} />
-                              </a>
+                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                              <Award className="w-5 h-5" />
                             </div>
-                          </div>
-                          <div className="space-y-4 sm:space-y-6">
-                            <div className="rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-slate-900 border border-slate-200/40 relative">
-                              <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Bento" className="w-full h-full object-cover" />
-                            </div>
-                            <div className={`p-4 sm:p-6 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex items-center justify-between`}>
-                              <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Proven Results</p>
-                                <p className="text-xl sm:text-2xl font-extrabold font-display">99.8%</p>
-                                <p className="text-[11px] sm:text-xs opacity-75">Client Satisfaction Score</p>
-                              </div>
-                              <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: accentColor }}>
-                                <Award className="w-5 h-5" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                    );
-                  }
-
-                  if (heroStyle === 'asymmetric-editorial') {
-                    return (
-                      <section key="hero" className="relative group/sec py-10 sm:py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
-                        <SectionToolbar index={secIdx} title="Hero Section" />
-                        <div className="border-b border-slate-200/80 pb-8 sm:pb-12">
-                          <span className="text-[11px] font-mono uppercase tracking-widest font-bold opacity-60 block mb-3">
-                            — <EditableText fieldKey="heroBadge" value={template.badge || 'Established Studio'} />
-                          </span>
-                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-5xl lg:text-6xl font-extrabold font-serif max-w-4xl leading-tight block break-words" multiline />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 pt-6 sm:pt-8 items-start">
-                          <div className="md:col-span-5 space-y-4">
-                            <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="text-xs sm:text-sm opacity-80 leading-relaxed font-sans block break-words" multiline />
-                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="inline-block px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl text-white font-bold text-xs shadow-md" style={{ backgroundColor: accentColor }}>
-                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Inquire Now'} />
-                            </a>
-                          </div>
-                          <div className="md:col-span-7">
-                            <div className="rounded-2xl overflow-hidden aspect-[16/10] shadow-xl bg-slate-900">
-                              <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Editorial Hero" className="w-full h-full object-cover" />
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                    );
-                  }
-
-                  if (heroStyle === 'dark-minimal') {
-                    return (
-                      <section key="hero" className="relative group/sec py-12 sm:py-20 md:py-28 px-4 sm:px-6 bg-slate-950 text-white">
-                        <SectionToolbar index={secIdx} title="Hero Section" />
-                        <div className="max-w-5xl mx-auto text-center">
-                          <span className="px-3.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest bg-slate-900 text-brand-400 border border-slate-800 inline-block mb-4 sm:mb-6">
-                            <EditableText fieldKey="heroBadge" value={template.badge || 'Professional Brand'} />
-                          </span>
-                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display text-slate-100 block break-words" multiline />
-                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 sm:mt-6 text-xs sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed block break-words" multiline />
-                          <div className="mt-8 sm:mt-10 flex justify-center gap-4">
-                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl font-bold text-xs text-white shadow-xl transition-transform hover:scale-105" style={{ backgroundColor: accentColor }}>
-                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Get In Touch'} />
-                            </a>
-                          </div>
-                        </div>
-                      </section>
-                    );
-                  }
-
-                  if (heroStyle === 'compact-left') {
-                    return (
-                      <section key="hero" className="relative group/sec py-8 sm:py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto">
-                        <SectionToolbar index={secIdx} title="Hero Section" />
-                        <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-5 sm:p-8 lg:p-12 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
-                          <div>
-                            <span className="px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white text-slate-800 border border-slate-200 inline-block mb-4">
-                              <EditableText fieldKey="heroBadge" value={template.badge || 'Verified Clinic'} />
-                            </span>
-                            <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-4xl font-extrabold font-display block break-words" multiline />
-                            <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed block break-words" multiline />
-                            <a href={data.ctaLink || '/contact'} onClick={(e) => handleLinkClick(e, data.ctaLink || '/contact')} className="mt-6 inline-block px-6 py-3 rounded-xl text-white font-bold text-xs" style={{ backgroundColor: accentColor }}>
-                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Schedule Visit'} />
-                            </a>
-                          </div>
-                          <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-lg bg-slate-900">
-                            <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Compact Hero" className="w-full h-full object-cover" />
-                          </div>
-                        </div>
-                      </section>
-                    );
-                  }
-
-                  // Default Hero: Arched Split
-                  return (
-                    <section key="hero" className="relative group/sec py-8 sm:py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto overflow-hidden">
-                      <SectionToolbar index={secIdx} title="Hero Section" />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
-                        <div>
-                          <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-slate-100 text-slate-800 border border-slate-200/80 shadow-xs">
-                            <EditableText fieldKey="heroBadge" value={template.badge || 'Official Business Site'} />
-                          </span>
-                          <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-4 leading-tight font-display tracking-tight block break-words" multiline />
-                          <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-base opacity-80 leading-relaxed font-sans block break-words" multiline />
-                          <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
-                            <a 
-                              href={data.ctaLink || "/contact"} 
-                              onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                              className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs text-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-0.5 cursor-pointer" 
-                              style={{ backgroundColor: accentColor }}
-                            >
-                              <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started Now'} />
-                            </a>
-                          </div>
-                        </div>
-
-                        <div className="relative">
-                          <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 relative z-10">
-                            <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Media" className="w-full h-full object-cover" />
                           </div>
                         </div>
                       </div>
                     </section>
                   );
+                }
+
+                // Default Hero: Arched Split
+                return (
+                  <section key="hero" className="relative group/sec py-8 sm:py-12 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
+                      <div>
+                        <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-slate-100 text-slate-800 border border-slate-200/80 shadow-xs">
+                          <EditableText fieldKey="heroBadge" value={template.badge || 'Official Business Site'} />
+                        </span>
+                        <EditableText fieldKey="heroTitle" value={data.heroTitle || template.defaultData?.heroTitle} tagName="h1" className="text-2xl sm:text-4xl lg:text-5xl font-extrabold mt-4 leading-tight font-display tracking-tight block break-words" multiline />
+                        <EditableText fieldKey="heroSubtitle" value={data.heroSubtitle || template.defaultData?.heroSubtitle} tagName="p" className="mt-4 text-xs sm:text-base opacity-80 leading-relaxed font-sans block break-words" multiline />
+                        <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+                          <a 
+                            href={data.ctaLink || "/contact"} 
+                            onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
+                            className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs text-white shadow-xl transition-all hover:shadow-2xl hover:-translate-y-0.5 cursor-pointer" 
+                            style={{ backgroundColor: accentColor }}
+                          >
+                            <EditableText fieldKey="ctaText" value={data.ctaText || 'Get Started Now'} />
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <div className="aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 relative z-10">
+                          <EditableImage slotKey="heroImageUrl" src={heroImage} alt="Hero Media" className="w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
                 }
 
                 if (section === 'features') {
@@ -1066,9 +1040,75 @@ export default function TemplateRenderer({
                 }
 
                 return null;
-              })}
-            </main>
-          )}
+            };
+
+            const customSecsMap = (customData.customSections || []).reduce((acc, sec) => { acc[sec.id] = sec; return acc; }, {});
+
+            const getSectionTitle = (sectionKey, secObj) => {
+              if (secObj && secObj.title) return secObj.title;
+              if (typeof sectionKey === 'string') {
+                if (sectionKey === 'hero') return 'Hero Section';
+                if (sectionKey === 'about') return 'About Section';
+                if (sectionKey === 'services') return 'Services Section';
+                if (sectionKey === 'features') return 'Features Section';
+                if (sectionKey === 'pricing') return 'Pricing Section';
+                if (sectionKey === 'testimonials') return 'Testimonials Section';
+                if (sectionKey === 'contact') return 'Contact Section';
+                if (sectionKey === 'gallery') return 'Gallery Section';
+                if (sectionKey.startsWith('custom_hero_')) return 'Hero Banner';
+                if (sectionKey.startsWith('custom_portfolio_')) return 'Selected Works';
+                if (sectionKey.startsWith('custom_cta_')) return 'Call To Action';
+                if (sectionKey.startsWith('custom_team_')) return 'Team Showcase';
+                if (sectionKey.startsWith('custom_faq_')) return 'FAQ Section';
+                if (sectionKey.startsWith('custom_button_')) return 'Action Button';
+                if (sectionKey.startsWith('custom_image_')) return 'Image Showcase';
+                if (sectionKey.startsWith('custom_text_')) return 'Text Section';
+                if (sectionKey.startsWith('custom_sec_')) return 'Custom Section';
+                return sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1) + ' Section';
+              }
+              return 'Content Section';
+            };
+
+            if (isEditMode) {
+              return (
+                <Reorder.Group
+                  axis="y"
+                  values={sectionsOrder}
+                  onReorder={(newOrder) => {
+                    if (onSectionReorder) {
+                      onSectionReorder(newOrder);
+                    }
+                  }}
+                  className="space-y-0 min-h-[400px]"
+                >
+                  {sectionsOrder.map((section, secIdx) => {
+                    const secObj = customSecsMap[section];
+                    const title = getSectionTitle(section, secObj);
+                    const content = renderSectionNode(section, secIdx);
+                    if (!content) return null;
+
+                    return (
+                      <DraggableSectionWrapper
+                        key={section}
+                        sectionKey={section}
+                        index={secIdx}
+                        title={title}
+                        isEditMode={isEditMode}
+                      >
+                        {content}
+                      </DraggableSectionWrapper>
+                    );
+                  })}
+                </Reorder.Group>
+              );
+            }
+
+            return (
+              <main>
+                {sectionsOrder.map((section, secIdx) => renderSectionNode(section, secIdx))}
+              </main>
+            );
+          })()}
 
           {/* ========================================== */}
           {/* VIEW ROUTE 2: DEDICATED ABOUT PAGE */}

@@ -664,25 +664,49 @@ export default function VisualEditor({
       return;
     }
 
-    handleUpdateContent(activeImageSlot, imageModalPreview);
-    if (imageModalAltInput !== undefined) {
-      handleTextChange(`${activeImageSlot}_alt`, imageModalAltInput);
+    let nextState = { ...customState };
+
+    // 1. Set top-level slot properties
+    nextState[activeImageSlot] = imageModalPreview;
+    if (imageModalAltInput !== undefined) nextState[`${activeImageSlot}_alt`] = imageModalAltInput;
+    if (imageModalFitMode) nextState[`${activeImageSlot}_fitMode`] = imageModalFitMode;
+    if (imageModalPosition) nextState[`${activeImageSlot}_position`] = imageModalPosition;
+    if (imageModalAlign) nextState[`${activeImageSlot}_align`] = imageModalAlign;
+    if (imageModalWidth !== undefined) nextState[`${activeImageSlot}_width`] = imageModalWidth;
+    if (imageModalHeight !== undefined) nextState[`${activeImageSlot}_height`] = imageModalHeight;
+
+    // 2. Handle nested array slots if activeImageSlot is indexed (e.g. feature_0_imageUrl, service_1_imageUrl)
+    if (activeImageSlot.startsWith('feature_')) {
+      const parts = activeImageSlot.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2] || 'imageUrl';
+      const updatedFeatures = [...(nextState.features || template.defaultData?.features || [])];
+      if (updatedFeatures[idx]) {
+        updatedFeatures[idx] = { ...updatedFeatures[idx], [prop]: imageModalPreview };
+        nextState.features = updatedFeatures;
+      }
+    } else if (activeImageSlot.startsWith('service_')) {
+      const parts = activeImageSlot.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2] || 'imageUrl';
+      const updatedServices = [...(nextState.services || template.defaultData?.services || [])];
+      if (updatedServices[idx]) {
+        updatedServices[idx] = { ...updatedServices[idx], [prop]: imageModalPreview };
+        nextState.services = updatedServices;
+      }
+    } else if (activeImageSlot.startsWith('testimonial_')) {
+      const parts = activeImageSlot.split('_');
+      const idx = parseInt(parts[1], 10);
+      const prop = parts[2] || 'avatarUrl';
+      const updatedTestimonials = [...(nextState.testimonials || template.defaultData?.testimonials || [])];
+      if (updatedTestimonials[idx]) {
+        updatedTestimonials[idx] = { ...updatedTestimonials[idx], [prop]: imageModalPreview };
+        nextState.testimonials = updatedTestimonials;
+      }
     }
-    if (imageModalFitMode) {
-      handleTextChange(`${activeImageSlot}_fitMode`, imageModalFitMode);
-    }
-    if (imageModalPosition) {
-      handleTextChange(`${activeImageSlot}_position`, imageModalPosition);
-    }
-    if (imageModalAlign) {
-      handleTextChange(`${activeImageSlot}_align`, imageModalAlign);
-    }
-    if (imageModalWidth !== undefined) {
-      handleTextChange(`${activeImageSlot}_width`, imageModalWidth);
-    }
-    if (imageModalHeight !== undefined) {
-      handleTextChange(`${activeImageSlot}_height`, imageModalHeight);
-    }
+
+    // 3. Single atomic history push and state update
+    pushToHistory(nextState);
 
     setShowImageModal(false);
     setActiveImageSlot('');

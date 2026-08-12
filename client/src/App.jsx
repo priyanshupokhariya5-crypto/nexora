@@ -94,11 +94,14 @@ export default function App() {
       const path = window.location.pathname;
       const search = window.location.search;
 
-      // 1. Standalone Published Site: /site/:slug
+      // 1. Standalone Published Site: /site/:slug (supports subpaths like /site/:slug/about)
       if (path.startsWith('/site/')) {
-        const slug = path.replace('/site/', '').trim();
+        const raw = path.replace('/site/', '').trim();
+        const parts = raw.split('/').filter(Boolean);
+        const slug = parts[0];
+        const subPath = parts.length > 1 ? '/' + parts.slice(1).join('/') : '/';
         if (slug) {
-          setPublicSlug(slug);
+          setPublicSlug({ slug, subPath });
           return;
         }
       }

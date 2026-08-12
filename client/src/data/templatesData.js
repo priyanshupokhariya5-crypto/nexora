@@ -42,26 +42,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Fresh Groceries, Delivered Daily.",
       "heroSubtitle": "Stock up on premium spices, cold-pressed oils, fresh farm produce, and everyday kitchen essentials right in your neighborhood.",
       "ctaText": "Explore Essentials",
-      "ctaLink": "#services",
+      "ctaLink": "/products",
       "heroImageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Us",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Daily Essentials",
-          "href": "#services"
+          "href": "/services"
+        },
+        {
+          "label": "Products Showcase",
+          "href": "/products"
+        },
+        {
+          "label": "Customer Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Store Info",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Quality You Can Trust Right In Your Neighborhood",
@@ -198,26 +206,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Seasonal Flavors & Artful Gastronomy",
       "heroSubtitle": "Experience wood-fired specialties, hand-crafted pastas, and sommelier-curated wines in an intimate, candlelit setting.",
       "ctaText": "Reserve A Table",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Our Story",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Menu Showcase",
-          "href": "#services"
+          "href": "/menu"
+        },
+        {
+          "label": "Atmosphere Gallery",
+          "href": "/gallery"
+        },
+        {
+          "label": "Diner Reviews",
+          "href": "/reviews"
         },
         {
           "label": "Reservations",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Bistro Craft Philosophy",
@@ -342,26 +358,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Crafted Coffee & Cozy Everyday Moments",
       "heroSubtitle": "Hand-selected single-origin beans, precision espresso extraction, and freshly baked croissants in a sunlit Scandinavian-inspired cafe.",
       "ctaText": "View Cafe Menu",
-      "ctaLink": "#services",
+      "ctaLink": "/menu",
       "heroImageUrl": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Our Beans",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Cafe Menu",
-          "href": "#services"
+          "href": "/menu"
         },
         {
-          "label": "Location",
-          "href": "#contact"
+          "label": "Customer Reviews",
+          "href": "/reviews"
+        },
+        {
+          "label": "Location & Hours",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Roast & Brew Standard",
@@ -486,26 +506,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Naturally Fermented Sourdough & Pastries",
       "heroSubtitle": "Handcrafted daily using organic stone-ground flour, 48-hour wild yeast fermentation, and pure French butter.",
       "ctaText": "View Today's Bakes",
-      "ctaLink": "#services",
+      "ctaLink": "/services",
       "heroImageUrl": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Our Story",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Fresh Bakes",
-          "href": "#services"
+          "href": "/services"
         },
         {
-          "label": "Order Inquiries",
-          "href": "#contact"
+          "label": "Customer Reviews",
+          "href": "/reviews"
+        },
+        {
+          "label": "Contact Us",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Art of Traditional Baking",
@@ -630,26 +654,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Reveal Your True Radiance & Beauty",
       "heroSubtitle": "Bespoke hair coloring, precision haircuts, keratin treatments, and botanical facial therapy delivered by master stylists.",
       "ctaText": "Book Appointment",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Studio",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Beauty Services",
-          "href": "#services"
+          "href": "/services"
         },
         {
-          "label": "Book Consultation",
-          "href": "#contact"
+          "label": "Style Gallery",
+          "href": "/gallery"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/reviews"
+        },
+        {
+          "label": "Book Appointment",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Luxe & Glow Experience",
@@ -774,26 +806,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Timeless Barbering For The Modern Gentleman",
       "heroSubtitle": "Precision skin fades, traditional straight razor shaves, hot towel conditioning, and tailored beard styling.",
       "ctaText": "Book Chair",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Our Story",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Grooming Services",
-          "href": "#services"
+          "href": "/services"
         },
         {
-          "label": "Book Appointment",
-          "href": "#contact"
+          "label": "Client Reviews",
+          "href": "/reviews"
+        },
+        {
+          "label": "Book Chair",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Iron & Blade Craft",
@@ -918,26 +954,38 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Unleash Your Highest Strength Potential",
       "heroSubtitle": "State-of-the-art equipment, certified personal trainers, HIIT group classes, and cold plunge recovery rooms.",
       "ctaText": "Claim 7-Day Pass",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Gym",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Training Programs",
-          "href": "#services"
+          "href": "/programs"
         },
         {
-          "label": "Membership",
-          "href": "#pricing"
+          "label": "Certified Coaches",
+          "href": "/trainers"
+        },
+        {
+          "label": "Results",
+          "href": "/results"
+        },
+        {
+          "label": "Member Stories",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Join & Contact",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The PulseFit Advantage",
@@ -1061,26 +1109,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Restore Balance, Breath & Inner Peace",
       "heroSubtitle": "Gentle flow yoga, sound bowl meditation, breathwork, and holistic wellness practices in a tranquil natural light studio.",
       "ctaText": "Book Intro Class",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Sanctuary",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Classes",
-          "href": "#services"
+          "label": "Class Schedule",
+          "href": "/services"
         },
         {
-          "label": "Passes",
-          "href": "#pricing"
+          "label": "Workshops",
+          "href": "/programs"
+        },
+        {
+          "label": "Student Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Contact Us",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Our Holistic Philosophy",
@@ -1204,26 +1260,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Find Exceptional Properties Tailored To Your Life",
       "heroSubtitle": "Curated luxury residences, private waterfront estates, architectural penthouses, and trusted real estate advisory.",
       "ctaText": "Explore Properties",
-      "ctaLink": "#services",
+      "ctaLink": "/properties",
       "heroImageUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Agency",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Properties",
-          "href": "#services"
+          "label": "Featured Properties",
+          "href": "/properties"
+        },
+        {
+          "label": "Why Choose Us",
+          "href": "/why-us"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Schedule Visit",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Why Clients Choose Prime Acre",
@@ -1348,26 +1412,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Architecture That Inspires & Endures",
       "heroSubtitle": "Award-winning architectural design, sustainable material integration, structural engineering, and spatial innovation.",
       "ctaText": "View Portfolio",
-      "ctaLink": "#services",
+      "ctaLink": "/portfolio",
       "heroImageUrl": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Studio",
-          "href": "#about"
+          "label": "Studio Philosophy",
+          "href": "/about"
         },
         {
-          "label": "Projects",
-          "href": "#services"
+          "label": "Selected Projects",
+          "href": "/portfolio"
+        },
+        {
+          "label": "Design Process",
+          "href": "/process"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Contact Us",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Our Design Principles",
@@ -1491,26 +1563,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Transforming Houses Into Luxurious Homes",
       "heroSubtitle": "Tailored residential interior design, bespoke furniture selection, warm lighting concepts, and refined material palettes.",
       "ctaText": "Book Design Call",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Studio",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Portfolio",
-          "href": "#services"
+          "label": "Project Portfolio",
+          "href": "/portfolio"
+        },
+        {
+          "label": "Design Services",
+          "href": "/services"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Inquire",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Sanctuary Touch",
@@ -1635,26 +1715,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Capturing Striking Moments & Editorial Visuals",
       "heroSubtitle": "High-end commercial photography, brand campaigns, executive headshots, and fine art portraits produced in a 3,000 sq.ft. studio.",
       "ctaText": "Book Shoot Session",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
+        },
+        {
+          "label": "Portfolio Lookbook",
+          "href": "/portfolio"
         },
         {
           "label": "About Lead",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Portfolio",
-          "href": "#services"
+          "label": "Services",
+          "href": "/services"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Book Studio",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Lenscraft Experience",
@@ -1779,26 +1867,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Scale Your Revenue With Data-Driven Marketing",
       "heroSubtitle": "We help ambitious B2B & direct-to-consumer brands acquire high-intent customers through SEO, targeted paid media, and conversion optimization.",
       "ctaText": "Request Growth Audit",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1542744094-3a3172720189?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Agency",
-          "href": "#about"
+          "label": "Agency Story",
+          "href": "/about"
         },
         {
           "label": "Capabilities",
-          "href": "#services"
+          "href": "/services"
         },
         {
-          "label": "Audit Call",
-          "href": "#contact"
+          "label": "Proven Results",
+          "href": "/results"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Request Audit",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The NexaGrowth Difference",
@@ -1923,26 +2019,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "High-Performance Web Apps & Platforms",
       "heroSubtitle": "We architect ultra-fast Web applications, microservice backend APIs, and custom enterprise portals built with modern React and Node.js.",
       "ctaText": "Discuss Project",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Engineering",
-          "href": "#about"
+          "label": "Engineering Ethos",
+          "href": "/about"
         },
         {
-          "label": "Solutions",
-          "href": "#services"
+          "label": "Services",
+          "href": "/services"
+        },
+        {
+          "label": "Selected Works",
+          "href": "/portfolio"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Contact",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Engineering Standards",
@@ -2067,26 +2171,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Streamline Infrastructure & Scale Without Limits",
       "heroSubtitle": "The all-in-one developer cloud platform for deploying containers, monitoring server metrics, and automating CI/CD pipelines.",
       "ctaText": "Start Free Trial",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Platform",
-          "href": "#about"
+          "label": "Platform Overview",
+          "href": "/about"
         },
         {
-          "label": "Features",
-          "href": "#features"
+          "label": "Core Features",
+          "href": "/features"
         },
         {
           "label": "Pricing Tiers",
-          "href": "#pricing"
+          "href": "/pricing"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Enterprise Cloud Features",
@@ -2211,26 +2323,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Transforming Enterprise Technology Infrastructure",
       "heroSubtitle": "Strategic IT consulting, cloud migration, legacy modernization, and 24/7 managed IT helpdesk for growing corporations.",
       "ctaText": "Request IT Audit",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Firm",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "IT Services",
-          "href": "#services"
+          "href": "/services"
+        },
+        {
+          "label": "Capabilities",
+          "href": "/features"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Consultation",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Vantage Advantage",
@@ -2355,26 +2475,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Proactive Cybersecurity & Threat Defense",
       "heroSubtitle": "Protecting corporate assets with ethical hacking penetration tests, 24/7 Security Operations Center (SOC), and incident response.",
       "ctaText": "Request Security Audit",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Defense",
-          "href": "#about"
+          "label": "Threat Defense",
+          "href": "/about"
         },
         {
-          "label": "Services",
-          "href": "#services"
+          "label": "Security Services",
+          "href": "/services"
         },
         {
-          "label": "Audit",
-          "href": "#contact"
+          "label": "Compliance Audit",
+          "href": "/features"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Emergency Contact",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The ShieldX Shield",
@@ -2499,26 +2627,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Principled Legal Counsel For Complex Ventures",
       "heroSubtitle": "Strategic representation in corporate litigation, mergers & acquisitions, intellectual property protection, and commercial contracts.",
       "ctaText": "Schedule Consultation",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "The Firm",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Practice Areas",
-          "href": "#services"
+          "href": "/services"
+        },
+        {
+          "label": "Case Results",
+          "href": "/results"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Consultation",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Our Legal Philosophy",
@@ -2643,26 +2779,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Strategic Tax Planning & Accounting Precision",
       "heroSubtitle": "Chartered accounting, corporate tax compliance, fractional CFO advisory, and auditing for growing businesses.",
       "ctaText": "Request Tax Review",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Firm",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Services",
-          "href": "#services"
+          "label": "Tax & Accounting",
+          "href": "/services"
+        },
+        {
+          "label": "Pricing Plans",
+          "href": "/pricing"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Book Audit",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Apex Standard",
@@ -2787,26 +2931,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Compassionate Medical Care For Your Entire Family",
       "heroSubtitle": "Board-certified primary care physicians, annual wellness checkups, lab diagnostics, and same-day urgent appointments.",
       "ctaText": "Book Appointment",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Clinic",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Medical Services",
-          "href": "#services"
+          "href": "/services"
+        },
+        {
+          "label": "Patient Info",
+          "href": "/features"
+        },
+        {
+          "label": "Patient Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Book Visit",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Why Families Choose CarePulse",
@@ -2931,26 +3083,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Transform Your Smile With Confidence",
       "heroSubtitle": "Pain-free family dentistry, laser teeth whitening, Invisalign clear aligners, porcelain veneers, and dental implants.",
       "ctaText": "Book Dental Exam",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Studio",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Treatments",
-          "href": "#services"
+          "label": "Dental Treatments",
+          "href": "/services"
         },
         {
-          "label": "Book Appointment",
-          "href": "#contact"
+          "label": "Smile Gallery",
+          "href": "/gallery"
+        },
+        {
+          "label": "Patient Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Book Exam",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Pearl Dental Experience",
@@ -3075,26 +3235,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Empowering Students To Reach Elite Academic Success",
       "heroSubtitle": "Small batch coaching, expert mentorship, personalized test prep, and proven study systems for SAT, GRE, and University admissions.",
       "ctaText": "Enroll In Course",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Academy",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Programs",
-          "href": "#services"
+          "label": "Academic Programs",
+          "href": "/programs"
         },
         {
-          "label": "Inquire",
-          "href": "#contact"
+          "label": "Faculty Team",
+          "href": "/team"
+        },
+        {
+          "label": "Student Results",
+          "href": "/results"
+        },
+        {
+          "label": "Enrollment & Contact",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The ScholarEdge Advantage",
@@ -3219,26 +3387,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Discover The World's Most Extraordinary Places",
       "heroSubtitle": "Handcrafted private luxury itineraries, African wildlife safaris, Mediterranean yacht charters, and immersive cultural journeys.",
       "ctaText": "Plan Your Trip",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Agency",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Expeditions",
-          "href": "#services"
+          "label": "Featured Expeditions",
+          "href": "/services"
+        },
+        {
+          "label": "Photo Gallery",
+          "href": "/gallery"
+        },
+        {
+          "label": "Traveler Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Inquire",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Wanderlust Difference",
@@ -3363,26 +3539,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Unplug In Coastal Paradise & Oceanfront Luxury",
       "heroSubtitle": "Overwater ocean villas, private white sand beaches, world-class hydrotherapy spa, and gourmet seaside dining.",
       "ctaText": "Explore Suites",
-      "ctaLink": "#services",
+      "ctaLink": "/services",
       "heroImageUrl": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
-          "label": "Resort",
-          "href": "#about"
+          "label": "Resort Sanctuary",
+          "href": "/about"
         },
         {
-          "label": "Suites",
-          "href": "#services"
+          "label": "Suites & Villas",
+          "href": "/services"
+        },
+        {
+          "label": "Guest Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Reserve",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Resort Amenities",
@@ -3507,26 +3687,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Bespoke Event Production & Unforgettable Galas",
       "heroSubtitle": "Full-service luxury wedding planning, corporate conferences, product launch galas, and high-end private celebrations.",
       "ctaText": "Plan Your Event",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Agency",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Event Portfolio",
-          "href": "#services"
+          "label": "Event Showcase",
+          "href": "/portfolio"
+        },
+        {
+          "label": "Planning Services",
+          "href": "/services"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Inquire",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Gala Prestige Standard",
@@ -3651,26 +3839,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Building Solid Foundations For Tomorrow's Skyline",
       "heroSubtitle": "General contracting, commercial high-rise construction, industrial warehouse buildouts, and civil infrastructure.",
       "ctaText": "Request Project Bid",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Firm",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Build Showcase",
-          "href": "#services"
+          "href": "/portfolio"
+        },
+        {
+          "label": "Capabilities",
+          "href": "/services"
+        },
+        {
+          "label": "Safety & Standards",
+          "href": "/features"
         },
         {
           "label": "Request Bid",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Apex Build Guarantee",
@@ -3795,26 +3991,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Elite Care For Performance & Luxury Vehicles",
       "heroSubtitle": "Master ASE-certified mechanics specializing in European exotics, ceramic coating protection, performance ECU tuning, and routine maintenance.",
       "ctaText": "Book Service",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Shop",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Auto Services",
-          "href": "#services"
+          "href": "/services"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/reviews"
         },
         {
           "label": "Book Service",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Precision Auto Difference",
@@ -3939,26 +4139,30 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Pure Botanical Science For Radiant Healthy Skin",
       "heroSubtitle": "Clean, dermatologist-tested clinical serums, organic botanical oils, and nourishing skincare formulas engineered without toxins.",
       "ctaText": "Discover Products",
-      "ctaLink": "#services",
+      "ctaLink": "/products",
       "heroImageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Our Formulas",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Skin Rituals",
-          "href": "#services"
+          "href": "/products"
+        },
+        {
+          "label": "Customer Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Contact Us",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Clean Beauty Commitment",
@@ -4083,26 +4287,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Timeless Minimalist Tailoring & Capsule Collections",
       "heroSubtitle": "Sustainably crafted organic linen, cashmere knits, and tailored outerwear designed for timeless elegance.",
       "ctaText": "View Collection",
-      "ctaLink": "#services",
+      "ctaLink": "/portfolio",
       "heroImageUrl": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "Atelier Story",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Collection",
-          "href": "#services"
+          "label": "Collection Lookbook",
+          "href": "/portfolio"
         },
         {
-          "label": "Showroom",
-          "href": "#contact"
+          "label": "Craftsmanship",
+          "href": "/features"
+        },
+        {
+          "label": "Client Reviews",
+          "href": "/testimonials"
+        },
+        {
+          "label": "Showroom Contact",
+          "href": "/contact"
         }
       ],
       "featuresTitle": "The Atelier Craft",
@@ -4227,26 +4439,34 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Designing Digital Products People Love To Use",
       "heroSubtitle": "Senior UI/UX & Product Designer with 10+ years experience building fintech apps, design systems, and web experiences.",
       "ctaText": "Hire Me For Project",
-      "ctaLink": "#contact",
+      "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
         {
           "label": "Home",
-          "href": "#hero"
+          "href": "/"
         },
         {
           "label": "About Me",
-          "href": "#about"
+          "href": "/about"
         },
         {
-          "label": "Selected Work",
-          "href": "#services"
+          "label": "Selected Case Studies",
+          "href": "/portfolio"
+        },
+        {
+          "label": "Design Capabilities",
+          "href": "/services"
+        },
+        {
+          "label": "Reviews",
+          "href": "/testimonials"
         },
         {
           "label": "Contact",
-          "href": "#contact"
+          "href": "/contact"
         }
       ],
       "featuresTitle": "Design Expertise",

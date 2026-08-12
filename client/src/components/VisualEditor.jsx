@@ -5,7 +5,9 @@ import {
   Palette, Type, Layout, Sliders, Sparkles, Check, Copy, Eye, RefreshCw, X, User, 
   Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw, RotateCw, Layers, FileText, 
   ChevronRight, ChevronDown, Wand2, SlidersHorizontal, Square, MoveUp, MoveDown, 
-  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3, ExternalLink
+  CheckCircle2, AlertCircle, UploadCloud, SlidersVertical, Edit3, ExternalLink, Plus,
+  Copy as DuplicateIcon, Trash2, EyeOff, LayoutGrid, Box, MessageSquare, HelpCircle,
+  Users, Award, PhoneCall, Zap, MousePointer
 } from 'lucide-react';
 import TemplateRenderer from './TemplateRenderer';
 import confetti from 'canvas-confetti';
@@ -35,6 +37,22 @@ const PRESET_BUSINESS_IMAGES = [
   { name: 'Artisan Bakery', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80' }
 ];
 
+const SECTION_PRESETS = [
+  { type: 'hero', name: 'Hero Banner', icon: Layout, desc: 'Large title, tagline, cta button, and media' },
+  { type: 'about', name: 'About Story', icon: FileText, desc: 'Brand heritage, mission, and image block' },
+  { type: 'services', name: 'Services & Products', icon: LayoutGrid, desc: 'Showcase grid for items, pricing, tags' },
+  { type: 'features', name: 'Features & Value', icon: Sparkles, desc: 'Icon grid highlighting core capabilities' },
+  { type: 'gallery', name: 'Photo Gallery', icon: ImageIcon, desc: 'Visual image grid' },
+  { type: 'portfolio', name: 'Selected Works', icon: Eye, desc: 'Project case studies & lookbook' },
+  { type: 'testimonials', name: 'Testimonials', icon: MessageSquare, desc: 'Star rating reviews & client quotes' },
+  { type: 'team', name: 'Team & Leadership', icon: Users, desc: 'Team member cards & roles' },
+  { type: 'pricing', name: 'Pricing Tiers', icon: Award, desc: 'Package options with checkmark features' },
+  { type: 'faq', name: 'FAQ & Help', icon: HelpCircle, desc: 'Question & answer accordion list' },
+  { type: 'contact', name: 'Contact Form', icon: PhoneCall, desc: 'Store details & direct message form' },
+  { type: 'cta', name: 'Call to Action', icon: Zap, desc: 'High conversion banner block' },
+  { type: 'custom_box', name: 'Custom Box Section', icon: Box, desc: 'Container cards with text, image, and button' }
+];
+
 export default function VisualEditor({ 
   template, 
   initialSite = null,
@@ -44,23 +62,26 @@ export default function VisualEditor({
   onBack 
 }) {
   const [leftTab, setLeftTab] = useState('sections');
-  const [rightTab, setRightTab] = useState('branding'); // 'branding', 'typography', 'content', 'buttons'
-  const [mobileTab, setMobileTab] = useState('preview'); // Mobile active view: 'preview', 'sections', 'settings'
+  const [rightTab, setRightTab] = useState('branding');
+  const [mobileTab, setMobileTab] = useState('preview');
   
   const [viewportMode, setViewportMode] = useState('desktop');
   const [zoomLevel, setZoomLevel] = useState(100);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [editorActivePage, setEditorActivePage] = useState('/');
   
-  // Saving Status States: 'idle', 'saving', 'saved', 'error'
+  const [showAddSectionModal, setShowAddSectionModal] = useState(false);
+  const [showAddPageModal, setShowAddPageModal] = useState(false);
+  const [newPageName, setNewPageName] = useState('');
+  const [newPageSlug, setNewPageSlug] = useState('');
+
   const [saveStatus, setSaveStatus] = useState('saved');
   const [copiedLink, setCopiedLink] = useState(false);
   const [savedSiteData, setSavedSiteData] = useState(initialSite);
 
-  // File Upload State
-  const [uploadingSlot, setUploadingSlot] = useState(null); // 'logoImageUrl', 'heroImageUrl', 'aboutImageUrl', 'galleryImageUrl'
+  const [uploadingSlot, setUploadingSlot] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Initial Custom State supporting full page content and images
   const [customState, setCustomState] = useState(() => {
     if (initialSite?.customData) {
       return {
@@ -73,7 +94,12 @@ export default function VisualEditor({
         accentColor: initialSite.accentColor || template.accentColor,
         fontFamily: initialSite.fontFamily || template.fontFamily,
         bgTheme: initialSite.bgTheme || template.bgTheme,
-        borderRadius: initialSite.customData.borderRadius || 'rounded-2xl'
+        sectionsOrder: initialSite.customData.sectionsOrder || template.defaultData?.sectionsOrder || ['hero', 'features', 'about', 'services', 'pricing', 'testimonials', 'contact'],
+        customSections: initialSite.customData.customSections || [],
+        customBoxes: initialSite.customData.customBoxes || [],
+        customButtons: initialSite.customData.customButtons || [],
+        customPages: initialSite.customData.customPages || [],
+        customTextBlocks: initialSite.customData.customTextBlocks || []
       };
     }
     return {
@@ -85,18 +111,21 @@ export default function VisualEditor({
       accentColor: template.accentColor || '#2551e8',
       fontFamily: template.fontFamily || 'sans',
       bgTheme: template.bgTheme || 'light',
-      borderRadius: 'rounded-2xl'
+      sectionsOrder: template.defaultData?.sectionsOrder || ['hero', 'features', 'about', 'services', 'pricing', 'testimonials', 'contact'],
+      customSections: [],
+      customBoxes: [],
+      customButtons: [],
+      customPages: [],
+      customTextBlocks: []
     };
   });
 
   const [siteTitle, setSiteTitle] = useState(initialSite?.title || `${template.title} Customized`);
 
-  // Undo / Redo History Stack
   const [history, setHistory] = useState([customState]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const isFirstRender = useRef(true);
 
-  // Auto-Save Debounce Effect (800ms of inactivity)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -141,13 +170,16 @@ export default function VisualEditor({
     return () => clearTimeout(timer);
   }, [customState, siteTitle]);
 
-  // Keyboard Shortcuts for Undo/Redo
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
-        handleUndo();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         handleRedo();
       }
@@ -158,8 +190,9 @@ export default function VisualEditor({
 
   const pushToHistory = (newState) => {
     const updatedHistory = history.slice(0, historyIndex + 1);
-    setHistory([...updatedHistory, newState]);
-    setHistoryIndex(updatedHistory.length);
+    updatedHistory.push(newState);
+    setHistory(updatedHistory);
+    setHistoryIndex(updatedHistory.length - 1);
     setCustomState(newState);
   };
 
@@ -179,38 +212,151 @@ export default function VisualEditor({
     }
   };
 
-  const handleTextChange = (field, value) => {
+  const handleTextChange = (key, value) => {
     pushToHistory({
       ...customState,
-      [field]: value
+      [key]: value
     });
   };
 
-  const handleFeatureChange = (index, key, value) => {
-    const updated = [...(customState.features || [])];
-    updated[index] = { ...updated[index], [key]: value };
-    pushToHistory({ ...customState, features: updated });
+  const handleMoveSection = (index, direction) => {
+    const sections = [...(customState.sectionsOrder || [])];
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= sections.length) return;
+    
+    const temp = sections[index];
+    sections[index] = sections[targetIdx];
+    sections[targetIdx] = temp;
+    
+    pushToHistory({ ...customState, sectionsOrder: sections });
   };
 
-  const handleServiceChange = (index, key, value) => {
-    const updated = [...(customState.services || [])];
-    updated[index] = { ...updated[index], [key]: value };
-    pushToHistory({ ...customState, services: updated });
+  const handleDuplicateSection = (index) => {
+    const sections = [...(customState.sectionsOrder || [])];
+    const secToDup = sections[index];
+    const newSecId = `custom_sec_${Date.now()}`;
+    sections.splice(index + 1, 0, newSecId);
+
+    const customSecs = [...(customState.customSections || [])];
+    customSecs.push({
+      id: newSecId,
+      title: `${typeof secToDup === 'string' ? secToDup.toUpperCase() : 'CUSTOM'} Section Copy`,
+      subtitle: 'Duplicated custom content section',
+      items: [
+        { title: 'Feature Item 1', desc: 'Description of custom service card', buttonText: 'Learn More', buttonLink: '/about' },
+        { title: 'Feature Item 2', desc: 'Description of custom service card', buttonText: 'Contact Us', buttonLink: '/contact' }
+      ]
+    });
+
+    pushToHistory({ ...customState, sectionsOrder: sections, customSections: customSecs });
   };
 
-  const handlePricingChange = (index, key, value) => {
-    const updated = [...(customState.pricing || [])];
-    updated[index] = { ...updated[index], [key]: value };
-    pushToHistory({ ...customState, pricing: updated });
+  const handleDeleteSection = (index) => {
+    const sections = [...(customState.sectionsOrder || [])];
+    sections.splice(index, 1);
+    pushToHistory({ ...customState, sectionsOrder: sections });
   };
 
-  const handleTestimonialChange = (index, key, value) => {
-    const updated = [...(customState.testimonials || [])];
-    updated[index] = { ...updated[index], [key]: value };
-    pushToHistory({ ...customState, testimonials: updated });
+  const handleAddPresetSection = (presetType) => {
+    const newSecId = `custom_${presetType}_${Date.now()}`;
+    const sections = [...(customState.sectionsOrder || []), newSecId];
+
+    const newSecObj = {
+      id: newSecId,
+      type: presetType,
+      title: `${presetType.toUpperCase()} Section`,
+      subtitle: 'Customizable section layout block',
+      items: [
+        { title: 'Headline Title 1', desc: 'Detailed description for this custom block.', buttonText: 'Explore', buttonLink: '/services' },
+        { title: 'Headline Title 2', desc: 'Detailed description for this custom block.', buttonText: 'Inquire', buttonLink: '/contact' }
+      ]
+    };
+
+    const customSecs = [...(customState.customSections || []), newSecObj];
+    setShowAddSectionModal(false);
+    pushToHistory({ ...customState, sectionsOrder: sections, customSections: customSecs });
   };
 
-  // Image Upload via Cloudinary / Data URL Endpoint
+  const handleAddCustomText = (textType = 'heading') => {
+    const newTextObj = {
+      id: `txt_${Date.now()}`,
+      type: textType,
+      content: textType === 'heading' ? 'New Custom Heading' : textType === 'paragraph' ? 'Add your custom paragraph description here.' : 'Custom Label',
+      fontSize: textType === 'heading' ? 'text-2xl' : 'text-sm',
+      fontWeight: textType === 'heading' ? 'font-bold' : 'font-normal',
+      color: customState.accentColor || '#2563eb'
+    };
+
+    const updatedTextBlocks = [...(customState.customTextBlocks || []), newTextObj];
+    pushToHistory({ ...customState, customTextBlocks: updatedTextBlocks });
+  };
+
+  const handleAddCustomBox = () => {
+    const newBoxObj = {
+      id: `box_${Date.now()}`,
+      title: 'New Custom Box Card',
+      description: 'Highlight your custom services, features, or product packages here.',
+      imageUrl: template.image,
+      buttonText: 'Learn More',
+      buttonLink: '/about',
+      backgroundColor: customState.bgTheme === 'dark' ? '#0f172a' : '#ffffff',
+      borderColor: '#e2e8f0',
+      borderRadius: 'rounded-2xl',
+      shadow: 'shadow-md'
+    };
+
+    const updatedBoxes = [...(customState.customBoxes || []), newBoxObj];
+    const customSecId = `custom_box_sec_${Date.now()}`;
+    const sections = [...(customState.sectionsOrder || []), customSecId];
+
+    const customSecs = [...(customState.customSections || [])];
+    customSecs.push({
+      id: customSecId,
+      title: 'Custom Content Cards',
+      subtitle: 'Personalized interactive container boxes',
+      items: updatedBoxes
+    });
+
+    pushToHistory({ ...customState, sectionsOrder: sections, customSections: customSecs, customBoxes: updatedBoxes });
+  };
+
+  const handleAddCustomButton = () => {
+    const newBtn = {
+      id: `btn_${Date.now()}`,
+      label: 'Explore Offerings',
+      link: '/services',
+      style: 'solid',
+      bg: customState.accentColor || '#2563eb',
+      textColor: '#ffffff',
+      radius: 'rounded-xl'
+    };
+
+    const updatedButtons = [...(customState.customButtons || []), newBtn];
+    pushToHistory({ ...customState, customButtons: updatedButtons });
+  };
+
+  const handleAddCustomPageSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newPageName || !newPageSlug) return;
+
+    const cleanSlug = newPageSlug.replace(/^\/+/, '').toLowerCase();
+    const newPage = {
+      name: newPageName,
+      slug: cleanSlug,
+      href: `/${cleanSlug}`
+    };
+
+    const updatedNavLinks = [...(customState.navLinks || template.defaultData?.navLinks || []), { label: newPageName, href: `/${cleanSlug}` }];
+    const updatedPages = [...(customState.customPages || []), newPage];
+
+    setShowAddPageModal(false);
+    setNewPageName('');
+    setNewPageSlug('');
+    setEditorActivePage(`/${cleanSlug}`);
+
+    pushToHistory({ ...customState, navLinks: updatedNavLinks, customPages: updatedPages });
+  };
+
   const triggerImageUpload = (slotKey) => {
     setUploadingSlot(slotKey);
     if (fileInputRef.current) {
@@ -291,7 +437,6 @@ export default function VisualEditor({
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  // Reusable Component Renders to guarantee 100% DOM separation between Mobile & Desktop
   const renderLeftSidebarContent = () => (
     <div className="flex-1 flex flex-col h-full bg-slate-900 border-r border-slate-800 overflow-y-auto">
       <div className="flex border-b border-slate-800 p-1 bg-slate-950 overflow-x-auto scrollbar-none flex-shrink-0">
@@ -304,145 +449,204 @@ export default function VisualEditor({
           Sections
         </button>
         <button
+          onClick={() => setLeftTab('add_content')}
+          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
+            leftTab === 'add_content' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          + Add Content
+        </button>
+        <button
+          onClick={() => setLeftTab('pages')}
+          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
+            leftTab === 'pages' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Pages
+        </button>
+        <button
           onClick={() => setLeftTab('assets')}
           className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
             leftTab === 'assets' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          3 Images
-        </button>
-        <button
-          onClick={() => setLeftTab('templates')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            leftTab === 'templates' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Presets
+          Images
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {leftTab === 'sections' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
+                Section Manager & Order
+              </span>
+              <button
+                onClick={() => setShowAddSectionModal(true)}
+                className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[10px] font-bold flex items-center space-x-1 shadow-sm"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add Section</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {(customState.sectionsOrder || []).map((sec, i) => {
+                const secName = typeof sec === 'string' ? sec : (sec.type || 'Custom');
+                return (
+                  <div key={i} className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between text-xs text-slate-200 font-medium group">
+                    <div className="flex items-center space-x-2 truncate">
+                      <Layers className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                      <span className="capitalize truncate">{secName}</span>
+                    </div>
+
+                    <div className="flex items-center space-x-1 flex-shrink-0">
+                      <button onClick={() => handleMoveSection(i, 'up')} disabled={i === 0} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white disabled:opacity-30">
+                        <MoveUp className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => handleMoveSection(i, 'down')} disabled={i === (customState.sectionsOrder || []).length - 1} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white disabled:opacity-30">
+                        <MoveDown className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => handleDuplicateSection(i)} className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-white" title="Duplicate">
+                        <DuplicateIcon className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => handleDeleteSection(i)} className="p-1 hover:bg-red-500/20 rounded text-slate-400 hover:text-red-400" title="Delete">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {leftTab === 'add_content' && (
+          <div className="space-y-4">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              Page Blocks & Sections
+              Add New Content Blocks
             </span>
-            {['Hero Banner', 'Features Grid', 'About Story', 'Services / Products', 'Pricing Tiers', 'Testimonials', 'Contact Form', 'Footer'].map((sec, i) => (
-              <div key={i} className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between text-xs text-slate-200 font-medium">
-                <div className="flex items-center space-x-2">
-                  <Layers className="w-3.5 h-3.5 text-brand-400" />
-                  <span>{sec}</span>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => handleAddCustomText('heading')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Type className="w-4 h-4 text-amber-400" />
+                <p className="text-xs font-bold text-white">+ Add Heading</p>
+                <p className="text-[9px] text-slate-400">Insert custom title block</p>
+              </button>
+
+              <button
+                onClick={() => triggerImageUpload('heroImageUrl')}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <ImageIcon className="w-4 h-4 text-emerald-400" />
+                <p className="text-xs font-bold text-white">+ Add Image</p>
+                <p className="text-[9px] text-slate-400">Upload or replace media</p>
+              </button>
+
+              <button
+                onClick={handleAddCustomBox}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <Box className="w-4 h-4 text-brand-400" />
+                <p className="text-xs font-bold text-white">+ Add Box Card</p>
+                <p className="text-[9px] text-slate-400">Container card with text/button</p>
+              </button>
+
+              <button
+                onClick={handleAddCustomButton}
+                className="p-3 rounded-2xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-left space-y-1.5 transition-all"
+              >
+                <MousePointer className="w-4 h-4 text-purple-400" />
+                <p className="text-xs font-bold text-white">+ Add Button</p>
+                <p className="text-[9px] text-slate-400">Styled CTA button</p>
+              </button>
+            </div>
+
+            <div className="pt-3 border-t border-slate-800">
+              <button
+                onClick={() => setShowAddPageModal(true)}
+                className="w-full p-3 rounded-2xl bg-brand-600/20 hover:bg-brand-600/30 border border-brand-500/40 text-brand-300 font-bold text-xs flex items-center justify-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Create Custom Sub-Page</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {leftTab === 'pages' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
+                Website Sub-Pages
+              </span>
+              <button
+                onClick={() => setShowAddPageModal(true)}
+                className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[10px] font-bold flex items-center space-x-1 shadow-sm"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add Page</span>
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {(customState.navLinks || template.defaultData?.navLinks || []).map((link, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-2 truncate">
+                    <FileText className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                    <span className="font-bold text-white truncate">{link.label}</span>
+                    <span className="text-[10px] font-mono text-slate-400">{link.href}</span>
+                  </div>
+                  <button
+                    onClick={() => setEditorActivePage(link.href)}
+                    className="px-2 py-1 rounded bg-slate-700 text-[10px] font-bold text-white hover:bg-brand-600"
+                  >
+                    View
+                  </button>
                 </div>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
         {leftTab === 'assets' && (
           <div className="space-y-4">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              3 Business Image Uploads
+              Business Image Uploads
             </span>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-bold text-slate-300">Image 1: Hero Banner</label>
-                  <button
-                    onClick={() => triggerImageUpload('heroImageUrl')}
-                    className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1"
-                  >
-                    <UploadCloud className="w-3 h-3" />
-                    <span>Upload File</span>
+                  <button onClick={() => triggerImageUpload('heroImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
+                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
                   </button>
                 </div>
-                <input
-                  type="text"
-                  value={customState.heroImageUrl || ''}
-                  onChange={(e) => handleTextChange('heroImageUrl', e.target.value)}
-                  placeholder="Image URL..."
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono"
-                />
+                <input type="text" value={customState.heroImageUrl || ''} onChange={(e) => handleTextChange('heroImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
               </div>
 
               <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-bold text-slate-300">Image 2: Brand Story</label>
-                  <button
-                    onClick={() => triggerImageUpload('aboutImageUrl')}
-                    className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1"
-                  >
-                    <UploadCloud className="w-3 h-3" />
-                    <span>Upload File</span>
+                  <button onClick={() => triggerImageUpload('aboutImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
+                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
                   </button>
                 </div>
-                <input
-                  type="text"
-                  value={customState.aboutImageUrl || ''}
-                  onChange={(e) => handleTextChange('aboutImageUrl', e.target.value)}
-                  placeholder="Image URL..."
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono"
-                />
+                <input type="text" value={customState.aboutImageUrl || ''} onChange={(e) => handleTextChange('aboutImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
               </div>
 
               <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-300">Image 3: Product Showcase</label>
-                  <button
-                    onClick={() => triggerImageUpload('galleryImageUrl')}
-                    className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1"
-                  >
-                    <UploadCloud className="w-3 h-3" />
-                    <span>Upload File</span>
+                  <label className="text-[10px] font-bold text-slate-300">Image 3: Showcase</label>
+                  <button onClick={() => triggerImageUpload('galleryImageUrl')} className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1">
+                    <UploadCloud className="w-3 h-3" /><span>Upload</span>
                   </button>
                 </div>
-                <input
-                  type="text"
-                  value={customState.galleryImageUrl || ''}
-                  onChange={(e) => handleTextChange('galleryImageUrl', e.target.value)}
-                  placeholder="Image URL..."
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono"
-                />
+                <input type="text" value={customState.galleryImageUrl || ''} onChange={(e) => handleTextChange('galleryImageUrl', e.target.value)} className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white font-mono" />
               </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800">
-              <span className="block text-[10px] font-semibold text-slate-400 mb-2">Stock Photo Library</span>
-              <div className="grid grid-cols-2 gap-2">
-                {PRESET_BUSINESS_IMAGES.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleTextChange('heroImageUrl', img.url)}
-                    className="p-1 rounded-lg bg-slate-950 border border-slate-800 hover:border-brand-500 overflow-hidden text-left"
-                  >
-                    <img src={img.url} alt={img.name} className="w-full h-12 object-cover rounded" />
-                    <span className="block text-[9px] text-slate-300 mt-1 truncate">{img.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {leftTab === 'templates' && (
-          <div className="space-y-3">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              30 Presets Library
-            </span>
-            <div className="space-y-2">
-              {TEMPLATES_DATA.slice(0, 10).map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => handleTextChange('heroTitle', t.defaultData.heroTitle)}
-                  className="w-full p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-left flex items-center space-x-2"
-                >
-                  <img src={t.image} alt={t.title} className="w-8 h-8 rounded-lg object-cover" />
-                  <div className="overflow-hidden">
-                    <p className="text-xs font-bold text-white truncate">{t.title}</p>
-                    <p className="text-[9px] text-slate-400">{t.category}</p>
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
         )}
@@ -453,37 +657,14 @@ export default function VisualEditor({
   const renderRightInspectorContent = () => (
     <div className="flex-1 flex flex-col h-full bg-slate-900 border-l border-slate-800 overflow-y-auto">
       <div className="flex border-b border-slate-800 p-1 bg-slate-950 overflow-x-auto scrollbar-none flex-shrink-0">
-        <button
-          onClick={() => setRightTab('branding')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            rightTab === 'branding' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Branding
+        <button onClick={() => setRightTab('branding')} className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${rightTab === 'branding' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+          Colors
         </button>
-        <button
-          onClick={() => setRightTab('typography')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            rightTab === 'typography' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
+        <button onClick={() => setRightTab('typography')} className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${rightTab === 'typography' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
           Fonts
         </button>
-        <button
-          onClick={() => setRightTab('content')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            rightTab === 'content' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Content
-        </button>
-        <button
-          onClick={() => setRightTab('buttons')}
-          className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${
-            rightTab === 'buttons' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Buttons
+        <button onClick={() => setRightTab('content')} className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold transition-colors whitespace-nowrap ${rightTab === 'content' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+          Text Content
         </button>
       </div>
 
@@ -491,90 +672,49 @@ export default function VisualEditor({
         {rightTab === 'branding' && (
           <div className="space-y-4">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              Brand & Palette Customizer
+              Brand & Color Palette
             </span>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Website Title</label>
-              <input
-                type="text"
-                value={siteTitle}
-                onChange={(e) => setSiteTitle(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
-              />
+              <input type="text" value={siteTitle} onChange={(e) => setSiteTitle(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white" />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Logo Brand Text</label>
-              <input
-                type="text"
-                value={customState.logoText || ''}
-                onChange={(e) => handleTextChange('logoText', e.target.value)}
-                placeholder="e.g. VoltTech Store"
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-slate-300">Brand Logo Image</label>
-                <button
-                  type="button"
-                  onClick={() => triggerImageUpload('logoImageUrl')}
-                  className="px-2.5 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-[9px] font-bold flex items-center space-x-1"
-                >
-                  <UploadCloud className="w-3 h-3" />
-                  <span>Upload Logo</span>
-                </button>
-              </div>
-              <input
-                type="text"
-                value={customState.logoImageUrl || ''}
-                onChange={(e) => handleTextChange('logoImageUrl', e.target.value)}
-                placeholder="Custom Logo Image URL..."
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
-              />
+              <input type="text" value={customState.logoText || ''} onChange={(e) => handleTextChange('logoText', e.target.value)} placeholder="e.g. VoltTech Store" className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white" />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Accent Hex Color</label>
               <div className="flex items-center space-x-2">
-                <input
-                  type="color"
-                  value={customState.accentColor}
-                  onChange={(e) => handleTextChange('accentColor', e.target.value)}
-                  className="w-8 h-8 rounded border-0 cursor-pointer"
-                />
+                <input type="color" value={customState.accentColor} onChange={(e) => handleTextChange('accentColor', e.target.value)} className="w-8 h-8 rounded border-0 cursor-pointer" />
                 <span className="text-xs font-mono text-slate-300">{customState.accentColor}</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-2">Preset Swatches</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-2">Curated Palettes</label>
               <div className="grid grid-cols-3 gap-2">
-                {CURATED_COLORS.map(c => (
-                  <button
-                    key={c.name}
-                    onClick={() => handleTextChange('accentColor', c.hex)}
-                    className="p-2 rounded-xl border border-slate-700 bg-slate-950 flex items-center space-x-2 hover:border-slate-500 text-left"
-                  >
-                    <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: c.hex }} />
-                    <span className="text-[9px] text-slate-300 font-medium truncate">{c.name}</span>
+                {CURATED_COLORS.map((c) => (
+                  <button key={c.name} onClick={() => handleTextChange('accentColor', c.hex)} className="p-2 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-600 flex items-center space-x-1.5">
+                    <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.hex }} />
+                    <span className="text-[10px] text-slate-300 truncate">{c.name}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Canvas Theme Mode</label>
-              <select
-                value={customState.bgTheme}
-                onChange={(e) => handleTextChange('bgTheme', e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
-              >
-                <option value="light">Light Theme (Clean White Canvas)</option>
-                <option value="dark">Dark Mode Theme</option>
-              </select>
+              <label className="block text-xs font-semibold text-slate-300 mb-2">Background Theme</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => handleTextChange('bgTheme', 'light')} className={`py-2 px-3 rounded-xl text-xs font-bold border ${customState.bgTheme === 'light' ? 'bg-white text-slate-950 border-white' : 'bg-slate-950 text-slate-400 border-slate-800'}`}>
+                  Light Mode
+                </button>
+                <button onClick={() => handleTextChange('bgTheme', 'dark')} className={`py-2 px-3 rounded-xl text-xs font-bold border ${customState.bgTheme === 'dark' ? 'bg-slate-950 text-white border-slate-700' : 'bg-slate-950 text-slate-400 border-slate-800'}`}>
+                  Dark Mode
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -584,200 +724,53 @@ export default function VisualEditor({
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
               Typography & Fonts
             </span>
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Font Family</label>
-              <select
-                value={customState.fontFamily}
-                onChange={(e) => handleTextChange('fontFamily', e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
-              >
-                <option value="sans">Plus Jakarta Sans</option>
-                <option value="display">Outfit (Bold Display)</option>
-                <option value="serif">Playfair Display (Editorial)</option>
-                <option value="inter">Inter UI</option>
-              </select>
+
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'sans', name: 'Inter Sans', sample: 'Modern & Clean' },
+                { id: 'serif', name: 'Playfair Serif', sample: 'Luxury & Elegant' },
+                { id: 'display', name: 'Outfit Display', sample: 'Bold & High-Energy' },
+                { id: 'mono', name: 'JetBrains Mono', sample: 'Technical Code' }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => handleTextChange('fontFamily', f.id)}
+                  className={`p-3 rounded-2xl text-left border transition-all ${
+                    customState.fontFamily === f.id ? 'bg-brand-600 text-white border-brand-500' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <p className="text-xs font-bold">{f.name}</p>
+                  <p className="text-[10px] opacity-75 mt-1">{f.sample}</p>
+                </button>
+              ))}
             </div>
           </div>
         )}
 
         {rightTab === 'content' && (
-          <div className="space-y-5">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              Full Page Content & Section Editors
-            </span>
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-              <span className="block text-xs font-bold text-brand-400 font-display">1. Hero Section</span>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Hero Title</label>
-                <textarea
-                  rows={2}
-                  value={customState.heroTitle || ''}
-                  onChange={(e) => handleTextChange('heroTitle', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Hero Subtitle</label>
-                <textarea
-                  rows={2}
-                  value={customState.heroSubtitle || ''}
-                  onChange={(e) => handleTextChange('heroSubtitle', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-              <span className="block text-xs font-bold text-amber-400 font-display">2. Features Section</span>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Features Section Title</label>
-                <input
-                  type="text"
-                  value={customState.featuresTitle || ''}
-                  onChange={(e) => handleTextChange('featuresTitle', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              {(customState.features || []).map((feat, idx) => (
-                <div key={idx} className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
-                  <label className="text-[9px] font-semibold text-slate-400">Feature #{idx+1}</label>
-                  <input
-                    type="text"
-                    value={feat.title || ''}
-                    onChange={(e) => handleFeatureChange(idx, 'title', e.target.value)}
-                    className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
-                    placeholder="Feature Title..."
-                  />
-                  <textarea
-                    rows={2}
-                    value={feat.desc || ''}
-                    onChange={(e) => handleFeatureChange(idx, 'desc', e.target.value)}
-                    className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
-                    placeholder="Feature Description..."
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-              <span className="block text-xs font-bold text-emerald-400 font-display">3. About Section</span>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">About Title</label>
-                <input
-                  type="text"
-                  value={customState.aboutTitle || ''}
-                  onChange={(e) => handleTextChange('aboutTitle', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">About Description</label>
-                <textarea
-                  rows={3}
-                  value={customState.aboutDesc || ''}
-                  onChange={(e) => handleTextChange('aboutDesc', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-              <span className="block text-xs font-bold text-indigo-400 font-display">4. Services / Products Section</span>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Services Title</label>
-                <input
-                  type="text"
-                  value={customState.servicesTitle || ''}
-                  onChange={(e) => handleTextChange('servicesTitle', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              {(customState.services || []).map((serv, idx) => (
-                <div key={idx} className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
-                  <label className="text-[9px] font-semibold text-slate-400">Item #{idx+1}</label>
-                  <input
-                    type="text"
-                    value={serv.title || ''}
-                    onChange={(e) => handleServiceChange(idx, 'title', e.target.value)}
-                    className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
-                    placeholder="Item Title..."
-                  />
-                  <input
-                    type="text"
-                    value={serv.price || ''}
-                    onChange={(e) => handleServiceChange(idx, 'price', e.target.value)}
-                    className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white font-mono"
-                    placeholder="Price Tag (e.g. $79)..."
-                  />
-                  <textarea
-                    rows={2}
-                    value={serv.desc || ''}
-                    onChange={(e) => handleServiceChange(idx, 'desc', e.target.value)}
-                    className="w-full p-1.5 text-xs rounded bg-slate-950 border border-slate-800 text-white"
-                    placeholder="Description..."
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-              <span className="block text-xs font-bold text-rose-400 font-display">5. Contact & Footer Details</span>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Contact Email</label>
-                <input
-                  type="email"
-                  value={customState.contactEmail || ''}
-                  onChange={(e) => handleTextChange('contactEmail', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Contact Phone</label>
-                <input
-                  type="text"
-                  value={customState.contactPhone || ''}
-                  onChange={(e) => handleTextChange('contactPhone', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] text-slate-400 mb-1">Footer Copyright Text</label>
-                <input
-                  type="text"
-                  value={customState.footerText || ''}
-                  onChange={(e) => handleTextChange('footerText', e.target.value)}
-                  className="w-full p-2 text-xs rounded-lg bg-slate-900 border border-slate-800 text-white"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {rightTab === 'buttons' && (
           <div className="space-y-4">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 font-display">
-              CTA Button Controls
+              Main Headlines & Text
             </span>
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Primary Button Text</label>
-              <input
-                type="text"
-                value={customState.ctaText || ''}
-                onChange={(e) => handleTextChange('ctaText', e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
-              />
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Hero Title</label>
+              <textarea rows={2} value={customState.heroTitle || ''} onChange={(e) => handleTextChange('heroTitle', e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white resize-none" />
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Corner Radius</label>
-              <select
-                value={customState.borderRadius}
-                onChange={(e) => handleTextChange('borderRadius', e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
-              >
-                <option value="rounded-xl">Soft Corners (12px)</option>
-                <option value="rounded-2xl">Modern Corners (16px)</option>
-                <option value="rounded-3xl">Pill Corners (24px)</option>
-              </select>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Hero Subtitle</label>
+              <textarea rows={3} value={customState.heroSubtitle || ''} onChange={(e) => handleTextChange('heroSubtitle', e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white resize-none" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">About Story Title</label>
+              <input type="text" value={customState.aboutTitle || ''} onChange={(e) => handleTextChange('aboutTitle', e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">About Story Text</label>
+              <textarea rows={3} value={customState.aboutDesc || ''} onChange={(e) => handleTextChange('aboutDesc', e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white resize-none" />
             </div>
           </div>
         )}
@@ -785,58 +778,30 @@ export default function VisualEditor({
     </div>
   );
 
-  const renderCenterCanvasContent = (isMobile = false) => (
-    <div className={`flex-1 bg-slate-950 ${isMobile ? 'w-full max-w-full p-2.5 sm:p-4 pb-28 flex flex-col items-center justify-start box-border' : 'overflow-x-hidden overflow-y-auto p-4 md:p-8 flex flex-col items-center justify-start relative w-full max-w-full box-border'}`}>
-      {/* DEDICATED PUBLISHED LIVE URL BANNER CARD */}
-      {savedSiteData && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-full sm:max-w-xl mb-4 p-3.5 sm:p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/40 text-emerald-100 shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 box-border flex-shrink-0"
-        >
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-xs text-white font-display">Website Published Live!</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0" />
-              </div>
-              <p className="text-[11px] font-mono text-emerald-300/90 truncate min-w-0 mt-0.5">
-                {window.location.origin}/site/{savedSiteData.slug}
-              </p>
-            </div>
+  const renderCenterCanvasContent = (isMobile) => (
+    <div className={`w-full flex flex-col items-center justify-start ${isMobile ? 'p-2' : ''}`}>
+      
+      {savedSiteData?.isPublished && savedSiteData?.slug && (
+        <div className="w-full max-w-4xl mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center justify-between text-xs font-semibold">
+          <div className="flex items-center space-x-2 truncate">
+            <Globe className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <span className="truncate">Live URL: {window.location.origin}/site/{savedSiteData.slug}</span>
           </div>
 
           <div className="flex items-center space-x-2 flex-shrink-0">
-            <a
-              href={`${window.location.origin}/site/${savedSiteData.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center space-x-1 transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Open Live Site</span>
-            </a>
-            <button
-              onClick={handleCopyPublishedLink}
-              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-300 hover:bg-slate-800 text-xs font-bold flex items-center justify-center space-x-1 flex-shrink-0 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
+            <button onClick={handleCopyPublishedLink} className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold transition-all">
+              {copiedLink ? 'Copied Link!' : 'Copy Link'}
             </button>
+            <a href={`/site/${savedSiteData.slug}`} target="_blank" rel="noreferrer" className="p-1 text-emerald-300 hover:text-white">
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <div 
-        style={{ transform: isMobile ? 'none' : `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
-        className={`transition-all duration-300 w-full max-w-full ${
-          isMobile ? 'w-full max-w-full' :
-          viewportMode === 'desktop' ? 'max-w-6xl' :
-          viewportMode === 'tablet' ? 'max-w-xl' : 'max-w-xs'
-        }`}
+        className="w-full transition-all duration-300 origin-top flex justify-center"
+        style={{ transform: isMobile ? 'none' : `scale(${zoomLevel / 100})` }}
       >
         <div className={`bg-white text-slate-900 w-full max-w-full ${isMobile ? 'rounded-2xl border border-slate-800 shadow-xl overflow-hidden' : 'rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl overflow-hidden min-h-[600px] sm:min-h-[800px]'}`}>
           <TemplateRenderer
@@ -846,6 +811,8 @@ export default function VisualEditor({
             fontFamily={customState.fontFamily}
             bgTheme={customState.bgTheme}
             viewportMode={isMobile ? 'full' : viewportMode}
+            activePath={editorActivePage}
+            onNavigate={(path) => setEditorActivePage(path)}
           />
         </div>
       </div>
@@ -855,32 +822,18 @@ export default function VisualEditor({
   return (
     <div className="h-screen flex flex-col bg-slate-950 text-white font-sans overflow-x-hidden select-none max-w-full w-full">
       
-      {/* Hidden File Input for Image Upload */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileSelected}
-        accept="image/*"
-        className="hidden"
-      />
+      <input type="file" ref={fileInputRef} onChange={handleFileSelected} accept="image/*" className="hidden" />
 
-      {/* 1. TOP TOOLBAR */}
       <header className="h-14 bg-slate-900 border-b border-slate-800/80 px-2 sm:px-4 flex items-center justify-between z-30 flex-shrink-0 w-full max-w-full">
         
-        {/* Left Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3 overflow-hidden">
-          <button
-            onClick={onBack}
-            className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex-shrink-0"
-            title="Back to Catalog"
-          >
+          <button onClick={onBack} className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex-shrink-0" title="Back to Catalog">
             <ArrowLeft className="w-4 h-4" />
           </button>
 
           <div className="flex items-center space-x-2 sm:space-x-3 border-r border-slate-800 pr-2 sm:pr-4 overflow-hidden">
             <span className="font-extrabold text-xs sm:text-sm text-white font-display truncate max-w-[90px] sm:max-w-none">Nexora</span>
             
-            {/* Saving Status Badges */}
             {saveStatus === 'saving' && (
               <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30 flex items-center space-x-1 animate-pulse flex-shrink-0">
                 <RefreshCw className="w-2.5 h-2.5 animate-spin text-brand-400" />
@@ -889,110 +842,67 @@ export default function VisualEditor({
             )}
 
             {saveStatus === 'saved' && (
-              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1 flex-shrink-0">
-                <Check className="w-2.5 h-2.5 text-emerald-400" />
-                <span>Saved ✓</span>
-              </span>
-            )}
-
-            {saveStatus === 'error' && (
-              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-red-500/20 text-red-300 border border-red-500/30 flex items-center space-x-1 flex-shrink-0">
-                <AlertCircle className="w-2.5 h-2.5 text-red-400" />
-                <span>Error</span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1 flex-shrink-0">
+                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                <span className="hidden xs:inline">Saved</span>
               </span>
             )}
           </div>
 
-          {/* Undo / Redo Actions */}
           <div className="hidden sm:flex items-center space-x-1 flex-shrink-0">
-            <button
-              onClick={handleUndo}
-              disabled={historyIndex <= 0}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-              title="Undo (Ctrl+Z)"
-            >
+            <button onClick={handleUndo} disabled={historyIndex <= 0} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
-            <button
-              onClick={handleRedo}
-              disabled={historyIndex >= history.length - 1}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-              title="Redo (Ctrl+Y)"
-            >
+            <button onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 transition-colors" title="Redo (Ctrl+Y)">
               <RotateCw className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Center Viewport Controls (Desktop only) */}
         <div className="hidden md:flex items-center space-x-4">
           <div className="flex items-center space-x-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setViewportMode('desktop')}
-              className={`p-1.5 rounded-lg text-xs transition-colors ${
-                viewportMode === 'desktop' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Desktop View (100%)"
-            >
+            <button onClick={() => setViewportMode('desktop')} className={`p-1.5 rounded-lg text-xs transition-colors ${viewportMode === 'desktop' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`} title="Desktop View">
               <Monitor className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setViewportMode('tablet')}
-              className={`p-1.5 rounded-lg text-xs transition-colors ${
-                viewportMode === 'tablet' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Tablet View (768px)"
-            >
+            <button onClick={() => setViewportMode('tablet')} className={`p-1.5 rounded-lg text-xs transition-colors ${viewportMode === 'tablet' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`} title="Tablet View">
               <Tablet className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setViewportMode('mobile')}
-              className={`p-1.5 rounded-lg text-xs transition-colors ${
-                viewportMode === 'mobile' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Mobile View (375px)"
-            >
+            <button onClick={() => setViewportMode('mobile')} className={`p-1.5 rounded-lg text-xs transition-colors ${viewportMode === 'mobile' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`} title="Mobile View">
               <Smartphone className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="hidden lg:flex items-center space-x-1 px-2.5 py-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-            <button 
-              onClick={() => setZoomLevel(Math.max(50, zoomLevel - 10))}
-              className="p-1 text-slate-400 hover:text-white"
-            >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <span className="font-mono text-[10px] text-slate-300 w-9 text-center">{zoomLevel}%</span>
-            <button 
-              onClick={() => setZoomLevel(Math.min(150, zoomLevel + 10))}
-              className="p-1 text-slate-400 hover:text-white"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
+          <div className="hidden lg:flex items-center space-x-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+            {(customState.navLinks || template.defaultData?.navLinks || [
+              { label: 'Home', href: '/' },
+              { label: 'About', href: '/about' },
+              { label: 'Services', href: '/services' },
+              { label: 'Contact', href: '/contact' }
+            ]).slice(0, 4).map((link, idx) => {
+              const isPillActive = (link.href === '/' && (editorActivePage === '/' || editorActivePage === 'home')) ||
+                (link.href !== '/' && editorActivePage.toLowerCase().includes(link.href.toLowerCase()));
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setEditorActivePage(link.href)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    isPillActive ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Toolbar Actions */}
         <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-          <button
-            onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className={`hidden md:flex px-3 py-1.5 rounded-xl text-xs font-bold transition-all items-center space-x-1.5 ${
-              isPreviewMode 
-                ? 'bg-amber-500 text-slate-950 font-extrabold' 
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-            }`}
-          >
+          <button onClick={() => setIsPreviewMode(!isPreviewMode)} className={`hidden md:flex px-3 py-1.5 rounded-xl text-xs font-bold transition-all items-center space-x-1.5 ${isPreviewMode ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`}>
             <Eye className="w-3.5 h-3.5" />
             <span>{isPreviewMode ? 'Exit Preview' : 'Preview'}</span>
           </button>
 
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={handlePublishClick}
-            className="px-3 sm:px-4 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md shadow-brand-600/30 flex items-center space-x-1"
-          >
+          <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={handlePublishClick} className="px-3 sm:px-4 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md flex items-center space-x-1">
             <Save className="w-3.5 h-3.5" />
             <span>Publish</span>
           </motion.button>
@@ -1000,14 +910,12 @@ export default function VisualEditor({
 
       </header>
 
-      {/* 2A. MOBILE RENDER CONTAINER (< 768px): RENDERS EXACTLY ONE SINGLE ACTIVE VIEW AT A TIME */}
       <div className="md:hidden flex-1 flex flex-col w-full max-w-full overflow-x-hidden overflow-y-auto relative bg-slate-950 box-border">
         {mobileTab === 'sections' && renderLeftSidebarContent()}
         {mobileTab === 'preview' && renderCenterCanvasContent(true)}
         {mobileTab === 'settings' && renderRightInspectorContent()}
       </div>
 
-      {/* 2B. DESKTOP RENDER CONTAINER (>= 768px): RENDERS 3-COLUMN SIDE-BY-SIDE LAYOUT */}
       <div className="hidden md:flex flex-1 overflow-hidden relative w-full">
         {!isPreviewMode && (
           <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0 z-20 overflow-y-auto">
@@ -1026,38 +934,105 @@ export default function VisualEditor({
         )}
       </div>
 
-      {/* 3. STICKY BOTTOM MOBILE NAVIGATION BAR (< 768px) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full max-w-full h-16 bg-slate-900 border-t border-slate-800/90 px-2 sm:px-4 flex items-center justify-around z-50 pb-safe shadow-2xl box-border">
-        <button
-          onClick={() => setMobileTab('sections')}
-          className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${
-            mobileTab === 'sections' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'
-          }`}
-        >
+        <button onClick={() => setMobileTab('sections')} className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${mobileTab === 'sections' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'}`}>
           <Layers className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 font-display">Sections</span>
         </button>
 
-        <button
-          onClick={() => setMobileTab('preview')}
-          className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${
-            mobileTab === 'preview' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'
-          }`}
-        >
+        <button onClick={() => setMobileTab('preview')} className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${mobileTab === 'preview' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'}`}>
           <Eye className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 font-display">Preview</span>
         </button>
 
-        <button
-          onClick={() => setMobileTab('settings')}
-          className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${
-            mobileTab === 'settings' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          <SlidersHorizontal className="w-5 h-5" />
+        <button onClick={() => setMobileTab('settings')} className={`flex flex-col items-center justify-center py-1 px-4 rounded-xl transition-all ${mobileTab === 'settings' ? 'text-brand-400 font-bold bg-slate-800 scale-105' : 'text-slate-400 hover:text-white'}`}>
+          <Sliders className="w-5 h-5" />
           <span className="text-[10px] mt-0.5 font-display">Settings</span>
         </button>
       </nav>
+
+      {showAddSectionModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 text-white shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+              <h3 className="text-lg font-bold font-display">Select Section Preset To Insert</h3>
+              <button onClick={() => setShowAddSectionModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 my-6 max-h-[60vh] overflow-y-auto">
+              {SECTION_PRESETS.map((sec) => {
+                const IconComp = sec.icon;
+                return (
+                  <button
+                    key={sec.type}
+                    onClick={() => handleAddPresetSection(sec.type)}
+                    className="p-3.5 rounded-2xl bg-slate-800 hover:bg-brand-600 border border-slate-700 text-left space-y-1.5 transition-all group"
+                  >
+                    <IconComp className="w-5 h-5 text-brand-400 group-hover:text-white" />
+                    <p className="text-xs font-bold text-white">{sec.name}</p>
+                    <p className="text-[9px] text-slate-400 group-hover:text-slate-200 line-clamp-2">{sec.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddPageModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 text-white shadow-2xl">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+              <h3 className="text-lg font-bold font-display">Create Custom Sub-Page</h3>
+              <button onClick={() => setShowAddPageModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCustomPageSubmit} className="space-y-4 my-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Page Name</label>
+                <input
+                  type="text"
+                  required
+                  value={newPageName}
+                  onChange={(e) => {
+                    setNewPageName(e.target.value);
+                    if (!newPageSlug) {
+                      setNewPageSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'));
+                    }
+                  }}
+                  placeholder="e.g. FAQ or Team"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">URL Route Slug</label>
+                <input
+                  type="text"
+                  required
+                  value={newPageSlug}
+                  onChange={(e) => setNewPageSlug(e.target.value)}
+                  placeholder="e.g. faq or team"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end space-x-2">
+                <button type="button" onClick={() => setShowAddPageModal(false)} className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-md">
+                  Create Page
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

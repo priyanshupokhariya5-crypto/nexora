@@ -4,10 +4,15 @@ import TemplateRenderer from './TemplateRenderer';
 import { TEMPLATES_DATA } from '../data/templatesData';
 import { apiFetch } from '../api';
 
-export default function PublicWebsite({ slug }) {
+export default function PublicWebsite({ slug: slugProp }) {
   const [website, setWebsite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const actualSlug = typeof slugProp === 'object' ? slugProp.slug : slugProp;
+  const initialSubPath = typeof slugProp === 'object' 
+    ? (slugProp.subPath || '/') 
+    : (window.location.pathname.replace(`/site/${actualSlug}`, '') || '/');
 
   useEffect(() => {
     const fetchPublicSite = async () => {
@@ -15,7 +20,7 @@ export default function PublicWebsite({ slug }) {
       setErrorMsg('');
 
       try {
-        const res = await apiFetch(`/api/public/${slug}`);
+        const res = await apiFetch(`/api/public/${actualSlug}`);
         const data = await res.json();
 
         if (data.success && data.website) {
@@ -30,10 +35,10 @@ export default function PublicWebsite({ slug }) {
       }
     };
 
-    if (slug) {
+    if (actualSlug) {
       fetchPublicSite();
     }
-  }, [slug]);
+  }, [actualSlug]);
 
   if (loading) {
     return (
@@ -42,7 +47,7 @@ export default function PublicWebsite({ slug }) {
           <RefreshCw className="w-6 h-6 animate-spin text-brand-500" />
         </div>
         <p className="text-sm font-bold text-slate-300 font-display">Loading Published Website...</p>
-        <p className="text-xs text-slate-500 font-mono mt-1">/site/{slug}</p>
+        <p className="text-xs text-slate-500 font-mono mt-1">/site/{actualSlug}</p>
       </div>
     );
   }
@@ -88,6 +93,8 @@ export default function PublicWebsite({ slug }) {
         fontFamily={website.fontFamily}
         bgTheme={website.bgTheme}
         viewportMode="desktop"
+        baseRoute={`/site/${actualSlug}`}
+        activePath={initialSubPath}
       />
     </div>
   );

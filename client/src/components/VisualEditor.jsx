@@ -587,8 +587,9 @@ export default function VisualEditor({
   };
 
   const handleModalFileUpload = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    console.log("IMAGE FILE SELECTED:", file);
+    console.log("FILE INPUT TRIGGERED");
+    const file = e.target.files?.[0];
+    console.log("SELECTED FILE:", file);
     console.log("FILE NAME:", file?.name);
     console.log("FILE TYPE:", file?.type);
     console.log("FILE SIZE:", file?.size);

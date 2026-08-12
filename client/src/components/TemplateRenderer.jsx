@@ -870,8 +870,86 @@ export default function TemplateRenderer({
                           </div>
                         )}
 
-                        {/* TYPE 8: DEFAULT CONTAINER GRID (Services / Features / Generic Cards) */}
-                        {(!secType || ['services', 'features', 'cta', 'custom', 'custom_box'].includes(secType)) && secObj.items && secObj.items.length > 0 && (
+                        {/* TYPE 8: HERO BANNER SECTION */}
+                        {secType === 'hero' && (
+                          <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-slate-950 text-white min-h-[360px] sm:min-h-[440px] flex items-center justify-center p-6 sm:p-12 my-6">
+                            <EditableImage 
+                              slotKey={`custom_sec_${secObj.id}_hero_image`} 
+                              src={secObj.imageUrl || template.image} 
+                              alt={secObj.title || 'Hero Banner'} 
+                              className="absolute inset-0 w-full h-full object-cover opacity-40" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent"></div>
+                            <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4">
+                              <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 text-amber-300">
+                                <EditableText fieldKey={`custom_sec_${secObj.id}_badge`} value={secObj.badge || 'Featured Showcase'} />
+                              </span>
+                              <EditableText fieldKey={`custom_sec_${secObj.id}_title`} value={secObj.title || 'Headline Banner'} tagName="h2" className="text-3xl sm:text-5xl font-extrabold font-display leading-tight text-white block" multiline />
+                              <EditableText fieldKey={`custom_sec_${secObj.id}_subtitle`} value={secObj.subtitle} tagName="p" className="text-xs sm:text-base opacity-85 leading-relaxed max-w-2xl mx-auto block" multiline />
+                              <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+                                <a href={secObj.buttonLink || '/contact'} onClick={(e) => handleLinkClick(e, secObj.buttonLink || '/contact')} className="px-6 py-3 rounded-xl font-bold text-xs text-white shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: accentColor }}>
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_btnText`} value={secObj.buttonText || 'Get Started Today'} />
+                                </a>
+                                {secObj.secondaryBtnText && (
+                                  <a href={secObj.secondaryBtnLink || '/about'} onClick={(e) => handleLinkClick(e, secObj.secondaryBtnLink || '/about')} className="px-6 py-3 rounded-xl font-bold text-xs bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-md hover:bg-white/20 transition-all">
+                                    <EditableText fieldKey={`custom_sec_${secObj.id}_secBtnText`} value={secObj.secondaryBtnText} />
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TYPE 9: SELECTED WORKS / PORTFOLIO SECTION */}
+                        {secType === 'portfolio' && (
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+                            {(secObj.items || []).map((item, itemIdx) => (
+                              <div key={itemIdx} className={`p-5 rounded-3xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-md flex flex-col justify-between overflow-hidden group/card`}>
+                                <div>
+                                  <div className="aspect-[16/10] rounded-2xl overflow-hidden mb-4 bg-slate-950 relative">
+                                    <EditableImage slotKey={`custom_sec_${secObj.id}_item_${itemIdx}_img`} src={item.imageUrl || template.image} alt={item.title || 'Work Image'} className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105" />
+                                  </div>
+                                  {item.category && <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-400 block mb-1">{item.category}</span>}
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_title`} value={item.title} tagName="h3" className="text-base font-bold font-display block" />
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_desc`} value={item.desc} tagName="p" className="mt-2 text-xs opacity-75 leading-relaxed block" multiline />
+                                </div>
+                                {item.buttonText && (
+                                  <div className="mt-5 pt-3 border-t border-slate-100/60 flex items-center justify-between">
+                                    <a href={item.buttonLink || '/services'} onClick={(e) => handleLinkClick(e, item.buttonLink || '/services')} className="text-xs font-bold flex items-center space-x-1 hover:underline" style={{ color: accentColor }}>
+                                      <EditableText fieldKey={`custom_sec_${secObj.id}_item_${itemIdx}_btnText`} value={item.buttonText} />
+                                      <ArrowRight className="w-3.5 h-3.5" />
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* TYPE 10: CALL TO ACTION BANNER SECTION */}
+                        {secType === 'cta' && (
+                          <div className="my-6 p-8 sm:p-12 rounded-3xl shadow-2xl text-center relative overflow-hidden text-white" style={{ backgroundColor: accentColor }}>
+                            <div className="relative z-10 max-w-3xl mx-auto space-y-4">
+                              <span className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-black/20 text-white backdrop-blur-md border border-white/20">
+                                <EditableText fieldKey={`custom_sec_${secObj.id}_badge`} value={secObj.badge || 'Take Action Today'} />
+                              </span>
+                              <EditableText fieldKey={`custom_sec_${secObj.id}_title`} value={secObj.title} tagName="h2" className="text-2xl sm:text-4xl font-extrabold font-display leading-tight block text-white" multiline />
+                              <EditableText fieldKey={`custom_sec_${secObj.id}_subtitle`} value={secObj.subtitle} tagName="p" className="text-xs sm:text-sm opacity-90 max-w-xl mx-auto block" multiline />
+                              <div className="pt-4">
+                                <a 
+                                  href={secObj.buttonLink || '/contact'} 
+                                  onClick={(e) => handleLinkClick(e, secObj.buttonLink || '/contact')} 
+                                  className="px-8 py-3.5 rounded-2xl bg-white text-slate-900 font-extrabold text-xs shadow-xl transition-transform hover:scale-105 inline-block"
+                                >
+                                  <EditableText fieldKey={`custom_sec_${secObj.id}_btnText`} value={secObj.buttonText || 'Get Started Now'} />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* TYPE 11: DEFAULT CONTAINER GRID (Services / Features / Generic Cards) */}
+                        {(!secType || ['services', 'features', 'custom', 'custom_box'].includes(secType)) && secObj.items && secObj.items.length > 0 && (
                           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {secObj.items.map((item, itemIdx) => (
                               <div key={itemIdx} className={`p-6 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-soft-sm flex flex-col justify-between`} style={{ backgroundColor: item.backgroundColor, borderColor: item.borderColor }}>

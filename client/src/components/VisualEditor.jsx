@@ -464,13 +464,37 @@ export default function VisualEditor({
           { name: 'Elena Rostova', role: 'Chief Strategist', bio: 'Specializes in brand development and growth strategy.', imageUrl: template.image }
         ]
       };
+    } else if (presetType === 'hero') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Headline Banner',
+        subtitle: 'Elevate your brand message with a high-impact cinematic showcase.',
+        badge: 'Featured Showcase',
+        imageUrl: template.image,
+        buttonText: 'Get Started Today',
+        buttonLink: '/contact',
+        secondaryBtnText: 'Learn More',
+        secondaryBtnLink: '/about'
+      };
+    } else if (presetType === 'portfolio') {
+      newSecObj = {
+        ...newSecObj,
+        title: 'Selected Works & Case Studies',
+        subtitle: 'A showcase of our recent projects, creative design, and client results.',
+        items: [
+          { title: 'Digital Transformation', category: 'Web & Brand Design', desc: 'Complete brand overhaul and custom digital platform build.', imageUrl: template.image, buttonText: 'View Case Study', buttonLink: '/services' },
+          { title: 'E-Commerce Platform', category: 'Product Engineering', desc: 'Scalable cloud infrastructure with high-conversion checkout.', imageUrl: template.image, buttonText: 'View Case Study', buttonLink: '/services' },
+          { title: 'Mobile Experience', category: 'UX & Application', desc: 'User-centered mobile interface designed for seamless engagement.', imageUrl: template.image, buttonText: 'View Case Study', buttonLink: '/services' }
+        ]
+      };
     } else if (presetType === 'cta') {
       newSecObj = {
         ...newSecObj,
         title: 'Ready To Elevate Your Business?',
         subtitle: 'Get in touch with our team today for a free consultation.',
         buttonText: 'Get Started Now',
-        buttonLink: '/contact'
+        buttonLink: '/contact',
+        badge: 'Take Action Today'
       };
     } else {
       newSecObj = {

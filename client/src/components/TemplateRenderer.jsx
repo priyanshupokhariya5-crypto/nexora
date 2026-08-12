@@ -181,28 +181,48 @@ export default function TemplateRenderer({
     );
   };
 
-  // Helper Component: Inline Canvas Image Editor
+  // Helper Component: Inline Canvas Image Editor with Role-Based Responsive Sizing
   const EditableImage = ({ 
     slotKey, 
     src, 
     alt = '', 
     className = '', 
-    style = {} 
+    style = {},
+    fitMode = 'auto'
   }) => {
+    const currentSrc = src || template.image;
+    const userFitMode = customData?.[`${slotKey}_fitMode`] || fitMode;
+    const userAlt = customData?.[`${slotKey}_alt`] || alt;
+
+    let fitClass = 'object-contain';
+    if (userFitMode === 'cover') {
+      fitClass = 'object-cover';
+    } else if (userFitMode === 'contain') {
+      fitClass = 'object-contain';
+    } else {
+      if (slotKey.includes('logo') || slotKey.includes('about') || slotKey.includes('gallery')) {
+        fitClass = 'object-contain';
+      } else {
+        fitClass = 'object-cover sm:object-contain';
+      }
+    }
+
+    const responsiveImgClass = `max-w-full w-full h-auto min-w-0 ${fitClass} ${className}`;
+
     if (!isEditMode) {
-      return <img src={src} alt={alt} className={className} style={style} />;
+      return <img src={currentSrc} alt={userAlt} className={responsiveImgClass} style={style} loading="lazy" />;
     }
 
     return (
       <div 
         onClick={() => onTriggerImageUpload && onTriggerImageUpload(slotKey)}
-        className="relative group/img cursor-pointer inline-block w-full h-full"
-        title="Click to replace image"
+        className="relative group/img cursor-pointer max-w-full w-full h-full min-w-0 flex items-center justify-center overflow-hidden"
+        title="Click to edit/replace image"
       >
-        <img src={src} alt={alt} className={`${className} transition-opacity group-hover/img:opacity-80`} style={style} />
+        <img src={currentSrc} alt={userAlt} className={`${responsiveImgClass} transition-opacity group-hover/img:opacity-85`} style={style} />
         <div className="opacity-0 group-hover/img:opacity-100 absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center transition-opacity z-20 rounded-inherit">
-          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1">
-            <span>📷 Replace Image</span>
+          <span className="px-3 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5">
+            <span>📷 Edit / Replace Image</span>
           </span>
         </div>
       </div>

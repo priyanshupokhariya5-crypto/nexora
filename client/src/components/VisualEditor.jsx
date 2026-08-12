@@ -419,11 +419,114 @@ export default function VisualEditor({
     pushToHistory({ ...customState, navLinks: updatedNavLinks, customPages: updatedPages });
   };
 
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [activeImageSlot, setActiveImageSlot] = useState('');
+  const [imageModalTab, setImageModalTab] = useState('upload');
+  const [imageModalUrlInput, setImageModalUrlInput] = useState('');
+  const [imageModalAltInput, setImageModalAltInput] = useState('');
+  const [imageModalFitMode, setImageModalFitMode] = useState('contain');
+  const [imageModalPreview, setImageModalPreview] = useState('');
+  const [imageModalError, setImageModalError] = useState('');
+  const [imageModalLoading, setImageModalLoading] = useState(false);
+
   const triggerImageUpload = (slotKey) => {
-    setUploadingSlot(slotKey);
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+    setActiveImageSlot(slotKey);
+    const existingUrl = customState[slotKey] || template.defaultData?.[slotKey] || template.image;
+    setImageModalPreview(existingUrl);
+    setImageModalUrlInput(typeof existingUrl === 'string' && existingUrl.startsWith('http') ? existingUrl : '');
+    setImageModalAltInput(customState[`${slotKey}_alt`] || '');
+    setImageModalFitMode(customState[`${slotKey}_fitMode`] || 'contain');
+    setImageModalError('');
+    setImageModalTab('upload');
+    setShowImageModal(true);
+  };
+
+  const handlePreviewImageUrl = () => {
+    if (!imageModalUrlInput || !imageModalUrlInput.trim()) {
+      setImageModalError('Please enter a valid image URL.');
+      return;
     }
+    const cleanUrl = imageModalUrlInput.trim();
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('data:image/')) {
+      setImageModalError('URL must start with http:// or https://');
+      return;
+    }
+
+    setImageModalLoading(true);
+    setImageModalError('');
+    const img = new Image();
+    img.onload = () => {
+      setImageModalLoading(false);
+      setImageModalPreview(cleanUrl);
+      setImageModalError('');
+    };
+    img.onerror = () => {
+      setImageModalLoading(false);
+      setImageModalError('Unable to load this image. Please check the URL.');
+    };
+    img.src = cleanUrl;
+  };
+
+  const handleModalFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setImageModalError('Unsupported file type. Please select a JPG, PNG, WEBP, or GIF image.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setImageModalError('Image file is too large. Please select an image under 10MB.');
+      return;
+    }
+
+    setImageModalLoading(true);
+    setImageModalError('');
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = reader.result;
+      try {
+        const res = await apiFetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        });
+        const data = await res.json();
+        if (data.success && data.url) {
+          setImageModalPreview(data.url);
+          setImageModalUrlInput(data.url);
+          setImageModalError('');
+        } else {
+          setImageModalPreview(base64Data);
+        }
+      } catch (err) {
+        setImageModalPreview(base64Data);
+      } finally {
+        setImageModalLoading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleApplyModalImage = () => {
+    if (!imageModalPreview || imageModalError) {
+      setImageModalError('Please provide a valid image before applying.');
+      return;
+    }
+
+    handleUpdateContent(activeImageSlot, imageModalPreview);
+    if (imageModalAltInput) {
+      handleTextChange(`${activeImageSlot}_alt`, imageModalAltInput);
+    }
+    if (imageModalFitMode) {
+      handleTextChange(`${activeImageSlot}_fitMode`, imageModalFitMode);
+    }
+
+    setShowImageModal(false);
+    setActiveImageSlot('');
+    setImageModalError('');
   };
 
   const handleFileSelected = (e) => {
@@ -1098,6 +1201,159 @@ export default function VisualEditor({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showImageModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 text-white shadow-2xl space-y-4 my-auto">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base sm:text-lg font-bold font-display flex items-center space-x-2">
+                  <Camera className="w-5 h-5 text-brand-400" />
+                  <span>Edit / Replace Image</span>
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-0.5">Slot: <span className="font-mono text-brand-300">{activeImageSlot}</span></p>
+              </div>
+              <button onClick={() => setShowImageModal(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tabs: Upload vs URL */}
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => { setImageModalTab('upload'); setImageModalError(''); }}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 ${imageModalTab === 'upload' ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload Image</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setImageModalTab('url'); setImageModalError(''); }}
+                className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center space-x-1.5 ${imageModalTab === 'url' ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <Globe className="w-4 h-4" />
+                <span>Image URL</span>
+              </button>
+            </div>
+
+            {/* Tab Body */}
+            {imageModalTab === 'upload' ? (
+              <div className="space-y-3">
+                <label className="block text-xs font-semibold text-slate-300">Choose Image File (JPG, PNG, WEBP, GIF)</label>
+                <div className="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-2xl p-6 text-center bg-slate-950/60 transition-colors cursor-pointer relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleModalFileUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  <UploadCloud className="w-8 h-8 text-brand-400 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-200">Click or Drag & Drop image file here</p>
+                  <p className="text-[10px] text-slate-500 mt-1">Supports JPG, PNG, WEBP, GIF up to 10MB</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <label className="block text-xs font-semibold text-slate-300">Paste External Image URL</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="url"
+                    value={imageModalUrlInput}
+                    onChange={(e) => setImageModalUrlInput(e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1 px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePreviewImageUrl}
+                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-colors"
+                  >
+                    Preview
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Fit Mode Switcher */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Image Fit Behavior</label>
+                <select
+                  value={imageModalFitMode}
+                  onChange={(e) => setImageModalFitMode(e.target.value)}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white"
+                >
+                  <option value="contain">Full Image Visible (Contain)</option>
+                  <option value="cover">Fill Container Frame (Cover)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Alt Description (Optional)</label>
+                <input
+                  type="text"
+                  value={imageModalAltInput}
+                  onChange={(e) => setImageModalAltInput(e.target.value)}
+                  placeholder="Describe image..."
+                  className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white"
+                />
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {imageModalError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>{imageModalError}</span>
+              </div>
+            )}
+
+            {/* Live Preview Box */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Live Image Preview</span>
+              <div className="w-full h-44 rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center relative p-2">
+                {imageModalLoading ? (
+                  <div className="flex flex-col items-center justify-center text-brand-400 space-y-2">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span className="text-xs font-bold">Loading Image Preview...</span>
+                  </div>
+                ) : imageModalPreview ? (
+                  <img
+                    src={imageModalPreview}
+                    alt="Preview"
+                    className={`max-w-full max-h-full ${imageModalFitMode === 'cover' ? 'object-cover w-full h-full' : 'object-contain'} rounded-xl shadow-md`}
+                    onError={() => setImageModalError('Unable to load this image. Please check the URL.')}
+                  />
+                ) : (
+                  <span className="text-xs text-slate-500 font-mono">No image loaded</span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-2 flex justify-end space-x-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowImageModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyModalImage}
+                disabled={imageModalLoading || !imageModalPreview || Boolean(imageModalError)}
+                className="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg transition-all flex items-center space-x-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>Use Image</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

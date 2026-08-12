@@ -394,6 +394,26 @@ export default function TemplateRenderer({
               <a href="#" onClick={(e) => handleLinkClick(e, '/')} className="flex items-center space-x-3 cursor-pointer">
                 {logoImage ? (
                   <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-8 max-w-[150px] object-contain rounded-md" />
+                ) : isEditMode ? (
+                  <div 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onTriggerImageUpload) onTriggerImageUpload('logoImageUrl');
+                    }}
+                    className="relative group/logo cursor-pointer flex items-center space-x-2"
+                    title="Click to edit or upload Brand Logo"
+                  >
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden" style={{ backgroundColor: accentColor }}>
+                      {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}
+                      <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
+                        <span className="text-[9px] font-extrabold text-white">📷</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-brand-400 opacity-0 group-hover/logo:opacity-100 transition-opacity whitespace-nowrap bg-slate-900/90 border border-slate-700 px-2 py-0.5 rounded-md shadow-md">
+                      + Upload Logo
+                    </span>
+                  </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm" style={{ backgroundColor: accentColor }}>
                     {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}

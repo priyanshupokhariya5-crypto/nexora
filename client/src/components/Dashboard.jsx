@@ -160,20 +160,26 @@ export default function Dashboard({
           <>
             {/* Analytics Stats & Plan Status */}
             <div className="grid sm:grid-cols-4 gap-6 mb-10">
-              <div className="p-6 rounded-3xl bg-white border-2 border-brand-500 shadow-soft-sm relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-brand-600 font-display">Current Plan</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    ✓ Active
+              
+              {/* CURRENT PLAN CARD */}
+              <div className="p-6 rounded-3xl bg-white border-2 border-brand-500 shadow-soft-sm relative overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 font-display">CURRENT PLAN</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      ✓ Active
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-extrabold text-slate-900 font-display">FREE</h3>
+                  <p className="text-sm font-bold text-slate-600 mt-0.5">₹0/month</p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="text-slate-500 font-medium">Premium features:</span>
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center space-x-1">
+                    <Lock className="w-3 h-3 text-amber-600" />
+                    <span>Coming Soon</span>
                   </span>
                 </div>
-                <div className="mt-3 flex items-baseline space-x-1.5">
-                  <p className="text-2xl font-extrabold text-slate-900 font-display uppercase">
-                    {user?.plan || 'FREE'}
-                  </p>
-                  <span className="text-xs text-slate-500 font-semibold">₹0/mo</span>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-1">1 Website slot • Free Nexora URL</p>
               </div>
 
               <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-soft-sm">
@@ -302,7 +308,42 @@ export default function Dashboard({
         )}
 
         {activeTab === 'subscribers' && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-soft-sm">
+          <div className="space-y-6">
+            {/* Admin Subscription System Overview */}
+            <div className="p-6 rounded-3xl bg-slate-900 text-white shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Shield className="w-5 h-5 text-brand-400" />
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider font-display">SUBSCRIPTION SYSTEM</h3>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1 font-display">
+                  <Lock className="w-3 h-3" />
+                  <span>PREMIUM: COMING SOON</span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Free</span>
+                  <p className="text-base font-extrabold text-emerald-400 mt-1 font-display">ACTIVE ✓</p>
+                  <p className="text-[11px] text-slate-400 mt-1">1 Website limit enforced</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Pro (₹499/mo)</span>
+                  <p className="text-base font-extrabold text-amber-400 mt-1 font-display">LOCKED 🔒</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Coming Soon</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-display">Business (₹1499/mo)</span>
+                  <p className="text-base font-extrabold text-amber-400 mt-1 font-display">LOCKED 🔒</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Coming Soon</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-soft-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 font-display">
@@ -381,6 +422,7 @@ export default function Dashboard({
               </div>
             )}
           </div>
+        </div>
         )}
 
         {/* Domain Settings Modal */}

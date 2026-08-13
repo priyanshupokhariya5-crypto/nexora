@@ -937,8 +937,8 @@ router.post('/websites', requireAuth, async (req, res) => {
       if (!isUserPremium && userSitesCount >= 1) {
         return res.status(403).json({
           success: false,
-          code: 'FREE_PLAN_LIMIT_REACHED',
-          message: 'Free plan allows 1 website. Upgrade to Premium for more websites.',
+          code: 'FREE_PLAN_LIMIT',
+          message: 'Free plan allows 1 website. Premium plans are coming soon.',
           isLocked: true
         });
       }

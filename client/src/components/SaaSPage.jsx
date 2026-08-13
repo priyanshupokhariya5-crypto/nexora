@@ -12,7 +12,7 @@ import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
 import TemplateRenderer from './TemplateRenderer';
 import { apiFetch } from '../api';
 
-export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null, onOpenAuth }) {
+export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null, onOpenAuth, scrollToPricing = false }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [openFaq, setOpenFaq] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -22,6 +22,17 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
   const [previewModalTemplate, setPreviewModalTemplate] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
   const [slideDirection, setSlideDirection] = useState('right');
+
+  useEffect(() => {
+    if (scrollToPricing) {
+      setTimeout(() => {
+        const elem = document.getElementById('pricing-section');
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [scrollToPricing]);
 
   // Source of Truth: Use templates prop from GET /api/templates or fallback to TEMPLATES_DATA
   const rawTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
@@ -767,7 +778,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
       </section>
 
       {/* 8.5 PRICING PLANS SECTION */}
-      <section className="py-20 sm:py-24 bg-slate-50 border-t border-slate-200/80 w-full min-w-0 max-w-full">
+      <section id="pricing-section" className="py-20 sm:py-24 bg-slate-50 border-t border-slate-200/80 w-full min-w-0 max-w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0 max-w-full">
           <div className="text-center max-w-3xl mx-auto">
             <span className="text-xs font-bold uppercase tracking-widest text-brand-600 font-display">
@@ -782,44 +793,57 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
           </div>
 
           <div className="mt-14 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch w-full min-w-0 max-w-full">
+            
             {/* 1. FREE PLAN (ACTIVE) */}
             <div className="p-8 rounded-3xl bg-white border-2 border-brand-500 shadow-xl flex flex-col justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-brand-500 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-xl font-display">
-                Active Plan
+              <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-extrabold uppercase px-3.5 py-1 rounded-bl-xl font-display">
+                ✓ ACTIVE PLAN
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-600 font-display">Free Tier</span>
-                <h3 className="text-2xl font-extrabold text-slate-900 font-display mt-1">FREE</h3>
+                <h3 className="text-3xl font-extrabold text-slate-900 font-display mt-1">FREE</h3>
                 <div className="mt-4 flex items-baseline">
                   <span className="text-4xl font-extrabold text-slate-900 font-display">₹0</span>
-                  <span className="text-xs text-slate-500 ml-1 font-medium">/ month</span>
+                  <span className="text-xs text-slate-500 ml-1 font-medium">/month</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Perfect for launching your first business website.</p>
 
                 <ul className="mt-6 space-y-3 text-xs text-slate-700 font-medium">
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Create up to 1 website</span>
+                    <span>1 Website</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Access to free business templates</span>
+                    <span>Free Templates</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Visual Editor & text customization</span>
+                    <span>Visual Editor</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Multi-slot image editing & uploads</span>
+                    <span>Basic Image Upload</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Responsive desktop/tablet/mobile preview</span>
+                    <span>Basic Image Editing</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Publish website on Nexora URL</span>
+                    <span>Basic Sections</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Responsive Preview</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Nexora URL</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Publish Website</span>
                   </li>
                 </ul>
               </div>
@@ -828,7 +852,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                 onClick={onExploreCatalog}
                 className="mt-8 w-full py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center space-x-2"
               >
-                <span>Current Plan (Active)</span>
+                <span>Current Plan</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -837,14 +861,14 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
             <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-soft-sm flex flex-col justify-between relative opacity-95">
               <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 border-l border-b border-amber-200 text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-xl font-display flex items-center space-x-1">
                 <Lock className="w-3 h-3 text-amber-600" />
-                <span>Coming Soon</span>
+                <span>🔒 PREMIUM COMING SOON</span>
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 font-display">Professional</span>
-                <h3 className="text-2xl font-extrabold text-slate-900 font-display mt-1">PRO</h3>
+                <h3 className="text-3xl font-extrabold text-slate-900 font-display mt-1">PRO</h3>
                 <div className="mt-4 flex items-baseline">
                   <span className="text-4xl font-extrabold text-slate-900 font-display">₹499</span>
-                  <span className="text-xs text-slate-500 ml-1 font-medium">/ month</span>
+                  <span className="text-xs text-slate-500 ml-1 font-medium">/month</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">For growing businesses needing multiple sites & custom domains.</p>
 
@@ -855,23 +879,35 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                    <span>Create multiple websites</span>
+                    <span>More Websites</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                    <span>Unlock all Premium templates</span>
+                    <span>Premium Templates</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                    <span>Connect custom domain</span>
+                    <span>Advanced Sections</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                    <span>Remove Nexora branding</span>
+                    <span>Custom Domain</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                    <span>Priority customer support</span>
+                    <span>Advanced SEO</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                    <span>Remove Nexora Branding</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                    <span>Analytics</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                    <span>Priority Support</span>
                   </li>
                 </ul>
               </div>
@@ -889,14 +925,14 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
             <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-soft-sm flex flex-col justify-between relative opacity-95">
               <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 border-l border-b border-amber-200 text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-xl font-display flex items-center space-x-1">
                 <Lock className="w-3 h-3 text-amber-600" />
-                <span>Coming Soon</span>
+                <span>🔒 PREMIUM COMING SOON</span>
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 font-display">Enterprise</span>
-                <h3 className="text-2xl font-extrabold text-slate-900 font-display mt-1">BUSINESS</h3>
+                <h3 className="text-3xl font-extrabold text-slate-900 font-display mt-1">BUSINESS</h3>
                 <div className="mt-4 flex items-baseline">
-                  <span className="text-4xl font-extrabold text-slate-900 font-display">₹1,499</span>
-                  <span className="text-xs text-slate-500 ml-1 font-medium">/ month</span>
+                  <span className="text-4xl font-extrabold text-slate-900 font-display">₹1499</span>
+                  <span className="text-xs text-slate-500 ml-1 font-medium">/month</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Full suite for agencies, teams, and multi-brand businesses.</p>
 
@@ -907,19 +943,23 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Unlimited website slots</span>
+                    <span>Multiple Websites</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Multiple custom domain mappings</span>
+                    <span>Multiple Domains</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Advanced analytics & reporting</span>
+                    <span>Team Features</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                    <span>Team collaboration & roles</span>
+                    <span>Advanced Analytics</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span>Priority Support</span>
                   </li>
                 </ul>
               </div>

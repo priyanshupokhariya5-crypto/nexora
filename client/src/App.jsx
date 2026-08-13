@@ -203,7 +203,13 @@ export default function App() {
         return;
       }
 
-      // 6. Public Landing Page: /
+      // Pricing Route: /pricing
+      if (path === '/pricing') {
+        setCurrentView('pricing');
+        return;
+      }
+
+      // Public Landing Page: /
       if (path === '/' || path === '') {
         setCurrentView('landing');
         if (user) {
@@ -368,8 +374,9 @@ export default function App() {
       )}
 
       {/* Main Views Router */}
-      {currentView === 'landing' && (
+      {(currentView === 'landing' || currentView === 'pricing') && (
         <SaaSPage
+          scrollToPricing={currentView === 'pricing'}
           templates={templates}
           onSelectTemplate={handleSelectTemplate}
           onExploreCatalog={() => {

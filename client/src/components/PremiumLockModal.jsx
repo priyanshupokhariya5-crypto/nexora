@@ -3,7 +3,7 @@ import { Lock, Sparkles, X, Check } from 'lucide-react';
 
 export default function PremiumLockModal({ 
   title = 'Premium Feature', 
-  description = 'This feature is available with a Nexora Premium plan.', 
+  description = 'Premium templates are coming soon.', 
   onClose 
 }) {
   return (
@@ -24,9 +24,9 @@ export default function PremiumLockModal({
         </div>
 
         {/* Badge */}
-        <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 inline-flex items-center space-x-1 mb-3">
-          <Sparkles className="w-3 h-3 text-amber-600" />
-          <span>LOCKED • COMING SOON</span>
+        <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 inline-flex items-center space-x-1 mb-3 font-display">
+          <Lock className="w-3 h-3 text-amber-600" />
+          <span>🔒 PREMIUM • COMING SOON</span>
         </span>
 
         {/* Title & Description */}
@@ -34,14 +34,14 @@ export default function PremiumLockModal({
           {title}
         </h2>
         
-        <p className="text-xs text-slate-600 leading-relaxed mt-2.5 px-2">
+        <p className="text-xs text-slate-600 leading-relaxed mt-2.5 px-2 font-medium">
           {description}
         </p>
 
         {/* Feature Highlights */}
         <div className="mt-6 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-2 text-xs text-slate-700">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 font-display">
-            Premium Plan Benefits:
+            Premium Plan Features (Coming Soon):
           </p>
           <div className="flex items-center space-x-2">
             <Check className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
@@ -61,21 +61,13 @@ export default function PremiumLockModal({
           </div>
         </div>
 
-        {/* Disabled Action Button */}
-        <div className="mt-6 space-y-3">
-          <button
-            disabled
-            className="w-full py-3 rounded-xl bg-slate-200 text-slate-400 font-bold text-xs cursor-not-allowed border border-slate-300 flex items-center justify-center space-x-1.5 shadow-none"
-          >
-            <Lock className="w-4 h-4" />
-            <span>Upgrade Coming Soon</span>
-          </button>
-          
+        {/* Action Button: OK */}
+        <div className="mt-6">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+            className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center space-x-1"
           >
-            Continue with Free Plan
+            <span>OK</span>
           </button>
         </div>
 

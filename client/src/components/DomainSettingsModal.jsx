@@ -110,8 +110,8 @@ export default function DomainSettingsModal({ website = {}, onClose }) {
             </h3>
 
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 border border-amber-200 flex items-center space-x-1">
-              <Sparkles className="w-3 h-3 text-amber-600" />
-              <span>COMING SOON</span>
+              <Lock className="w-3 h-3 text-amber-600" />
+              <span>🔒 PREMIUM • COMING SOON</span>
             </span>
           </div>
 

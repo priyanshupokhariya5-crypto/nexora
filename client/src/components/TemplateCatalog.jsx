@@ -136,16 +136,25 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
                         </span>
 
                         <div className="flex items-center space-x-1.5 flex-shrink-0">
-                          {tpl.featured && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1">
-                              <Star className="w-3 h-3 fill-slate-950" />
-                              <span>Featured</span>
+                          {tpl.isPremium || tpl.badge === 'Tech & SaaS' || tpl.category === 'Tech & SaaS' ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1 font-display">
+                              <Lock className="w-3 h-3 text-slate-950" />
+                              <span>🔒 PREMIUM COMING SOON</span>
                             </span>
-                          )}
-                          {tpl.badge && !tpl.featured && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow">
-                              {tpl.badge}
-                            </span>
+                          ) : (
+                            <>
+                              {tpl.featured && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1">
+                                  <Star className="w-3 h-3 fill-slate-950" />
+                                  <span>Featured</span>
+                                </span>
+                              )}
+                              {tpl.badge && !tpl.featured && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow">
+                                  {tpl.badge}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

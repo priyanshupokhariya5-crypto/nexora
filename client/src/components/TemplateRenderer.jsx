@@ -440,51 +440,53 @@ export default function TemplateRenderer({
         <div>
           {/* NAVBAR */}
           <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full`}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 min-h-[4rem] py-3.5 sm:py-4 flex items-center justify-between gap-3 sm:gap-6 min-w-0 w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-[4.25rem] py-3.5 flex items-center justify-between gap-4 w-full min-w-0">
               
-              {/* Brand Logo + Brand Name Container */}
-              <a 
-                href="#" 
-                onClick={(e) => handleLinkClick(e, '/')} 
-                className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 flex-1 xl:flex-initial max-w-[65%] sm:max-w-[75%] xl:max-w-xs mr-2 overflow-hidden"
-              >
-                {logoImage ? (
-                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
-                ) : isEditMode ? (
-                  <div 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (onTriggerImageUpload) onTriggerImageUpload('logoImageUrl');
-                    }}
-                    className="relative group/logo cursor-pointer flex items-center space-x-2 flex-shrink-0"
-                    title="Click to edit or upload Brand Logo"
-                  >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden flex-shrink-0" style={{ backgroundColor: accentColor }}>
-                      {brandName.charAt(0).toUpperCase()}
-                      <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
-                        <span className="text-[9px] font-extrabold text-white">📷</span>
+              {/* COLUMN 1: Brand Logo + Brand Name Container (LEFT) */}
+              <div className="flex items-center min-w-0 max-w-[40%] sm:max-w-[45%] xl:max-w-[320px] flex-shrink-0">
+                <a 
+                  href="#" 
+                  onClick={(e) => handleLinkClick(e, '/')} 
+                  className="flex items-center space-x-2.5 cursor-pointer min-w-0 overflow-hidden group"
+                >
+                  {logoImage ? (
+                    <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
+                  ) : isEditMode ? (
+                    <div 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (onTriggerImageUpload) onTriggerImageUpload('logoImageUrl');
+                      }}
+                      className="relative group/logo cursor-pointer flex items-center space-x-2 flex-shrink-0"
+                      title="Click to edit or upload Brand Logo"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                        {brandName.charAt(0).toUpperCase()}
+                        <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
+                          <span className="text-[9px] font-extrabold text-white">📷</span>
+                        </div>
                       </div>
+                      <span className="hidden xs:inline-block text-[10px] font-extrabold text-brand-400 opacity-0 group-hover/logo:opacity-100 transition-opacity whitespace-nowrap bg-slate-900/90 border border-slate-700 px-2 py-0.5 rounded-md shadow-md">
+                        + Upload Logo
+                      </span>
                     </div>
-                    <span className="hidden xs:inline-block text-[10px] font-extrabold text-brand-400 opacity-0 group-hover/logo:opacity-100 transition-opacity whitespace-nowrap bg-slate-900/90 border border-slate-700 px-2 py-0.5 rounded-md shadow-md">
-                      + Upload Logo
-                    </span>
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm flex-shrink-0" style={{ backgroundColor: accentColor }}>
-                    {brandName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <EditableText 
-                  fieldKey="logoText" 
-                  value={brandName} 
-                  tagName="span" 
-                  className="font-extrabold text-sm sm:text-base xl:text-lg tracking-tight font-display truncate block min-w-0 max-w-full" 
-                />
-              </a>
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                      {brandName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <EditableText 
+                    fieldKey="logoText" 
+                    value={brandName} 
+                    tagName="span" 
+                    className="font-extrabold text-sm sm:text-base xl:text-lg tracking-tight font-display truncate block min-w-0 max-w-full" 
+                  />
+                </a>
+              </div>
 
-              {/* Desktop Navigation Links */}
-              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden xl:flex'} items-center space-x-4 2xl:space-x-6 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
+              {/* COLUMN 2: Center Navigation Links (CENTER) */}
+              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden 2xl:flex'} items-center justify-center space-x-5 xl:space-x-6 text-xs font-semibold opacity-90 flex-1 min-w-0 overflow-hidden`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -501,22 +503,22 @@ export default function TemplateRenderer({
                 })}
               </nav>
 
-              {/* Header Actions (CTA + Mobile Hamburger Toggle) */}
-              <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto">
+              {/* COLUMN 3: Right Actions / CTA Button + Hamburger Toggle (RIGHT) */}
+              <div className="flex items-center space-x-3 flex-shrink-0">
                 {/* Desktop CTA Button */}
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden xl:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden 2xl:inline-flex'} px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
                 </a>
 
-                {/* Mobile Hamburger Toggle Button */}
+                {/* Mobile / Tablet Hamburger Toggle Button */}
                 <button
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : 'xl:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : '2xl:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
                   aria-label="Toggle navigation menu"
                 >
                   <span className="text-lg font-bold leading-none">{mobileNavOpen ? '✕' : '☰'}</span>

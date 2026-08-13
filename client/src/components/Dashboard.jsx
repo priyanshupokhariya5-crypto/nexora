@@ -6,6 +6,9 @@ import {
 import { apiFetch } from '../api';
 import DomainSettingsModal from './DomainSettingsModal';
 
+import PremiumLockModal from './PremiumLockModal';
+import { Shield, Lock } from 'lucide-react';
+
 export default function Dashboard({ 
   user = null,
   onOpenAuth,
@@ -18,6 +21,7 @@ export default function Dashboard({
   const [subscribers, setSubscribers] = useState([]);
   const [subscribersLoading, setSubscribersLoading] = useState(false);
   const [selectedDomainSite, setSelectedDomainSite] = useState(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   const fetchWebsites = async () => {
     try {
@@ -32,6 +36,19 @@ export default function Dashboard({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateWebsiteClick = () => {
+    if (!user) {
+      if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    const isFree = !user.premiumAccess && user.plan !== 'pro' && user.plan !== 'business';
+    if (isFree && savedSites.length >= 1) {
+      setShowLimitModal(true);
+      return;
+    }
+    if (onCreateNew) onCreateNew();
   };
 
   const fetchSubscribers = async () => {
@@ -101,7 +118,7 @@ export default function Dashboard({
             )}
 
             <button
-              onClick={onCreateNew}
+              onClick={handleCreateWebsiteClick}
               className="px-5 py-3 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 flex items-center space-x-2 transition-all transform active:scale-95"
             >
               <Plus className="w-4 h-4" />
@@ -141,15 +158,31 @@ export default function Dashboard({
 
         {activeTab === 'websites' && (
           <>
-            {/* Analytics Stats */}
-            <div className="grid sm:grid-cols-3 gap-6 mb-10">
+            {/* Analytics Stats & Plan Status */}
+            <div className="grid sm:grid-cols-4 gap-6 mb-10">
+              <div className="p-6 rounded-3xl bg-white border-2 border-brand-500 shadow-soft-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-brand-600 font-display">Current Plan</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    ✓ Active
+                  </span>
+                </div>
+                <div className="mt-3 flex items-baseline space-x-1.5">
+                  <p className="text-2xl font-extrabold text-slate-900 font-display uppercase">
+                    {user?.plan || 'FREE'}
+                  </p>
+                  <span className="text-xs text-slate-500 font-semibold">₹0/mo</span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">1 Website slot • Free Nexora URL</p>
+              </div>
+
               <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-soft-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-display">Total Websites</span>
                   <Layers className="w-5 h-5 text-brand-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-slate-900 mt-3 font-display">
-                  {savedSites.length}
+                  {savedSites.length} / 1
                 </p>
               </div>
 
@@ -355,6 +388,15 @@ export default function Dashboard({
           <DomainSettingsModal
             website={selectedDomainSite}
             onClose={() => setSelectedDomainSite(null)}
+          />
+        )}
+
+        {/* Free Plan Limit Upgrade Modal */}
+        {showLimitModal && (
+          <PremiumLockModal
+            title="Free Plan Limit Reached"
+            description="The Free plan includes 1 website slot. Upgrade to Premium plans for unlimited websites."
+            onClose={() => setShowLimitModal(false)}
           />
         )}
 

@@ -914,6 +914,36 @@ router.post('/websites', requireAuth, async (req, res) => {
       });
     }
 
+    // Website Creation Limit Enforcement for Free Plan Users (Limit = 1 website)
+    if (!existingSite) {
+      let userSitesCount = 0;
+      if (isMongoConnected()) {
+        userSitesCount = await Website.countDocuments({ userId: authenticatedUserId });
+      } else {
+        userSitesCount = Array.from(memoryWebsitesStore.values()).filter(s => s.userId === authenticatedUserId).length;
+      }
+
+      let isUserPremium = false;
+      if (isMongoConnected()) {
+        try {
+          const u = await User.findById(authenticatedUserId);
+          if (u && (u.premiumAccess || u.plan !== 'free')) isUserPremium = true;
+        } catch (e) {}
+      } else {
+        const u = Array.from(memoryUsersStore.values()).find(user => user.id === authenticatedUserId);
+        if (u && (u.premiumAccess || u.plan !== 'free')) isUserPremium = true;
+      }
+
+      if (!isUserPremium && userSitesCount >= 1) {
+        return res.status(403).json({
+          success: false,
+          code: 'FREE_PLAN_LIMIT_REACHED',
+          message: 'Free plan allows 1 website. Upgrade to Premium for more websites.',
+          isLocked: true
+        });
+      }
+    }
+
     // Preserve slug ONLY if website is already published!
     const isAlreadyPublished = Boolean(existingSite?.isPublished);
     const targetSlug = await generateUniqueSlug(
@@ -1542,6 +1572,64 @@ router.post('/newsletter/unsubscribe', async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ==========================================
+// 8. PAYMENT SYSTEM PREPARATION & SUBSCRIPTION CONFIG (RAZORPAY PREPARED)
+// ==========================================
+
+const PREMIUM_ENABLED = process.env.PREMIUM_ENABLED === 'true'; // Defaults to false
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || null;
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || null;
+
+// GET /api/subscription/config — Public Subscription Configuration
+router.get('/subscription/config', (req, res) => {
+  return res.json({
+    success: true,
+    premiumEnabled: PREMIUM_ENABLED,
+    plans: {
+      free: { id: 'free', name: 'FREE', price: 0, currency: 'INR', active: true, websiteLimit: 1 },
+      pro: { id: 'pro', name: 'PRO', price: 499, currency: 'INR', active: false, status: 'locked' },
+      business: { id: 'business', name: 'BUSINESS', price: 1499, currency: 'INR', active: false, status: 'locked' }
+    }
+  });
+});
+
+// POST /api/payments/create-order — Razorpay Order Creation (Locked)
+router.post('/payments/create-order', requireAuth, async (req, res) => {
+  if (!PREMIUM_ENABLED) {
+    return res.status(400).json({
+      success: false,
+      code: 'PREMIUM_COMING_SOON',
+      message: 'Premium plans are coming soon. Real purchases are currently disabled.',
+      isLocked: true
+    });
+  }
+  return res.status(501).json({ success: false, message: 'Payment gateway integration is pending activation.' });
+});
+
+// POST /api/payments/verify — Razorpay Signature Verification (Locked)
+router.post('/payments/verify', requireAuth, async (req, res) => {
+  if (!PREMIUM_ENABLED) {
+    return res.status(400).json({
+      success: false,
+      code: 'PREMIUM_COMING_SOON',
+      message: 'Premium plans are coming soon. Real purchases are currently disabled.',
+      isLocked: true
+    });
+  }
+  return res.status(501).json({ success: false, message: 'Payment gateway integration is pending activation.' });
+});
+
+// POST /api/payments/webhook — Razorpay Webhook Listener (Prepared Architecture)
+router.post('/payments/webhook', async (req, res) => {
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    console.log('Razorpay Webhook event received. Premium Enabled:', PREMIUM_ENABLED);
+    return res.json({ success: true, message: 'Webhook received successfully.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
 

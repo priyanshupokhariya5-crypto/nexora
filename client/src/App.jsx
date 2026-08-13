@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import AuthModal from './components/AuthModal';
 import AdminThemeModal from './components/AdminThemeModal';
 import PublicWebsite from './components/PublicWebsite';
+import PremiumLockModal from './components/PremiumLockModal';
 import { TEMPLATES_DATA } from './data/templatesData';
 import { apiFetch } from './api';
 import { Loader2, AlertTriangle, ArrowLeft, LayoutGrid, Layers } from 'lucide-react';
@@ -217,11 +218,35 @@ export default function App() {
     return () => window.removeEventListener('popstate', checkPathRoute);
   }, [user]);
 
+  const [appLockModal, setAppLockModal] = useState(null);
+
   const handleSelectTemplate = (template) => {
     if (!user) {
       setIsAuthOpen(true);
       return;
     }
+
+    const isFree = !user.premiumAccess && user.plan !== 'pro' && user.plan !== 'business';
+
+    // 1. Check template locking
+    const isPremium = template.isPremium || template.badge === 'Tech & SaaS' || template.price === 'Premium' || template.category === 'Tech & SaaS';
+    if (isPremium && isFree) {
+      setAppLockModal({
+        title: 'Premium Template',
+        description: 'This template is available with a Premium plan.'
+      });
+      return;
+    }
+
+    // 2. Check website creation limit (Free plan = 1 website)
+    if (isFree && savedWebsites.length >= 1) {
+      setAppLockModal({
+        title: 'Free Plan Limit Reached',
+        description: 'The Free plan includes 1 website slot. Upgrade to Premium for more website slots.'
+      });
+      return;
+    }
+
     setSelectedTemplate(template);
     setEditingSite(null);
     setIsAuthOpen(false);
@@ -408,13 +433,14 @@ export default function App() {
         onAuthSuccess={handleAuthSuccess}
       />
 
-      {/* Admin Theme Manager Modal (ADMIN ROLE ONLY) */}
-      <AdminThemeModal
-        isOpen={isAdminThemeOpen && user?.role === 'admin'}
-        onClose={() => setIsAdminThemeOpen(false)}
-        user={user}
-        onThemeAdded={fetchTemplates}
-      />
+      {/* Global App Lock Modal */}
+      {appLockModal && (
+        <PremiumLockModal
+          title={appLockModal.title}
+          description={appLockModal.description}
+          onClose={() => setAppLockModal(null)}
+        />
+      )}
 
     </div>
   );

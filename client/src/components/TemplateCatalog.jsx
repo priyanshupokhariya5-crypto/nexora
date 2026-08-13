@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
-import { Search, LayoutGrid, Sparkles, ArrowRight, Eye, ExternalLink, Globe, BookOpen, Star, Zap } from 'lucide-react';
-import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
-import TemplateRenderer from './TemplateRenderer';
+import PremiumLockModal from './PremiumLockModal';
+import { Lock } from 'lucide-react';
 
 export default function TemplateCatalog({ templates = [], onSelectTemplate, user = null, onOpenAuth }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [showLockModal, setShowLockModal] = useState(false);
 
   const activeTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
 
   const handleCustomizeClick = (tpl) => {
     if (!user) {
       if (onOpenAuth) onOpenAuth();
+      return;
+    }
+    const isPremium = tpl.isPremium || tpl.badge === 'Tech & SaaS' || tpl.price === 'Premium' || tpl.category === 'Tech & SaaS';
+    if (isPremium && (!user?.premiumAccess && user?.plan !== 'pro' && user?.plan !== 'business')) {
+      setShowLockModal(true);
       return;
     }
     if (onSelectTemplate) onSelectTemplate(tpl);
@@ -279,6 +283,15 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
             <TemplateRenderer template={previewTemplate} viewportMode="desktop" />
           </div>
         </div>
+      )}
+
+      {/* Premium Lock Modal */}
+      {showLockModal && (
+        <PremiumLockModal
+          title="Premium Template"
+          description="This template is available with a Premium plan."
+          onClose={() => setShowLockModal(false)}
+        />
       )}
     </div>
   );

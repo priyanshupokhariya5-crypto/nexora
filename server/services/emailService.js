@@ -4,14 +4,21 @@ const sendWelcomeEmail = async (email) => {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.NEWSLETTER_FROM || 'Nexora <onboarding@resend.dev>';
 
+  console.log(`[NEWSLETTER EMAIL CONFIG] Email Provider API Key Configured: ${Boolean(apiKey)} | Sender: ${fromEmail}`);
+
   if (!apiKey) {
-    console.log(`[Email Service Warning] RESEND_API_KEY is not set in environment variables. Subscriber saved to MongoDB, but email dispatch skipped.`);
-    return { success: false, reason: 'RESEND_API_KEY_MISSING' };
+    console.log(`[NEWSLETTER EMAIL WARNING] RESEND_API_KEY is not set in environment variables.`);
+    return { 
+      success: false, 
+      emailSent: false,
+      reason: 'RESEND_API_KEY_MISSING',
+      message: 'Subscriber saved to MongoDB, but email dispatch requires RESEND_API_KEY on the server.'
+    };
   }
 
   try {
     const resend = new Resend(apiKey);
-    const data = await resend.emails.send({
+    const response = await resend.emails.send({
       from: fromEmail,
       to: [email],
       subject: 'Welcome to Nexora Product Updates',
@@ -20,22 +27,16 @@ const sendWelcomeEmail = async (email) => {
           <div style="margin-bottom: 20px;">
             <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #2563eb; font-family: sans-serif;">Nexora</h2>
           </div>
-          <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 0;">Thanks for subscribing to Nexora Product Updates!</h3>
+          <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 0;">Welcome to Nexora!</h3>
           <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-            Hi there,
+            Thanks for subscribing to Nexora Product Updates.
           </p>
           <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-            Thanks for subscribing to Nexora Product Updates. You'll receive updates about:
+            You'll receive updates about new templates, features, product improvements and important Nexora announcements.
           </p>
-          <ul style="font-size: 14px; line-height: 1.8; color: #334155; padding-left: 20px;">
-            <li>New customizable website templates</li>
-            <li>New features & visual editor tools</li>
-            <li>Product improvements</li>
-            <li>Important Nexora announcements</li>
-          </ul>
           <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 24px;">
             Thanks,<br/>
-            <strong>The Nexora Team</strong>
+            <strong>Nexora Team</strong>
           </p>
           <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 16px 0;" />
           <p style="font-size: 11px; color: #94a3b8; text-align: center;">
@@ -45,11 +46,33 @@ const sendWelcomeEmail = async (email) => {
       `
     });
 
-    console.log(`[Email Service Success] Welcome email sent to ${email} (ID: ${data?.id || 'OK'})`);
-    return { success: true, id: data?.id };
+    if (response.error) {
+      console.error(`[NEWSLETTER EMAIL ERROR] Resend returned error for ${email}:`, response.error);
+      return { 
+        success: false, 
+        emailSent: false,
+        error: response.error.message || response.error,
+        message: "You're subscribed, but we couldn't send the confirmation email right now." 
+      };
+    }
+
+    const messageId = response.data?.id || response.id;
+    console.log(`[NEWSLETTER EMAIL SENT SUCCESS] Email dispatched to ${email} | Resend Message ID: ${messageId}`);
+
+    return { 
+      success: true, 
+      emailSent: true,
+      id: messageId,
+      message: "You're subscribed! Check your inbox for a confirmation email." 
+    };
   } catch (error) {
-    console.error(`[Email Service Error] Failed to send email to ${email}:`, error.message || error);
-    return { success: false, error: error.message };
+    console.error(`[NEWSLETTER EMAIL EXCEPTION] Exception sending email to ${email}:`, error.message || error);
+    return { 
+      success: false, 
+      emailSent: false,
+      error: error.message || String(error),
+      message: "You're subscribed, but we couldn't send the confirmation email right now." 
+    };
   }
 };
 

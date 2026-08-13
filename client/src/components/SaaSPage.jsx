@@ -94,10 +94,23 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setNewsletterMsg({ type: 'success', text: data.message || "You're subscribed! Check your inbox for a confirmation email." });
+        if (data.emailSent) {
+          setNewsletterMsg({ 
+            type: 'success', 
+            text: "You're subscribed! Check your inbox for a confirmation email." 
+          });
+        } else {
+          setNewsletterMsg({ 
+            type: 'warning', 
+            text: data.message || "You're subscribed, but the confirmation email couldn't be sent right now." 
+          });
+        }
         setNewsletterEmail('');
       } else {
-        setNewsletterMsg({ type: 'error', text: data.message || 'Something went wrong. Please try again.' });
+        setNewsletterMsg({ 
+          type: 'error', 
+          text: data.message || 'Something went wrong. Please try again.' 
+        });
       }
     } catch (err) {
       setNewsletterMsg({ type: 'error', text: 'Something went wrong. Please try again.' });
@@ -843,7 +856,10 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   </button>
                 </div>
                 {newsletterMsg.text && (
-                  <p className={`mt-2 text-xs font-semibold ${newsletterMsg.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <p className={`mt-2 text-xs font-semibold ${
+                    newsletterMsg.type === 'success' ? 'text-emerald-400' :
+                    newsletterMsg.type === 'warning' ? 'text-amber-400' : 'text-rose-400'
+                  }`}>
                     {newsletterMsg.text}
                   </p>
                 )}

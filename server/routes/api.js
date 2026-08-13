@@ -1033,6 +1033,9 @@ router.post('/newsletter/subscribe', async (req, res) => {
     rateData.count += 1;
     newsletterRateLimit.set(clientKey, rateData);
 
+    console.log(`\n--- NEWSLETTER REQUEST RECEIVED ---`);
+    console.log(`[NEWSLETTER EMAIL]: ${cleanEmail}`);
+
     // Check duplicate in Mongo or Memory
     if (isMongoConnected()) {
       const existing = await Subscriber.findOne({ email: cleanEmail });
@@ -1041,29 +1044,38 @@ router.post('/newsletter/subscribe', async (req, res) => {
           existing.status = 'active';
           existing.subscribedAt = new Date();
           await existing.save();
-          sendWelcomeEmail(cleanEmail);
+          console.log(`[NEWSLETTER DB STATUS] Subscriber reactivated in MongoDB: true`);
+          const emailResult = await sendWelcomeEmail(cleanEmail);
           return res.json({
             success: true,
-            message: "Welcome back! Your subscription has been reactivated."
+            subscribed: true,
+            emailSent: Boolean(emailResult.emailSent),
+            message: emailResult.emailSent
+              ? "Welcome back! Check your inbox for a confirmation email."
+              : "Welcome back! Your subscription is reactivated."
           });
         }
+        console.log(`[NEWSLETTER DB STATUS] Duplicate subscriber detected: true`);
         return res.status(400).json({
           success: false,
+          subscribed: true,
+          emailSent: false,
           message: "You're already subscribed to Nexora updates."
         });
       }
 
-      // Create new subscriber
+      // Create new subscriber in MongoDB
       const subscriber = new Subscriber({
         email: cleanEmail,
         status: 'active',
         emailStatus: 'pending'
       });
       await subscriber.save();
+      console.log(`[NEWSLETTER DB STATUS] Subscriber saved to MongoDB: true`);
 
       // Trigger confirmation email
       const emailResult = await sendWelcomeEmail(cleanEmail);
-      if (emailResult.success) {
+      if (emailResult.emailSent) {
         subscriber.emailStatus = 'sent';
         await subscriber.save();
       } else {
@@ -1073,7 +1085,11 @@ router.post('/newsletter/subscribe', async (req, res) => {
 
       return res.json({
         success: true,
-        message: "You're subscribed! Check your inbox for a confirmation email."
+        subscribed: true,
+        emailSent: Boolean(emailResult.emailSent),
+        message: emailResult.emailSent
+          ? "You're subscribed! Check your inbox for a confirmation email."
+          : "You're subscribed, but the confirmation email couldn't be sent right now."
       });
     } else {
       // Memory Store Fallback
@@ -1082,14 +1098,22 @@ router.post('/newsletter/subscribe', async (req, res) => {
         if (existing.status === 'unsubscribed') {
           existing.status = 'active';
           existing.subscribedAt = new Date();
-          sendWelcomeEmail(cleanEmail);
+          console.log(`[NEWSLETTER MEMORY STATUS] Subscriber reactivated in Memory: true`);
+          const emailResult = await sendWelcomeEmail(cleanEmail);
           return res.json({
             success: true,
-            message: "Welcome back! Your subscription has been reactivated."
+            subscribed: true,
+            emailSent: Boolean(emailResult.emailSent),
+            message: emailResult.emailSent
+              ? "Welcome back! Check your inbox for a confirmation email."
+              : "Welcome back! Your subscription is reactivated."
           });
         }
+        console.log(`[NEWSLETTER MEMORY STATUS] Duplicate subscriber detected: true`);
         return res.status(400).json({
           success: false,
+          subscribed: true,
+          emailSent: false,
           message: "You're already subscribed to Nexora updates."
         });
       }
@@ -1102,9 +1126,10 @@ router.post('/newsletter/subscribe', async (req, res) => {
         subscribedAt: new Date()
       };
       memorySubscribersStore.set(cleanEmail, subscriberObj);
+      console.log(`[NEWSLETTER MEMORY STATUS] Subscriber saved to Memory Store: true`);
 
       const emailResult = await sendWelcomeEmail(cleanEmail);
-      if (emailResult.success) {
+      if (emailResult.emailSent) {
         subscriberObj.emailStatus = 'sent';
       } else {
         subscriberObj.emailStatus = 'failed';
@@ -1112,7 +1137,11 @@ router.post('/newsletter/subscribe', async (req, res) => {
 
       return res.json({
         success: true,
-        message: "You're subscribed! Check your inbox for a confirmation email."
+        subscribed: true,
+        emailSent: Boolean(emailResult.emailSent),
+        message: emailResult.emailSent
+          ? "You're subscribed! Check your inbox for a confirmation email."
+          : "You're subscribed, but the confirmation email couldn't be sent right now."
       });
     }
   } catch (error) {

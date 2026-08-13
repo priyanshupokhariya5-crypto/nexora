@@ -164,7 +164,7 @@ export default function TemplateRenderer({
     { label: data.servicesTitle ? data.servicesTitle.split(' ')[0] : 'Services', href: '/services' },
     { label: 'Contact', href: '/contact' }
   ];
-  const defaultNavLinks = rawNavLinks.slice(0, 5);
+  const defaultNavLinks = rawNavLinks.slice(0, 4);
 
   const renderIcon = (iconName) => {
     const IconComp = ICON_MAP[iconName] || Sparkles;
@@ -440,18 +440,18 @@ export default function TemplateRenderer({
         
         <div>
           {/* NAVBAR */}
-          <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full`}>
-            <div className="max-w-7xl mx-auto px-3 sm:px-5 min-h-[3.5rem] sm:min-h-[4rem] py-2.5 flex items-center justify-between gap-2.5 sm:gap-4 w-full min-w-0">
+          <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full box-border`}>
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 min-h-[3.5rem] py-2 flex items-center justify-between gap-2 sm:gap-3 w-full min-w-0 box-border">
               
               {/* COLUMN 1: Brand Logo + Brand Name Container (LEFT) */}
-              <div className="flex items-center min-w-0 max-w-[200px] sm:max-w-[260px] xl:max-w-[300px] flex-shrink-0">
+              <div className="flex items-center min-w-0 max-w-[170px] sm:max-w-[220px] xl:max-w-[250px] flex-shrink-0">
                 <a 
                   href="#" 
                   onClick={(e) => handleLinkClick(e, '/')} 
-                  className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 overflow-hidden group"
+                  className="flex items-center space-x-2 cursor-pointer min-w-0 overflow-hidden group"
                 >
                   {logoImage ? (
-                    <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-6 sm:h-7.5 max-w-[80px] sm:max-w-[110px] object-contain rounded-md flex-shrink-0" />
+                    <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-6 sm:h-7 max-w-[75px] sm:max-w-[100px] object-contain rounded-md flex-shrink-0" />
                   ) : isEditMode ? (
                     <div 
                       onClick={(e) => {
@@ -459,10 +459,10 @@ export default function TemplateRenderer({
                         e.stopPropagation();
                         if (onTriggerImageUpload) onTriggerImageUpload('logoImageUrl');
                       }}
-                      className="relative group/logo cursor-pointer flex items-center space-x-2 flex-shrink-0"
+                      className="relative group/logo cursor-pointer flex items-center space-x-1.5 flex-shrink-0"
                       title="Click to edit or upload Brand Logo"
                     >
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-xs sm:text-sm relative overflow-hidden flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-xs relative overflow-hidden flex-shrink-0" style={{ backgroundColor: accentColor }}>
                         {brandName.charAt(0).toUpperCase()}
                         <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
                           <span className="text-[9px] font-extrabold text-white">📷</span>
@@ -473,7 +473,7 @@ export default function TemplateRenderer({
                       </span>
                     </div>
                   ) : (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-xs sm:text-sm flex-shrink-0" style={{ backgroundColor: accentColor }}>
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-xs flex-shrink-0" style={{ backgroundColor: accentColor }}>
                       {brandName.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -481,13 +481,13 @@ export default function TemplateRenderer({
                     fieldKey="logoText" 
                     value={brandName} 
                     tagName="span" 
-                    className="font-extrabold text-xs sm:text-sm xl:text-base tracking-tight font-display truncate block min-w-0 max-w-full" 
+                    className="font-extrabold text-xs sm:text-sm tracking-tight font-display truncate block min-w-0 max-w-full" 
                   />
                 </a>
               </div>
 
               {/* COLUMN 2: Center Navigation Links (CENTER) */}
-              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:flex'} items-center justify-center space-x-2.5 sm:space-x-3.5 xl:space-x-5 text-[11px] sm:text-xs xl:text-sm font-semibold opacity-90 flex-1 min-w-0 overflow-hidden px-1`}>
+              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:flex'} items-center justify-center space-x-2 sm:space-x-3.5 xl:space-x-4 text-[11px] sm:text-xs font-semibold opacity-90 flex-1 min-w-0 overflow-hidden px-1`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -505,12 +505,12 @@ export default function TemplateRenderer({
               </nav>
 
               {/* COLUMN 3: Right Actions / CTA Button + Hamburger Toggle (RIGHT) */}
-              <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto lg:ml-0">
+              <div className="flex items-center space-x-2 flex-shrink-0 ml-auto lg:ml-0">
                 {/* Desktop CTA Button */}
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:inline-flex'} px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:inline-flex'} px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />

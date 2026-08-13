@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, Zap, LayoutGrid, CheckCircle2, ArrowRight, Shield, 
   Smartphone, Monitor, Palette, Type, Code, Download, Globe, 
-  ChevronRight, Star, Heart, Flame, Eye, Layers, Check, Rocket,
+  ChevronRight, ChevronLeft, Star, Heart, Flame, Eye, Layers, Check, Rocket,
   HelpCircle, ChevronDown, MessageSquare, ShieldCheck, Clock, Award,
   Send, Twitter, Github, Linkedin, Disc as Discord, Lock, UserCheck,
   ExternalLink, X, RefreshCw
@@ -18,6 +18,8 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const [previewModalTemplate, setPreviewModalTemplate] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [slideDirection, setSlideDirection] = useState('right');
 
   // Source of Truth: Use templates prop from GET /api/templates or fallback to TEMPLATES_DATA
   const rawTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
@@ -30,6 +32,34 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
   const spotlightList = featuredTemplates.length > 0 ? featuredTemplates : publishedTemplates;
   const safeSpotlightIndex = Math.min(spotlightIndex, spotlightList.length - 1);
   const activeSpotlight = spotlightList[safeSpotlightIndex] || spotlightList[0] || TEMPLATES_DATA[0];
+
+  // Auto-rotation timer (3.5 seconds interval) with pause on hover
+  useEffect(() => {
+    if (spotlightList.length <= 1 || isHovered) return;
+
+    const timer = setInterval(() => {
+      setSlideDirection('right');
+      setSpotlightIndex((prevIndex) => (prevIndex + 1) % spotlightList.length);
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [spotlightList.length, isHovered]);
+
+  const handleManualSelect = (idx) => {
+    if (idx === safeSpotlightIndex) return;
+    setSlideDirection(idx > safeSpotlightIndex ? 'right' : 'left');
+    setSpotlightIndex(idx);
+  };
+
+  const handlePrevSpotlight = () => {
+    setSlideDirection('left');
+    setSpotlightIndex((prevIndex) => (prevIndex - 1 + spotlightList.length) % spotlightList.length);
+  };
+
+  const handleNextSpotlight = () => {
+    setSlideDirection('right');
+    setSpotlightIndex((prevIndex) => (prevIndex + 1) % spotlightList.length);
+  };
 
   // Filtered list for category showcase grid
   const filteredTemplates = publishedTemplates.filter(t => 
@@ -146,7 +176,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
             </div>
           </motion.div>
 
-          {/* DYNAMIC LIVE PREVIEW SHOWCASE CARD (COMPACT HERO SPOTLIGHT) */}
+          {/* DYNAMIC LIVE PREVIEW SHOWCASE CARD (AUTO-ROTATING CAROUSEL) */}
           <motion.div 
             id="demo-showcase" 
             initial={{ opacity: 0, y: 30 }}
@@ -155,7 +185,11 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
             transition={{ duration: 0.6 }}
             className="mt-10 sm:mt-14 relative max-w-3xl mx-auto w-full min-w-0 max-w-full px-2 sm:px-4"
           >
-            <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/95 backdrop-blur-xl shadow-xl p-3 sm:p-5 relative w-full min-w-0 max-w-full overflow-hidden">
+            <div 
+              className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/95 backdrop-blur-xl shadow-xl p-3 sm:p-5 relative w-full min-w-0 max-w-full overflow-hidden"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
               
               {/* Browser Header Bar - Compact */}
               <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-1.5 px-3 py-2 bg-slate-100/90 rounded-xl mb-3 border border-slate-200/80 w-full min-w-0 max-w-full overflow-hidden text-[10px] sm:text-xs">
@@ -165,7 +199,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                     <div className="w-2 h-2 rounded-full bg-amber-400" />
                     <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   </div>
-                  <span className="font-bold text-slate-500 font-mono hidden sm:inline">Nexora Live Template</span>
+                  <span className="font-bold text-slate-500 font-mono hidden sm:inline">Nexora Auto Preview</span>
                 </div>
 
                 <div className="px-2.5 py-0.5 rounded-lg bg-white font-mono text-slate-600 border border-slate-200 flex items-center space-x-1 shadow-soft-sm truncate min-w-0">
@@ -178,7 +212,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                 <div className="flex items-center space-x-1 font-semibold flex-shrink-0">
                   <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
-                    <span>MongoDB Sync</span>
+                    <span>{isHovered ? 'Paused' : 'Auto 3.5s Sync'}</span>
                   </span>
                 </div>
               </div>
@@ -190,7 +224,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   {spotlightList.slice(0, 5).map((t, idx) => (
                     <button
                       key={t.id || t._id || idx}
-                      onClick={() => setSpotlightIndex(idx)}
+                      onClick={() => handleManualSelect(idx)}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap flex items-center space-x-1 flex-shrink-0 ${
                         safeSpotlightIndex === idx
                           ? 'bg-brand-600 text-white shadow-sm'
@@ -204,131 +238,178 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                 </div>
               )}
 
-              {/* Compact Live Preview Spotlight Card */}
-              <div className="rounded-xl sm:rounded-2xl border border-slate-200 bg-white shadow-soft-sm overflow-hidden flex flex-col sm:flex-row items-stretch w-full min-w-0 max-w-full">
-                
-                {/* Compact Preview Image */}
-                <div className="relative sm:w-1/2 aspect-[16/10] overflow-hidden bg-slate-900 w-full min-w-0 max-w-full flex-shrink-0">
-                  <img 
-                    src={activeSpotlight.thumbnail || activeSpotlight.image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80'} 
-                    alt={activeSpotlight.name || activeSpotlight.title}
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-3 sm:p-4 flex flex-col justify-between">
-                    <div className="flex items-center justify-between gap-1.5">
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30 truncate">
-                        {activeSpotlight.category || 'Local & Retail'}
-                      </span>
-                      {activeSpotlight.featured ? (
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1 flex-shrink-0">
-                          <Star className="w-2.5 h-2.5 fill-slate-950" />
-                          <span>Featured</span>
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow flex-shrink-0">
-                          {activeSpotlight.badge || 'Popular'}
-                        </span>
-                      )}
+              {/* Slide Container with Height Stability & Framer Motion Slide Animation */}
+              <div className="relative rounded-xl sm:rounded-2xl border border-slate-200 bg-white shadow-soft-sm overflow-hidden w-full min-w-0 max-w-full">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={activeSpotlight.id || activeSpotlight._id || safeSpotlightIndex}
+                    initial={{ opacity: 0, x: slideDirection === 'right' ? 40 : -40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: slideDirection === 'right' ? -40 : 40 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex flex-col sm:flex-row items-stretch w-full min-w-0 max-w-full"
+                  >
+                    {/* Compact Preview Image */}
+                    <div className="relative sm:w-1/2 aspect-[16/10] overflow-hidden bg-slate-900 w-full min-w-0 max-w-full flex-shrink-0">
+                      <img 
+                        src={activeSpotlight.thumbnail || activeSpotlight.image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80'} 
+                        alt={activeSpotlight.name || activeSpotlight.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-3 sm:p-4 flex flex-col justify-between">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30 truncate">
+                            {activeSpotlight.category || 'Local & Retail'}
+                          </span>
+                          {activeSpotlight.featured ? (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1 flex-shrink-0">
+                              <Star className="w-2.5 h-2.5 fill-slate-950" />
+                              <span>Featured</span>
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow flex-shrink-0">
+                              {activeSpotlight.badge || 'Popular'}
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] font-semibold text-white/80 uppercase tracking-wider block">By {activeSpotlight.author || 'Nexora Studio'}</span>
+                          <h3 className="text-base sm:text-lg font-bold text-white font-display leading-tight drop-shadow-sm truncate">
+                            {activeSpotlight.name || activeSpotlight.title}
+                          </h3>
+                        </div>
+                      </div>
                     </div>
 
-                    <div>
-                      <span className="text-[9px] font-semibold text-white/80 uppercase tracking-wider block">By {activeSpotlight.author || 'Nexora Studio'}</span>
-                      <h3 className="text-base sm:text-lg font-bold text-white font-display leading-tight drop-shadow-sm truncate">
-                        {activeSpotlight.name || activeSpotlight.title}
-                      </h3>
-                    </div>
-                  </div>
-                </div>
+                    {/* Compact Details & Action Buttons */}
+                    <div className="p-4 sm:p-5 sm:w-1/2 flex flex-col justify-between space-y-3 w-full min-w-0 max-w-full bg-slate-50/50 min-h-[220px]">
+                      <div>
+                        <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-brand-600 uppercase tracking-widest font-display mb-0.5">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Active Live Preview ({safeSpotlightIndex + 1}/{spotlightList.length})</span>
+                        </div>
 
-                {/* Compact Details & Action Buttons */}
-                <div className="p-4 sm:p-5 sm:w-1/2 flex flex-col justify-between space-y-3 w-full min-w-0 max-w-full bg-slate-50/50">
-                  <div>
-                    <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-brand-600 uppercase tracking-widest font-display mb-0.5">
-                      <Sparkles className="w-3 h-3" />
-                      <span>Active Live Preview</span>
-                    </div>
+                        <h4 className="text-base sm:text-lg font-extrabold text-slate-900 font-display tracking-tight leading-snug truncate">
+                          {activeSpotlight.name || activeSpotlight.title}
+                        </h4>
 
-                    <h4 className="text-base sm:text-lg font-extrabold text-slate-900 font-display tracking-tight leading-snug truncate">
-                      {activeSpotlight.name || activeSpotlight.title}
-                    </h4>
+                        <p className="mt-1 text-xs text-slate-600 leading-relaxed line-clamp-2 min-h-[32px]">
+                          {activeSpotlight.description || activeSpotlight.tagline || 'High-converting customizable business template.'}
+                        </p>
 
-                    <p className="mt-1 text-xs text-slate-600 leading-relaxed line-clamp-2">
-                      {activeSpotlight.description || activeSpotlight.tagline || 'High-converting customizable business template.'}
-                    </p>
+                        {/* Compact Metadata Badges */}
+                        <div className="mt-2.5 flex flex-wrap gap-1 text-[9px] font-semibold text-slate-600">
+                          <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
+                            {activeSpotlight.fontFamily || 'sans'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
+                            {activeSpotlight.bgTheme || 'light'}
+                          </span>
+                        </div>
+                      </div>
 
-                    {/* Compact Metadata Badges */}
-                    <div className="mt-2.5 flex flex-wrap gap-1 text-[9px] font-semibold text-slate-600">
-                      <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
-                        {activeSpotlight.fontFamily || 'sans'}
-                      </span>
-                      <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
-                        {activeSpotlight.bgTheme || 'light'}
-                      </span>
-                    </div>
-                  </div>
+                      {/* Compact Functional Action Buttons */}
+                      <div className="space-y-2 pt-2 border-t border-slate-200/80 w-full min-w-0 max-w-full">
+                        
+                        {/* Optional URLs */}
+                        <div className="flex flex-wrap items-center gap-1.5 w-full min-w-0 max-w-full">
+                          {activeSpotlight.previewUrl ? (
+                            <a
+                              href={activeSpotlight.previewUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
+                            >
+                              <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
+                              <span className="truncate">Preview Link</span>
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => setPreviewModalTemplate(activeSpotlight)}
+                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
+                            >
+                              <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
+                              <span className="truncate">Preview</span>
+                            </button>
+                          )}
 
-                  {/* Compact Functional Action Buttons */}
-                  <div className="space-y-2 pt-2 border-t border-slate-200/80 w-full min-w-0 max-w-full">
-                    
-                    {/* Optional URLs */}
-                    <div className="flex flex-wrap items-center gap-1.5 w-full min-w-0 max-w-full">
-                      {activeSpotlight.previewUrl ? (
-                        <a
-                          href={activeSpotlight.previewUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
-                        >
-                          <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
-                          <span className="truncate">Preview Link</span>
-                        </a>
-                      ) : (
+                          {activeSpotlight.demoUrl && (
+                            <a
+                              href={activeSpotlight.demoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-[11px] border border-sky-200 flex items-center justify-center space-x-1 transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">Demo</span>
+                            </a>
+                          )}
+
+                          {activeSpotlight.liveUrl && (
+                            <a
+                              href={activeSpotlight.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 flex items-center justify-center space-x-1 transition-colors"
+                            >
+                              <Globe className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">Live Site</span>
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Primary Use Template / Customize Button */}
                         <button
-                          onClick={() => setPreviewModalTemplate(activeSpotlight)}
-                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
+                          onClick={() => handleUseTemplate(activeSpotlight)}
+                          className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-1.5"
                         >
-                          <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
-                          <span className="truncate">Preview</span>
+                          <Zap className="w-3.5 h-3.5 text-amber-300 fill-current flex-shrink-0" />
+                          <span className="truncate">Use Template ({activeSpotlight.name || activeSpotlight.title})</span>
+                          <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
                         </button>
-                      )}
-
-                      {activeSpotlight.demoUrl && (
-                        <a
-                          href={activeSpotlight.demoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-[11px] border border-sky-200 flex items-center justify-center space-x-1 transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">Demo</span>
-                        </a>
-                      )}
-
-                      {activeSpotlight.liveUrl && (
-                        <a
-                          href={activeSpotlight.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 flex items-center justify-center space-x-1 transition-colors"
-                        >
-                          <Globe className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">Live Site</span>
-                        </a>
-                      )}
+                      </div>
                     </div>
-
-                    {/* Primary Use Template / Customize Button */}
-                    <button
-                      onClick={() => handleUseTemplate(activeSpotlight)}
-                      className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-1.5"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-amber-300 fill-current flex-shrink-0" />
-                      <span className="truncate">Use Template ({activeSpotlight.name || activeSpotlight.title})</span>
-                      <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
-                    </button>
-                  </div>
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               </div>
+
+              {/* Controls Bar: Chevrons & Pagination Indicators */}
+              {spotlightList.length > 1 && (
+                <div className="mt-3 flex items-center justify-between px-1 text-slate-500">
+                  <button
+                    onClick={handlePrevSpotlight}
+                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors"
+                    title="Previous Template"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {/* Pagination Dots */}
+                  <div className="flex items-center space-x-1.5">
+                    {spotlightList.map((t, idx) => (
+                      <button
+                        key={t.id || t._id || idx}
+                        onClick={() => handleManualSelect(idx)}
+                        className={`transition-all duration-300 rounded-full ${
+                          safeSpotlightIndex === idx
+                            ? 'w-5 h-1.5 bg-brand-600'
+                            : 'w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400'
+                        }`}
+                        title={`Go to template: ${t.name || t.title}`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleNextSpotlight}
+                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors"
+                    title="Next Template"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
 
             </div>
           </motion.div>

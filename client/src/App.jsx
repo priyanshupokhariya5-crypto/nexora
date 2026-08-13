@@ -44,19 +44,21 @@ export default function App() {
     }
   }, [user, isAuthOpen]);
 
-  // Fetch Template Catalog when logged in (falls back gracefully to static TEMPLATES_DATA)
+  // Fetch Template Catalog for all visitors & authenticated users
+  const fetchTemplates = () => {
+    apiFetch('/api/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.templates?.length > 0) {
+          setTemplates(data.templates);
+        }
+      })
+      .catch(err => console.error('Templates fetch error:', err));
+  };
+
   useEffect(() => {
-    if (user) {
-      apiFetch('/api/templates')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.templates?.length > 0) {
-            setTemplates(data.templates);
-          }
-        })
-        .catch(err => console.error('Templates fetch error:', err));
-    }
-  }, [user]);
+    fetchTemplates();
+  }, []);
 
   // Load User Specific Websites
   const loadSavedWebsites = async (currentUser = user) => {
@@ -411,6 +413,7 @@ export default function App() {
         isOpen={isAdminThemeOpen && user?.role === 'admin'}
         onClose={() => setIsAdminThemeOpen(false)}
         user={user}
+        onThemeAdded={fetchTemplates}
       />
 
     </div>

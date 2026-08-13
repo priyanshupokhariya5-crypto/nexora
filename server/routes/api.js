@@ -18,21 +18,76 @@ const isMongoConnected = () => {
   return mongoose.connection.readyState === 1;
 };
 
+// Helper to normalize template & theme objects across MongoDB & static presets
+const normalizeTemplate = (tpl) => {
+  if (!tpl) return null;
+  const raw = typeof tpl.toObject === 'function' ? tpl.toObject() : tpl;
+  const titleStr = raw.title || raw.name || 'Untitled Theme';
+  const rawId = raw.id || raw.themeId || (raw._id ? raw._id.toString() : `thm_${Date.now()}`);
+  const slugStr = raw.slug || raw.id || titleStr.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  return {
+    id: rawId,
+    _id: raw._id ? raw._id.toString() : undefined,
+    title: titleStr,
+    name: titleStr,
+    slug: slugStr,
+    category: raw.category || 'Local & Retail',
+    badge: raw.badge || (raw.featured ? 'Featured' : 'Popular'),
+    tagline: raw.tagline || raw.description || 'Professional customizable business website theme.',
+    description: raw.description || raw.tagline || 'Professional customizable business website theme.',
+    author: raw.author || 'Nexora Studio',
+    tags: Array.isArray(raw.tags) ? raw.tags : (typeof raw.tags === 'string' ? raw.tags.split(',').map(s => s.trim()).filter(Boolean) : []),
+    accentColor: raw.accentColor || '#2551e8',
+    bgTheme: raw.bgTheme || 'light',
+    fontFamily: raw.fontFamily || 'sans',
+    image: raw.image || raw.thumbnail || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    thumbnail: raw.thumbnail || raw.image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80',
+    heroImage: raw.heroImage || '',
+    logo: raw.logo || '',
+    previewUrl: raw.previewUrl || '',
+    demoUrl: raw.demoUrl || '',
+    liveUrl: raw.liveUrl || '',
+    documentationUrl: raw.documentationUrl || '',
+    themeType: raw.themeType || raw.heroStyle || 'split-arched',
+    heroStyle: raw.heroStyle || raw.themeType || 'split-arched',
+    status: raw.status || 'Published',
+    featured: Boolean(raw.featured),
+    price: raw.price || 'Free',
+    sortOrder: typeof raw.sortOrder === 'number' ? raw.sortOrder : 0,
+    isAdminCreated: Boolean(raw.isAdminCreated),
+    defaultData: raw.defaultData || {
+      heroTitle: titleStr,
+      heroSubtitle: raw.tagline || raw.description || 'Welcome to our official business platform.',
+      ctaText: 'Get Started',
+      ctaLink: '/contact',
+      logoText: titleStr,
+      navLinks: [
+        { label: 'Home', href: '/' },
+        { label: 'About Us', href: '/about' },
+        { label: 'Services', href: '/services' },
+        { label: 'Contact', href: '/contact' }
+      ]
+    },
+    createdAt: raw.createdAt || new Date(),
+    updatedAt: raw.updatedAt || new Date()
+  };
+};
+
 // Seed / Sync MongoDB with the 30 redesigned templates automatically
 const seedTemplatesIfEmpty = async () => {
   try {
     if (isMongoConnected()) {
-      // Upsert all 30 redesigned templates to ensure MongoDB always has fresh template data
       for (const tpl of TEMPLATES_DATA) {
         await TemplateModel.findOneAndUpdate(
           { id: tpl.id },
-          { $set: tpl },
+          { $set: { ...tpl, isAdminCreated: false } },
           { upsert: true, new: true }
         );
       }
-      // Remove any legacy template documents no longer present in TEMPLATES_DATA
+      // ONLY delete legacy templates that are NOT created by admin
       const currentIds = TEMPLATES_DATA.map(t => t.id);
-      await TemplateModel.deleteMany({ id: { $nin: currentIds } });
+      await TemplateModel.deleteMany({ id: { $nin: currentIds }, isAdminCreated: { $ne: true } });
     }
   } catch (err) {
     console.error('Template sync error:', err.message);
@@ -133,10 +188,11 @@ router.post('/upload', (req, res, next) => {
 router.get('/admin/themes', async (req, res) => {
   try {
     if (isMongoConnected()) {
-      const themes = await Theme.find().sort({ createdAt: -1 });
-      return res.json({ success: true, count: themes.length, themes });
+      const themes = await TemplateModel.find({ isAdminCreated: true }).sort({ createdAt: -1 });
+      const normalized = themes.map(normalizeTemplate);
+      return res.json({ success: true, count: normalized.length, themes: normalized });
     } else {
-      const themes = Array.from(memoryThemesStore.values());
+      const themes = Array.from(memoryThemesStore.values()).map(normalizeTemplate);
       return res.json({ success: true, count: themes.length, themes });
     }
   } catch (error) {
@@ -438,56 +494,87 @@ const requireAuth = (req, res, next) => {
 };
 
 // ==========================================
-// 4. TEMPLATES CATALOG ENDPOINTS (DIRECT MONGODB QUERY)
+// 4. TEMPLATES & THEMES CATALOG CRUD ENDPOINTS
 // ==========================================
 
-router.get('/templates', requireAuth, async (req, res) => {
+// Public & User GET Templates List
+router.get('/templates', async (req, res) => {
   try {
     await seedTemplatesIfEmpty();
-    const { category, search } = req.query;
+    const { category, search, status, featured } = req.query;
 
     if (isMongoConnected()) {
       let query = {};
+      
+      // Status filtering: Public view shows Published templates or default templates
+      if (status && status !== 'all') {
+        query.status = status;
+      } else if (!status) {
+        query.$or = [{ status: 'Published' }, { status: { $exists: false } }, { status: null }];
+      }
+
       if (category && category !== 'All') {
         query.category = { $regex: new RegExp(`^${category}$`, 'i') };
       }
+
+      if (featured === 'true') {
+        query.featured = true;
+      }
+
       if (search) {
-        query.$or = [
-          { title: { $regex: search, $options: 'i' } },
-          { tagline: { $regex: search, $options: 'i' } },
-          { category: { $regex: search, $options: 'i' } }
+        const searchRegex = new RegExp(search, 'i');
+        query.$and = [
+          ...(query.$and || []),
+          {
+            $or: [
+              { title: searchRegex },
+              { name: searchRegex },
+              { tagline: searchRegex },
+              { description: searchRegex },
+              { category: searchRegex },
+              { author: searchRegex },
+              { tags: searchRegex }
+            ]
+          }
         ];
       }
-      const dbTemplates = await TemplateModel.find(query).limit(30);
-      
-      const templates = dbTemplates.length > 0 ? dbTemplates : TEMPLATES_DATA.slice(0, 30);
+
+      const dbTemplates = await TemplateModel.find(query).sort({ sortOrder: 1, createdAt: -1 });
+      const normalized = dbTemplates.map(normalizeTemplate);
+
       return res.json({
         success: true,
-        source: dbTemplates.length > 0 ? 'mongodb' : 'static',
-        count: templates.length,
-        templates
+        source: 'mongodb',
+        count: normalized.length,
+        templates: normalized
       });
     } else {
-      let filtered = TEMPLATES_DATA.slice(0, 30);
+      let list = Array.from(memoryThemesStore.values()).map(normalizeTemplate);
+      const staticList = TEMPLATES_DATA.map(normalizeTemplate);
+      let combined = [...list, ...staticList];
 
-      if (category && category !== 'All') {
-        filtered = filtered.filter(t => t.category.toLowerCase() === category.toLowerCase());
+      if (status && status !== 'all') {
+        combined = combined.filter(t => t.status === status);
+      } else if (!status) {
+        combined = combined.filter(t => t.status === 'Published' || !t.status);
       }
 
+      if (category && category !== 'All') {
+        combined = combined.filter(t => t.category.toLowerCase() === category.toLowerCase());
+      }
       if (search) {
         const q = search.toLowerCase();
-        filtered = filtered.filter(t => 
+        combined = combined.filter(t => 
           t.title.toLowerCase().includes(q) || 
           t.tagline.toLowerCase().includes(q) ||
           t.category.toLowerCase().includes(q)
         );
       }
-
       return res.json({
         success: true,
         source: 'in-memory',
-        count: filtered.length,
-        templates: filtered
+        count: combined.length,
+        templates: combined
       });
     }
   } catch (error) {
@@ -495,17 +582,250 @@ router.get('/templates', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/templates/:id', requireAuth, async (req, res) => {
+// Public GET Single Template
+router.get('/templates/:id', async (req, res) => {
   try {
+    const id = req.params.id;
     if (isMongoConnected()) {
-      const template = await TemplateModel.findOne({ id: req.params.id });
-      if (template) return res.json({ success: true, source: 'mongodb', template });
+      const isObjId = mongoose.Types.ObjectId.isValid(id);
+      const template = await TemplateModel.findOne({
+        $or: [
+          { id: id },
+          { slug: id },
+          ...(isObjId ? [{ _id: id }] : [])
+        ]
+      });
+      if (template) {
+        return res.json({ success: true, source: 'mongodb', template: normalizeTemplate(template) });
+      }
     }
-    const template = TEMPLATES_DATA.find(t => t.id === req.params.id);
-    if (!template) {
-      return res.status(404).json({ success: false, message: 'Template not found' });
+    const staticTpl = TEMPLATES_DATA.find(t => t.id === id || t.slug === id);
+    if (staticTpl) {
+      return res.json({ success: true, source: 'fallback', template: normalizeTemplate(staticTpl) });
     }
-    res.json({ success: true, source: 'fallback', template });
+    return res.status(404).json({ success: false, message: 'Template not found' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin CREATE Theme / Template (POST /api/templates)
+router.post('/templates', requireAdmin, async (req, res) => {
+  try {
+    const {
+      title, name, slug, category, badge, tagline, description, author, tags,
+      accentColor, bgTheme, fontFamily, image, thumbnail, heroImage, logo,
+      previewUrl, demoUrl, liveUrl, documentationUrl, themeType, status,
+      featured, price, sortOrder, defaultData
+    } = req.body;
+
+    const finalTitle = title || name;
+    if (!finalTitle || !category) {
+      return res.status(400).json({ success: false, message: 'Please provide theme title/name and category.' });
+    }
+
+    // URL Validations if provided
+    const urlFields = { previewUrl, demoUrl, liveUrl, documentationUrl };
+    for (const [key, val] of Object.entries(urlFields)) {
+      if (val && typeof val === 'string' && val.trim() !== '') {
+        const cleanVal = val.trim();
+        if (!cleanVal.startsWith('http://') && !cleanVal.startsWith('https://')) {
+          return res.status(400).json({ success: false, message: `${key} must start with http:// or https://` });
+        }
+      }
+    }
+
+    const generateSlug = slug && slug.trim()
+      ? slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+      : finalTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+    const tplId = `thm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+    const tagArray = Array.isArray(tags)
+      ? tags
+      : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+
+    const imgUrl = thumbnail || image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80';
+
+    const tplPayload = {
+      id: tplId,
+      title: finalTitle,
+      name: finalTitle,
+      slug: generateSlug,
+      category,
+      badge: badge || (featured ? 'Featured Theme' : 'Admin Preset'),
+      tagline: tagline || description || 'Professional customizable business website theme.',
+      description: description || tagline || 'Professional customizable business website theme.',
+      author: author || 'Nexora Studio',
+      tags: tagArray,
+      accentColor: accentColor || '#2551e8',
+      bgTheme: bgTheme || 'light',
+      fontFamily: fontFamily || 'sans',
+      image: imgUrl,
+      thumbnail: imgUrl,
+      heroImage: heroImage || '',
+      logo: logo || '',
+      previewUrl: previewUrl ? previewUrl.trim() : '',
+      demoUrl: demoUrl ? demoUrl.trim() : '',
+      liveUrl: liveUrl ? liveUrl.trim() : '',
+      documentationUrl: documentationUrl ? documentationUrl.trim() : '',
+      themeType: themeType || 'split-arched',
+      heroStyle: themeType || 'split-arched',
+      status: status || 'Published',
+      featured: Boolean(featured),
+      price: price || 'Free',
+      sortOrder: typeof sortOrder === 'number' ? sortOrder : parseInt(sortOrder, 10) || 0,
+      isAdminCreated: true,
+      defaultData: defaultData || {
+        heroStyle: themeType || 'split-arched',
+        featuresStyle: 'grid-cards',
+        aboutStyle: 'split-image-left',
+        servicesStyle: 'grid-cards',
+        sectionsOrder: ['hero', 'features', 'about', 'services', 'testimonials', 'contact'],
+        heroTitle: `${finalTitle} - High Impact Platform`,
+        heroSubtitle: tagline || description || 'Empowering your brand with modern design, speed, and elevated user experience.',
+        ctaText: 'Get Started Today',
+        ctaLink: '/contact',
+        heroImageUrl: heroImage || imgUrl,
+        aboutImageUrl: imgUrl,
+        logoText: finalTitle,
+        navLinks: [
+          { label: 'Home', href: '/' },
+          { label: 'About Us', href: '/about' },
+          { label: 'Services', href: '/services' },
+          { label: 'Contact', href: '/contact' }
+        ]
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    if (isMongoConnected()) {
+      const newTpl = new TemplateModel(tplPayload);
+      await newTpl.save();
+      return res.json({
+        success: true,
+        template: normalizeTemplate(newTpl),
+        message: `Theme "${finalTitle}" created & saved to MongoDB!`
+      });
+    } else {
+      memoryThemesStore.set(tplId, tplPayload);
+      return res.json({
+        success: true,
+        template: normalizeTemplate(tplPayload),
+        message: `Theme "${finalTitle}" created successfully!`
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin UPDATE Theme / Template (PUT /api/templates/:id)
+router.put('/templates/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title, name, slug, category, badge, tagline, description, author, tags,
+      accentColor, bgTheme, fontFamily, image, thumbnail, heroImage, logo,
+      previewUrl, demoUrl, liveUrl, documentationUrl, themeType, status,
+      featured, price, sortOrder, defaultData
+    } = req.body;
+
+    // URL Validations if provided
+    const urlFields = { previewUrl, demoUrl, liveUrl, documentationUrl };
+    for (const [key, val] of Object.entries(urlFields)) {
+      if (val && typeof val === 'string' && val.trim() !== '') {
+        const cleanVal = val.trim();
+        if (!cleanVal.startsWith('http://') && !cleanVal.startsWith('https://')) {
+          return res.status(400).json({ success: false, message: `${key} must start with http:// or https://` });
+        }
+      }
+    }
+
+    const tagArray = Array.isArray(tags)
+      ? tags
+      : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined);
+
+    const updateData = {};
+    if (title !== undefined || name !== undefined) {
+      updateData.title = title || name;
+      updateData.name = title || name;
+    }
+    if (slug !== undefined) updateData.slug = slug;
+    if (category !== undefined) updateData.category = category;
+    if (badge !== undefined) updateData.badge = badge;
+    if (tagline !== undefined) updateData.tagline = tagline;
+    if (description !== undefined) updateData.description = description;
+    if (author !== undefined) updateData.author = author;
+    if (tagArray !== undefined) updateData.tags = tagArray;
+    if (accentColor !== undefined) updateData.accentColor = accentColor;
+    if (bgTheme !== undefined) updateData.bgTheme = bgTheme;
+    if (fontFamily !== undefined) updateData.fontFamily = fontFamily;
+    if (thumbnail !== undefined || image !== undefined) {
+      const img = thumbnail || image;
+      updateData.image = img;
+      updateData.thumbnail = img;
+    }
+    if (heroImage !== undefined) updateData.heroImage = heroImage;
+    if (logo !== undefined) updateData.logo = logo;
+    if (previewUrl !== undefined) updateData.previewUrl = previewUrl.trim();
+    if (demoUrl !== undefined) updateData.demoUrl = demoUrl.trim();
+    if (liveUrl !== undefined) updateData.liveUrl = liveUrl.trim();
+    if (documentationUrl !== undefined) updateData.documentationUrl = documentationUrl.trim();
+    if (themeType !== undefined) {
+      updateData.themeType = themeType;
+      updateData.heroStyle = themeType;
+    }
+    if (status !== undefined) updateData.status = status;
+    if (featured !== undefined) updateData.featured = Boolean(featured);
+    if (price !== undefined) updateData.price = price;
+    if (sortOrder !== undefined) updateData.sortOrder = parseInt(sortOrder, 10) || 0;
+    if (defaultData !== undefined) updateData.defaultData = defaultData;
+    updateData.updatedAt = new Date();
+
+    if (isMongoConnected()) {
+      const isObjId = mongoose.Types.ObjectId.isValid(id);
+      const updated = await TemplateModel.findOneAndUpdate(
+        { $or: [{ id: id }, { slug: id }, ...(isObjId ? [{ _id: id }] : [])] },
+        { $set: updateData },
+        { new: true }
+      );
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'Theme not found.' });
+      }
+      return res.json({
+        success: true,
+        template: normalizeTemplate(updated),
+        message: 'Theme updated successfully in MongoDB!'
+      });
+    } else {
+      let item = memoryThemesStore.get(id);
+      if (item) {
+        Object.assign(item, updateData);
+        return res.json({ success: true, template: normalizeTemplate(item), message: 'Theme updated successfully!' });
+      }
+      return res.status(404).json({ success: false, message: 'Theme not found.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin DELETE Theme / Template (DELETE /api/templates/:id)
+router.delete('/templates/:id', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isMongoConnected()) {
+      const isObjId = mongoose.Types.ObjectId.isValid(id);
+      await TemplateModel.findOneAndDelete({
+        $or: [{ id: id }, { slug: id }, ...(isObjId ? [{ _id: id }] : [])]
+      });
+      await Theme.findOneAndDelete({ $or: [{ themeId: id }, ...(isObjId ? [{ _id: id }] : [])] });
+      return res.json({ success: true, message: 'Theme deleted successfully from MongoDB' });
+    } else {
+      memoryThemesStore.delete(id);
+      return res.json({ success: true, message: 'Theme deleted successfully' });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

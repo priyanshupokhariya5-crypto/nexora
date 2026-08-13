@@ -95,7 +95,7 @@ export default function DomainSettingsModal({ website = {}, onClose }) {
             <div className="flex items-start space-x-2 text-[11px] text-slate-600 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/60">
               <Lock className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
               <p className="leading-relaxed">
-                🔒 <strong>Automatically generated from your website name</strong> (<span className="font-semibold text-slate-900">{rawTitle}</span>). This URL cannot be edited manually.
+                🔒 <strong>Automatically generated from your logo/brand name</strong> (<span className="font-semibold text-slate-900">{rawTitle}</span>). This URL cannot be edited manually.
               </p>
             </div>
           </div>

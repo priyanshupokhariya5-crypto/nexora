@@ -1207,45 +1207,27 @@ export default function VisualEditor({
             </span>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Website Name / Brand Name</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Logo / Brand Text</label>
               <input 
                 type="text" 
-                value={siteTitle} 
+                value={customState.brandName || customState.logoText || siteTitle} 
                 onChange={(e) => {
                   const val = e.target.value;
                   setSiteTitle(val);
                   pushToHistory({
                     ...customState,
-                    title: val,
-                    websiteName: val,
                     brandName: val,
-                    logoText: val
+                    logoText: val,
+                    websiteName: val,
+                    title: val
                   });
                 }} 
                 placeholder="e.g. Pokhariya Kirana Store"
                 className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" 
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Logo Brand Text</label>
-              <input 
-                type="text" 
-                value={customState.logoText || siteTitle} 
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSiteTitle(val);
-                  pushToHistory({
-                    ...customState,
-                    title: val,
-                    websiteName: val,
-                    brandName: val,
-                    logoText: val
-                  });
-                }} 
-                placeholder="e.g. Pokhariya Kirana Store" 
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" 
-              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                This single brand name drives your navbar logo, website identity, and URL slug.
+              </p>
             </div>
 
             <div>

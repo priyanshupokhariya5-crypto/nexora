@@ -146,152 +146,149 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
             </div>
           </motion.div>
 
-          {/* DYNAMIC LIVE PREVIEW SHOWCASE CARD (HERO SPOTLIGHT) */}
+          {/* DYNAMIC LIVE PREVIEW SHOWCASE CARD (COMPACT HERO SPOTLIGHT) */}
           <motion.div 
             id="demo-showcase" 
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="mt-14 sm:mt-20 relative max-w-5xl mx-auto w-full min-w-0 max-w-full"
+            transition={{ duration: 0.6 }}
+            className="mt-10 sm:mt-14 relative max-w-3xl mx-auto w-full min-w-0 max-w-full px-2 sm:px-4"
           >
-            <div className="rounded-3xl border border-slate-300/80 bg-white/95 backdrop-blur-xl shadow-2xl p-3 sm:p-6 relative w-full min-w-0 max-w-full overflow-hidden">
+            <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/95 backdrop-blur-xl shadow-xl p-3 sm:p-5 relative w-full min-w-0 max-w-full overflow-hidden">
               
-              {/* Browser Header Bar */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-slate-100/90 rounded-2xl mb-4 border border-slate-200/80 w-full min-w-0 max-w-full overflow-hidden">
+              {/* Browser Header Bar - Compact */}
+              <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-1.5 px-3 py-2 bg-slate-100/90 rounded-xl mb-3 border border-slate-200/80 w-full min-w-0 max-w-full overflow-hidden text-[10px] sm:text-xs">
                 <div className="flex items-center space-x-2 flex-shrink-0">
-                  <div className="flex space-x-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 rounded-full bg-red-400" />
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    <div className="w-2 h-2 rounded-full bg-emerald-400" />
                   </div>
-                  <span className="text-[11px] font-bold text-slate-500 font-mono hidden sm:inline">Nexora Live Template System</span>
+                  <span className="font-bold text-slate-500 font-mono hidden sm:inline">Nexora Live Template</span>
                 </div>
 
-                <div className="px-3 py-1 rounded-xl bg-white text-[10px] sm:text-xs font-mono text-slate-700 border border-slate-300/80 flex items-center space-x-1.5 shadow-soft-sm max-w-full overflow-hidden min-w-0">
-                  <Globe className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
+                <div className="px-2.5 py-0.5 rounded-lg bg-white font-mono text-slate-600 border border-slate-200 flex items-center space-x-1 shadow-soft-sm truncate min-w-0">
+                  <Globe className="w-3 h-3 text-brand-600 flex-shrink-0" />
                   <span className="truncate min-w-0">
                     https://nexora.app/templates/{activeSpotlight.slug || activeSpotlight.id}
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-2 text-[10px] sm:text-xs font-semibold flex-shrink-0">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center space-x-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
-                    <span>MongoDB Database Sync</span>
+                <div className="flex items-center space-x-1 font-semibold flex-shrink-0">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping flex-shrink-0" />
+                    <span>MongoDB Sync</span>
                   </span>
                 </div>
               </div>
 
               {/* Spotlight Selector Tabs */}
               {spotlightList.length > 1 && (
-                <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full min-w-0 max-w-full">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex-shrink-0 font-display mr-1">Spotlight Themes:</span>
+                <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full min-w-0 max-w-full">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 flex-shrink-0 font-display mr-1">Spotlight:</span>
                   {spotlightList.slice(0, 5).map((t, idx) => (
                     <button
                       key={t.id || t._id || idx}
                       onClick={() => setSpotlightIndex(idx)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center space-x-1.5 flex-shrink-0 ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap flex items-center space-x-1 flex-shrink-0 ${
                         safeSpotlightIndex === idx
-                          ? 'bg-brand-600 text-white shadow-md'
+                          ? 'bg-brand-600 text-white shadow-sm'
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                       }`}
                     >
-                      {t.featured && <Star className="w-3 h-3 fill-current text-amber-300" />}
-                      <span className="truncate max-w-[120px] sm:max-w-[180px]">{t.name || t.title}</span>
+                      {t.featured && <Star className="w-2.5 h-2.5 fill-current text-amber-300" />}
+                      <span className="truncate max-w-[100px] sm:max-w-[140px]">{t.name || t.title}</span>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Dynamic Live Preview Spotlight Card */}
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-soft-md overflow-hidden flex flex-col md:flex-row items-stretch w-full min-w-0 max-w-full">
+              {/* Compact Live Preview Spotlight Card */}
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200 bg-white shadow-soft-sm overflow-hidden flex flex-col sm:flex-row items-stretch w-full min-w-0 max-w-full">
                 
-                {/* Preview Thumbnail Container */}
-                <div className="relative md:w-1/2 aspect-[16/10] md:aspect-auto overflow-hidden bg-slate-900 w-full min-w-0 max-w-full">
+                {/* Compact Preview Image */}
+                <div className="relative sm:w-1/2 aspect-[16/10] overflow-hidden bg-slate-900 w-full min-w-0 max-w-full flex-shrink-0">
                   <img 
                     src={activeSpotlight.thumbnail || activeSpotlight.image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80'} 
                     alt={activeSpotlight.name || activeSpotlight.title}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-4 sm:p-6 flex flex-col justify-between">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30 truncate">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-3 sm:p-4 flex flex-col justify-between">
+                    <div className="flex items-center justify-between gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/30 truncate">
                         {activeSpotlight.category || 'Local & Retail'}
                       </span>
                       {activeSpotlight.featured ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1 flex-shrink-0">
-                          <Star className="w-3 h-3 fill-slate-950" />
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wider shadow flex items-center space-x-1 flex-shrink-0">
+                          <Star className="w-2.5 h-2.5 fill-slate-950" />
                           <span>Featured</span>
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow flex-shrink-0">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white text-slate-950 uppercase tracking-wider shadow flex-shrink-0">
                           {activeSpotlight.badge || 'Popular'}
                         </span>
                       )}
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-semibold text-white/80 uppercase tracking-wider block">By {activeSpotlight.author || 'Nexora Studio'}</span>
-                      <h2 className="text-xl sm:text-2xl font-extrabold text-white font-display leading-tight drop-shadow-sm truncate">
+                      <span className="text-[9px] font-semibold text-white/80 uppercase tracking-wider block">By {activeSpotlight.author || 'Nexora Studio'}</span>
+                      <h3 className="text-base sm:text-lg font-bold text-white font-display leading-tight drop-shadow-sm truncate">
                         {activeSpotlight.name || activeSpotlight.title}
-                      </h2>
+                      </h3>
                     </div>
                   </div>
                 </div>
 
-                {/* Card Details & Action Buttons */}
-                <div className="p-5 sm:p-8 md:w-1/2 flex flex-col justify-between space-y-4 w-full min-w-0 max-w-full bg-slate-50/50">
+                {/* Compact Details & Action Buttons */}
+                <div className="p-4 sm:p-5 sm:w-1/2 flex flex-col justify-between space-y-3 w-full min-w-0 max-w-full bg-slate-50/50">
                   <div>
-                    <div className="flex items-center space-x-2 text-[11px] font-semibold text-brand-600 uppercase tracking-widest font-display mb-1">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Current Active Template</span>
+                    <div className="flex items-center space-x-1.5 text-[10px] font-semibold text-brand-600 uppercase tracking-widest font-display mb-0.5">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Active Live Preview</span>
                     </div>
 
-                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-display tracking-tight leading-snug">
+                    <h4 className="text-base sm:text-lg font-extrabold text-slate-900 font-display tracking-tight leading-snug truncate">
                       {activeSpotlight.name || activeSpotlight.title}
-                    </h3>
+                    </h4>
 
-                    <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed line-clamp-2">
                       {activeSpotlight.description || activeSpotlight.tagline || 'High-converting customizable business template.'}
                     </p>
 
-                    {/* Metadata Badges */}
-                    <div className="mt-4 flex flex-wrap gap-1.5 text-[10px] font-bold text-slate-600">
-                      <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-soft-sm">
-                        Font: {activeSpotlight.fontFamily || 'sans'}
+                    {/* Compact Metadata Badges */}
+                    <div className="mt-2.5 flex flex-wrap gap-1 text-[9px] font-semibold text-slate-600">
+                      <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
+                        {activeSpotlight.fontFamily || 'sans'}
                       </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-soft-sm">
-                        Theme: {activeSpotlight.bgTheme || 'light'} mode
-                      </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-soft-sm">
-                        Hero: {activeSpotlight.themeType || activeSpotlight.heroStyle || 'split-arched'}
+                      <span className="px-2 py-0.5 rounded bg-white border border-slate-200 shadow-soft-sm">
+                        {activeSpotlight.bgTheme || 'light'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Functional Action Buttons */}
-                  <div className="space-y-2.5 pt-2 border-t border-slate-200/80 w-full min-w-0 max-w-full">
+                  {/* Compact Functional Action Buttons */}
+                  <div className="space-y-2 pt-2 border-t border-slate-200/80 w-full min-w-0 max-w-full">
                     
-                    {/* Optional URL Row */}
-                    <div className="flex flex-wrap items-center gap-2 w-full min-w-0 max-w-full">
+                    {/* Optional URLs */}
+                    <div className="flex flex-wrap items-center gap-1.5 w-full min-w-0 max-w-full">
                       {activeSpotlight.previewUrl ? (
                         <a
                           href={activeSpotlight.previewUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300 shadow-soft-sm flex items-center justify-center space-x-1.5 transition-colors"
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
                         >
-                          <Eye className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
-                          <span className="truncate">Live Preview Link</span>
+                          <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
+                          <span className="truncate">Preview Link</span>
                         </a>
                       ) : (
                         <button
                           onClick={() => setPreviewModalTemplate(activeSpotlight)}
-                          className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs border border-slate-300 shadow-soft-sm flex items-center justify-center space-x-1.5 transition-colors"
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200 shadow-soft-sm flex items-center justify-center space-x-1 transition-colors"
                         >
-                          <Eye className="w-3.5 h-3.5 text-brand-600 flex-shrink-0" />
-                          <span className="truncate">Live Fullscreen Preview</span>
+                          <Eye className="w-3 h-3 text-brand-600 flex-shrink-0" />
+                          <span className="truncate">Preview</span>
                         </button>
                       )}
 
@@ -300,10 +297,10 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                           href={activeSpotlight.demoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-2 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-xs border border-sky-200 flex items-center justify-center space-x-1.5 transition-colors"
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-[11px] border border-sky-200 flex items-center justify-center space-x-1 transition-colors"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                          <span className="truncate">Demo Link</span>
+                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">Demo</span>
                         </a>
                       )}
 
@@ -312,9 +309,9 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                           href={activeSpotlight.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs border border-emerald-200 flex items-center justify-center space-x-1.5 transition-colors"
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] border border-emerald-200 flex items-center justify-center space-x-1 transition-colors"
                         >
-                          <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+                          <Globe className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">Live Site</span>
                         </a>
                       )}
@@ -323,11 +320,11 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                     {/* Primary Use Template / Customize Button */}
                     <button
                       onClick={() => handleUseTemplate(activeSpotlight)}
-                      className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-2"
+                      className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-1.5"
                     >
-                      <Zap className="w-4 h-4 text-amber-300 fill-current flex-shrink-0" />
-                      <span>Use This Template ({activeSpotlight.name || activeSpotlight.title})</span>
-                      <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                      <Zap className="w-3.5 h-3.5 text-amber-300 fill-current flex-shrink-0" />
+                      <span className="truncate">Use Template ({activeSpotlight.name || activeSpotlight.title})</span>
+                      <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
                     </button>
                   </div>
                 </div>

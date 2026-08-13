@@ -440,13 +440,13 @@ export default function TemplateRenderer({
         <div>
           {/* NAVBAR */}
           <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full`}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6 min-w-0 w-full">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 min-h-[4rem] py-3.5 sm:py-4 flex items-center justify-between gap-3 sm:gap-6 min-w-0 w-full">
               
               {/* Brand Logo + Brand Name Container */}
               <a 
                 href="#" 
                 onClick={(e) => handleLinkClick(e, '/')} 
-                className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 flex-1 lg:flex-initial max-w-[65%] sm:max-w-[75%] lg:max-w-xs mr-2 overflow-hidden"
+                className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 flex-1 xl:flex-initial max-w-[65%] sm:max-w-[75%] xl:max-w-xs mr-2 overflow-hidden"
               >
                 {logoImage ? (
                   <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
@@ -479,12 +479,12 @@ export default function TemplateRenderer({
                   fieldKey="logoText" 
                   value={brandName} 
                   tagName="span" 
-                  className="font-extrabold text-sm sm:text-base lg:text-lg tracking-tight font-display truncate block min-w-0 max-w-full" 
+                  className="font-extrabold text-sm sm:text-base xl:text-lg tracking-tight font-display truncate block min-w-0 max-w-full" 
                 />
               </a>
 
               {/* Desktop Navigation Links */}
-              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:flex'} items-center space-x-4 xl:space-x-6 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
+              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden xl:flex'} items-center space-x-4 2xl:space-x-6 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -507,7 +507,7 @@ export default function TemplateRenderer({
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden xl:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
@@ -516,7 +516,7 @@ export default function TemplateRenderer({
                 {/* Mobile Hamburger Toggle Button */}
                 <button
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : 'lg:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : 'xl:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
                   aria-label="Toggle navigation menu"
                 >
                   <span className="text-lg font-bold leading-none">{mobileNavOpen ? '✕' : '☰'}</span>

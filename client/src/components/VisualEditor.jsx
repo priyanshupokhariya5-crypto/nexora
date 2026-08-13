@@ -1546,8 +1546,8 @@ export default function VisualEditor({
         <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
           <button 
             onClick={() => setShowDomainModal(true)} 
-            className="hidden sm:flex px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 items-center space-x-1.5 transition-colors"
-            title="Manage Nexora Slug & Custom Domain"
+            className="flex px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 items-center space-x-1.5 transition-colors"
+            title="View Nexora URL & Custom Domain Status"
           >
             <Globe className="w-3.5 h-3.5 text-brand-400" />
             <span>Domain</span>
@@ -1966,11 +1966,12 @@ export default function VisualEditor({
       {/* Domain Settings Modal */}
       {showDomainModal && (
         <DomainSettingsModal
-          website={savedSiteData || initialSite || { siteId: `site_${Date.now()}`, slug: template.slug || template.id, title: siteTitle }}
-          onClose={() => setShowDomainModal(false)}
-          onUpdateWebsite={(updatedSite) => {
-            setSavedSiteData(updatedSite);
+          website={savedSiteData || initialSite || { 
+            siteId: `site_${Date.now()}`, 
+            slug: (siteTitle || template.title || 'my-website').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''), 
+            title: siteTitle || template.title || 'My Website' 
           }}
+          onClose={() => setShowDomainModal(false)}
         />
       )}
 

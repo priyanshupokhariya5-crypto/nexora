@@ -78,10 +78,10 @@ export default function DomainSettingsModal({ website, onClose }) {
               </div>
             </div>
 
-            <div className="flex items-start space-x-2 text-[11px] text-slate-500 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/60">
-              <Lock className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start space-x-2 text-[11px] text-slate-600 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/60">
+              <Lock className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
               <p className="leading-relaxed">
-                <strong>Automatically generated</strong> from your website name (<span className="font-semibold text-slate-700">{website?.title || 'Website Name'}</span>). Manual URL editing is disabled to preserve site links.
+                🔒 <strong>Automatically generated from your website name</strong> (<span className="font-semibold text-slate-900">{rawTitle}</span>). You cannot manually change this URL.
               </p>
             </div>
           </div>

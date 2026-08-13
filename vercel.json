@@ -1,8 +1,7 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/((?!sitemap\\.xml|robots\\.txt|google.*\\.html|assets/).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]

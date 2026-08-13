@@ -136,6 +136,19 @@ export default function TemplateRenderer({
   const galleryImage = customData.galleryImageUrl || data.galleryImageUrl || template.image;
   const logoImage = customData.logoImageUrl || data.logoImageUrl || data.logoUrl;
 
+  // Dynamic Brand / Website Name binding
+  const brandName = 
+    customData.websiteName ||
+    customData.brandName ||
+    customData.logoText ||
+    customData.title ||
+    data.websiteName ||
+    data.brandName ||
+    data.logoText ||
+    data.title ||
+    template.title ||
+    'Nexora';
+
   const fontClass = {
     sans: 'font-sans',
     serif: 'font-serif',
@@ -448,7 +461,7 @@ export default function TemplateRenderer({
                     title="Click to edit or upload Brand Logo"
                   >
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden" style={{ backgroundColor: accentColor }}>
-                      {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}
+                      {brandName.charAt(0).toUpperCase()}
                       <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
                         <span className="text-[9px] font-extrabold text-white">📷</span>
                       </div>
@@ -459,12 +472,12 @@ export default function TemplateRenderer({
                   </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm flex-shrink-0" style={{ backgroundColor: accentColor }}>
-                    {(data.logoText || template.title || 'N').charAt(0).toUpperCase()}
+                    {brandName.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <EditableText 
                   fieldKey="logoText" 
-                  value={data.logoText || template.title} 
+                  value={brandName} 
                   tagName="span" 
                   className="font-extrabold text-sm sm:text-base lg:text-lg tracking-tight font-display truncate block min-w-0" 
                 />
@@ -1404,7 +1417,7 @@ export default function TemplateRenderer({
         <footer className={`py-12 sm:py-16 px-4 sm:px-6 ${isDark ? 'bg-slate-950 text-slate-200 border-t border-slate-900' : 'bg-slate-900 text-white'} w-full max-w-full overflow-hidden mt-16`}>
           <div className="max-w-6xl mx-auto pb-12 border-b border-slate-800 flex flex-col md:flex-row justify-between gap-8">
             <div>
-              <EditableText fieldKey="footerTitle" value={data.footerTitle || data.logoText || template.title} tagName="span" className="font-extrabold text-xl tracking-tight font-display" />
+              <EditableText fieldKey="footerTitle" value={data.footerTitle || brandName} tagName="span" className="font-extrabold text-xl tracking-tight font-display" />
               <EditableText fieldKey="footerTagline" value={data.footerTagline || template.tagline || template.defaultData?.heroSubtitle} tagName="p" className="mt-2 text-xs opacity-75 max-w-sm leading-relaxed block" multiline />
             </div>
             <div className="flex flex-wrap gap-8 text-xs font-semibold">

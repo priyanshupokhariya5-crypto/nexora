@@ -1207,13 +1207,45 @@ export default function VisualEditor({
             </span>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">Website Title</label>
-              <input type="text" value={siteTitle} onChange={(e) => setSiteTitle(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white" />
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Website Name / Brand Name</label>
+              <input 
+                type="text" 
+                value={siteTitle} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSiteTitle(val);
+                  pushToHistory({
+                    ...customState,
+                    title: val,
+                    websiteName: val,
+                    brandName: val,
+                    logoText: val
+                  });
+                }} 
+                placeholder="e.g. Pokhariya Kirana Store"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" 
+              />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Logo Brand Text</label>
-              <input type="text" value={customState.logoText || ''} onChange={(e) => handleTextChange('logoText', e.target.value)} placeholder="e.g. VoltTech Store" className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white" />
+              <input 
+                type="text" 
+                value={customState.logoText || siteTitle} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSiteTitle(val);
+                  pushToHistory({
+                    ...customState,
+                    title: val,
+                    websiteName: val,
+                    brandName: val,
+                    logoText: val
+                  });
+                }} 
+                placeholder="e.g. Pokhariya Kirana Store" 
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none" 
+              />
             </div>
 
             <div>

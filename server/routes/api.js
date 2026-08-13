@@ -6,11 +6,15 @@ const Website = require('../models/Website');
 const User = require('../models/User');
 const Theme = require('../models/Theme');
 const TemplateModel = require('../models/TemplateModel');
+const Subscriber = require('../models/SubscriberModel');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 // In-memory fallback stores when MongoDB is not connected
 const memoryWebsitesStore = new Map();
 const memoryUsersStore = new Map();
 const memoryThemesStore = new Map();
+const memorySubscribersStore = new Map();
+const newsletterRateLimit = new Map();
 
 // Helper to check if Mongoose is connected
 const isMongoConnected = () => {
@@ -988,6 +992,193 @@ router.get('/public/:slug', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Helper to validate email format
+const isValidEmailFormat = (email) => {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+};
+
+// 1. PUBLIC NEWSLETTER SUBSCRIBE ENDPOINT
+router.post('/newsletter/subscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !isValidEmailFormat(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.'
+      });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Lightweight rate-limiting (max 5 requests per 10 minutes per IP/email)
+    const clientKey = `${req.ip}_${cleanEmail}`;
+    const now = Date.now();
+    const rateData = newsletterRateLimit.get(clientKey) || { count: 0, resetTime: now + 10 * 60 * 1000 };
+    if (now > rateData.resetTime) {
+      rateData.count = 0;
+      rateData.resetTime = now + 10 * 60 * 1000;
+    }
+    if (rateData.count >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many subscription attempts. Please try again in a few minutes.'
+      });
+    }
+    rateData.count += 1;
+    newsletterRateLimit.set(clientKey, rateData);
+
+    // Check duplicate in Mongo or Memory
+    if (isMongoConnected()) {
+      const existing = await Subscriber.findOne({ email: cleanEmail });
+      if (existing) {
+        if (existing.status === 'unsubscribed') {
+          existing.status = 'active';
+          existing.subscribedAt = new Date();
+          await existing.save();
+          sendWelcomeEmail(cleanEmail);
+          return res.json({
+            success: true,
+            message: "Welcome back! Your subscription has been reactivated."
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: "You're already subscribed to Nexora updates."
+        });
+      }
+
+      // Create new subscriber
+      const subscriber = new Subscriber({
+        email: cleanEmail,
+        status: 'active',
+        emailStatus: 'pending'
+      });
+      await subscriber.save();
+
+      // Trigger confirmation email
+      const emailResult = await sendWelcomeEmail(cleanEmail);
+      if (emailResult.success) {
+        subscriber.emailStatus = 'sent';
+        await subscriber.save();
+      } else {
+        subscriber.emailStatus = 'failed';
+        await subscriber.save();
+      }
+
+      return res.json({
+        success: true,
+        message: "You're subscribed! Check your inbox for a confirmation email."
+      });
+    } else {
+      // Memory Store Fallback
+      if (memorySubscribersStore.has(cleanEmail)) {
+        const existing = memorySubscribersStore.get(cleanEmail);
+        if (existing.status === 'unsubscribed') {
+          existing.status = 'active';
+          existing.subscribedAt = new Date();
+          sendWelcomeEmail(cleanEmail);
+          return res.json({
+            success: true,
+            message: "Welcome back! Your subscription has been reactivated."
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: "You're already subscribed to Nexora updates."
+        });
+      }
+
+      const subscriberObj = {
+        _id: `sub_${Date.now()}`,
+        email: cleanEmail,
+        status: 'active',
+        emailStatus: 'pending',
+        subscribedAt: new Date()
+      };
+      memorySubscribersStore.set(cleanEmail, subscriberObj);
+
+      const emailResult = await sendWelcomeEmail(cleanEmail);
+      if (emailResult.success) {
+        subscriberObj.emailStatus = 'sent';
+      } else {
+        subscriberObj.emailStatus = 'failed';
+      }
+
+      return res.json({
+        success: true,
+        message: "You're subscribed! Check your inbox for a confirmation email."
+      });
+    }
+  } catch (error) {
+    console.error('Newsletter subscribe error:', error);
+    // Duplicate Key Error Guard (E11000)
+    if (error.code === 11000 || error.name === 'MongoServerError') {
+      return res.status(400).json({
+        success: false,
+        message: "You're already subscribed to Nexora updates."
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.'
+    });
+  }
+});
+
+// 2. PROTECTED ADMIN GET ALL SUBSCRIBERS ENDPOINT
+router.get('/newsletter/subscribers', requireAdmin, async (req, res) => {
+  try {
+    if (isMongoConnected()) {
+      const subscribers = await Subscriber.find().sort({ subscribedAt: -1 });
+      return res.json({ success: true, count: subscribers.length, subscribers });
+    } else {
+      const subscribers = Array.from(memorySubscribersStore.values()).sort(
+        (a, b) => new Date(b.subscribedAt) - new Date(a.subscribedAt)
+      );
+      return res.json({ success: true, count: subscribers.length, subscribers });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. PUBLIC UNSUBSCRIBE ENDPOINT
+router.post('/newsletter/unsubscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !isValidEmailFormat(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.'
+      });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (isMongoConnected()) {
+      const subscriber = await Subscriber.findOne({ email: cleanEmail });
+      if (!subscriber) {
+        return res.status(404).json({ success: false, message: 'Subscriber email not found.' });
+      }
+      subscriber.status = 'unsubscribed';
+      await subscriber.save();
+      return res.json({ success: true, message: 'Successfully unsubscribed from Nexora updates.' });
+    } else {
+      const subscriber = memorySubscribersStore.get(cleanEmail);
+      if (!subscriber) {
+        return res.status(404).json({ success: false, message: 'Subscriber email not found.' });
+      }
+      subscriber.status = 'unsubscribed';
+      return res.json({ success: true, message: 'Successfully unsubscribed from Nexora updates.' });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 

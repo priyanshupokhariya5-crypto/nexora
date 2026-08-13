@@ -10,12 +10,14 @@ import {
 } from 'lucide-react';
 import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
 import TemplateRenderer from './TemplateRenderer';
+import { apiFetch } from '../api';
 
 export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCatalog, user = null, onOpenAuth }) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [openFaq, setOpenFaq] = useState(null);
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMsg, setNewsletterMsg] = useState({ type: '', text: '' });
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const [previewModalTemplate, setPreviewModalTemplate] = useState(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -70,12 +72,37 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    if (newsletterEmail) {
-      setNewsletterSuccess(true);
-      setNewsletterEmail('');
-      setTimeout(() => setNewsletterSuccess(false), 4000);
+    if (!newsletterEmail) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newsletterEmail.trim())) {
+      setNewsletterMsg({ type: 'error', text: 'Please enter a valid email address.' });
+      return;
+    }
+
+    setNewsletterLoading(true);
+    setNewsletterMsg({ type: '', text: '' });
+
+    try {
+      const res = await apiFetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail.trim() })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewsletterMsg({ type: 'success', text: data.message || "You're subscribed! Check your inbox for a confirmation email." });
+        setNewsletterEmail('');
+      } else {
+        setNewsletterMsg({ type: 'error', text: data.message || 'Something went wrong. Please try again.' });
+      }
+    } catch (err) {
+      setNewsletterMsg({ type: 'error', text: 'Something went wrong. Please try again.' });
+    } finally {
+      setNewsletterLoading(false);
     }
   };
 
@@ -789,21 +816,36 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                   <input
                     type="email"
                     required
+                    disabled={newsletterLoading}
                     value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewsletterEmail(e.target.value);
+                      if (newsletterMsg.text) setNewsletterMsg({ type: '', text: '' });
+                    }}
                     placeholder="Enter your work email"
-                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 w-full"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 w-full disabled:opacity-50"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow flex-shrink-0 flex items-center space-x-1"
+                    disabled={newsletterLoading}
+                    className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow flex-shrink-0 flex items-center space-x-1 disabled:opacity-50 transition-all"
                   >
-                    <span>Subscribe</span>
-                    <Send className="w-3.5 h-3.5" />
+                    {newsletterLoading ? (
+                      <span>Subscribing...</span>
+                    ) : newsletterMsg.type === 'success' ? (
+                      <span>Subscribed ✓</span>
+                    ) : (
+                      <>
+                        <span>Subscribe</span>
+                        <Send className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 </div>
-                {newsletterSuccess && (
-                  <p className="mt-2 text-xs text-emerald-400 font-semibold">Thank you for subscribing!</p>
+                {newsletterMsg.text && (
+                  <p className={`mt-2 text-xs font-semibold ${newsletterMsg.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {newsletterMsg.text}
+                  </p>
                 )}
               </form>
 

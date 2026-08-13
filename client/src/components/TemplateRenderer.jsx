@@ -439,17 +439,17 @@ export default function TemplateRenderer({
         
         <div>
           {/* NAVBAR */}
-          <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/90' : 'border-slate-200/80 bg-white/90'} sticky top-0 z-40 backdrop-blur-md`}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 min-w-0 w-full">
+          <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6 min-w-0 w-full">
               
               {/* Brand Logo + Brand Name Container */}
               <a 
                 href="#" 
                 onClick={(e) => handleLinkClick(e, '/')} 
-                className="flex items-center space-x-2.5 cursor-pointer min-w-0 flex-1 lg:flex-initial max-w-[70%] sm:max-w-xs lg:max-w-sm mr-2"
+                className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 flex-1 lg:flex-initial max-w-[65%] sm:max-w-[75%] lg:max-w-xs mr-2 overflow-hidden"
               >
                 {logoImage ? (
-                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[100px] sm:max-w-[130px] object-contain rounded-md flex-shrink-0" />
+                  <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
                 ) : isEditMode ? (
                   <div 
                     onClick={(e) => {
@@ -460,7 +460,7 @@ export default function TemplateRenderer({
                     className="relative group/logo cursor-pointer flex items-center space-x-2 flex-shrink-0"
                     title="Click to edit or upload Brand Logo"
                   >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden" style={{ backgroundColor: accentColor }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white shadow-sm font-display text-sm relative overflow-hidden flex-shrink-0" style={{ backgroundColor: accentColor }}>
                       {brandName.charAt(0).toUpperCase()}
                       <div className="opacity-0 group-hover/logo:opacity-100 absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center transition-opacity z-20">
                         <span className="text-[9px] font-extrabold text-white">📷</span>
@@ -479,12 +479,12 @@ export default function TemplateRenderer({
                   fieldKey="logoText" 
                   value={brandName} 
                   tagName="span" 
-                  className="font-extrabold text-sm sm:text-base lg:text-lg tracking-tight font-display truncate block min-w-0" 
+                  className="font-extrabold text-sm sm:text-base lg:text-lg tracking-tight font-display truncate block min-w-0 max-w-full" 
                 />
               </a>
 
               {/* Desktop Navigation Links */}
-              <nav className={`${viewportMode === 'mobile' ? 'hidden' : 'hidden lg:flex'} items-center space-x-5 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
+              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:flex'} items-center space-x-4 xl:space-x-6 text-xs font-semibold opacity-90 flex-shrink min-w-0`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -492,7 +492,7 @@ export default function TemplateRenderer({
                       key={idx} 
                       href={link.href} 
                       onClick={(e) => handleLinkClick(e, link.href)}
-                      className={`hover:opacity-100 transition-all whitespace-nowrap ${isLinkActive ? 'font-extrabold border-b-2' : 'opacity-70'}`}
+                      className={`hover:opacity-100 transition-all whitespace-nowrap flex-shrink-0 ${isLinkActive ? 'font-extrabold border-b-2' : 'opacity-75'}`}
                       style={isLinkActive ? { borderColor: accentColor } : {}}
                     >
                       <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />
@@ -502,12 +502,12 @@ export default function TemplateRenderer({
               </nav>
 
               {/* Header Actions (CTA + Mobile Hamburger Toggle) */}
-              <div className="flex items-center space-x-2 flex-shrink-0 ml-auto">
+              <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0 ml-auto">
                 {/* Desktop CTA Button */}
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className={`${viewportMode === 'mobile' ? 'hidden' : 'hidden sm:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
@@ -516,7 +516,7 @@ export default function TemplateRenderer({
                 {/* Mobile Hamburger Toggle Button */}
                 <button
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                  className={`${viewportMode === 'mobile' ? 'flex' : 'lg:hidden flex'} items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[36px]`}
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : 'lg:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
                   aria-label="Toggle navigation menu"
                 >
                   <span className="text-lg font-bold leading-none">{mobileNavOpen ? '✕' : '☰'}</span>
@@ -526,7 +526,7 @@ export default function TemplateRenderer({
 
             {/* Collapsible Mobile Navigation Drawer */}
             {mobileNavOpen && (
-              <div className={`border-t ${isDark ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} px-4 py-4 space-y-2.5 font-medium text-xs shadow-xl animate-fade-in w-full min-w-0 max-w-full`}>
+              <div className={`border-t ${isDark ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} px-4 py-4 space-y-2.5 font-medium text-xs shadow-2xl animate-fade-in w-full min-w-0 max-w-full overflow-hidden`}>
                 {defaultNavLinks.map((link, idx) => (
                   <a
                     key={idx}
@@ -538,7 +538,7 @@ export default function TemplateRenderer({
                     className={`block px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()))
                         ? 'bg-brand-600 text-white shadow-sm'
-                        : 'hover:bg-slate-200/50'
+                        : 'hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                     }`}
                   >
                     <EditableText fieldKey={`navLink_${idx}_label`} value={link.label} />

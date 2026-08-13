@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /register
+Disallow: /dashboard
+Disallow: /editor
+Disallow: /admin
+
+Sitemap: https://nexora-seven-umber.vercel.app/sitemap.xml

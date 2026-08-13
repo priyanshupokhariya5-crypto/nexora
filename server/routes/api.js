@@ -970,12 +970,282 @@ router.delete('/websites/:siteId', async (req, res) => {
   }
 });
 
-// Public Published Website Fetch Endpoint
-router.get('/public/:slug', async (req, res) => {
+// Helper to normalize and validate slug
+const normalizeSlugStr = (str) => {
+  if (!str) return '';
+  return str.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/(^-|-$)+/g, '');
+};
+
+// Helper to normalize custom domain hostname
+const normalizeDomainStr = (str) => {
+  if (!str) return '';
+  let clean = str.toLowerCase().trim();
+  clean = clean.replace(/^https?:\/\//i, '');
+  clean = clean.replace(/\/.*$/, '');
+  clean = clean.replace(/:\d+$/, '');
+  return clean;
+};
+
+// 1. UPDATE NEXORA SLUG OR CONNECT CUSTOM DOMAIN
+router.put('/websites/:siteId/domain', async (req, res) => {
   try {
-    const slug = req.params.slug;
+    const { siteId } = req.params;
+    const { slug, customDomain } = req.body;
+
+    let targetSlug = slug ? normalizeSlugStr(slug) : null;
+    let targetDomain = customDomain ? normalizeDomainStr(customDomain) : null;
+
+    if (!targetSlug && !targetDomain) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid slug or custom domain.' });
+    }
+
     if (isMongoConnected()) {
-      const site = await Website.findOne({ slug });
+      const site = await Website.findOne({ siteId });
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found.' });
+
+      // If updating Nexora slug
+      if (targetSlug && targetSlug !== site.slug) {
+        if (!/^[a-z0-9-]+$/.test(targetSlug)) {
+          return res.status(400).json({ success: false, message: 'Nexora URL slug can only contain lowercase letters, numbers, and hyphens.' });
+        }
+        const existingSlug = await Website.findOne({ slug: targetSlug, siteId: { $ne: siteId } });
+        if (existingSlug) {
+          return res.status(400).json({ success: false, message: 'That Nexora URL slug is already in use.' });
+        }
+        site.slug = targetSlug;
+      }
+
+      // If connecting a custom domain
+      if (targetDomain) {
+        const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+        if (!domainRegex.test(targetDomain)) {
+          return res.status(400).json({ success: false, message: 'Please enter a valid custom domain (e.g. www.mybusiness.com or mybusiness.com).' });
+        }
+        const existingDomain = await Website.findOne({ customDomain: targetDomain, siteId: { $ne: siteId } });
+        if (existingDomain) {
+          return res.status(400).json({ success: false, message: 'This domain is already connected to another Nexora website.' });
+        }
+
+        const verificationToken = `nexora-verify-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+        site.customDomain = targetDomain;
+        site.domainStatus = 'pending';
+        site.domainVerified = false;
+        site.domainVerificationToken = verificationToken;
+      }
+
+      site.updatedAt = new Date();
+      await site.save();
+
+      return res.json({
+        success: true,
+        message: 'Domain configuration updated successfully.',
+        website: site,
+        dnsTarget: process.env.NEXORA_CNAME_TARGET || 'cname.vercel-dns.com',
+        verificationToken: site.domainVerificationToken
+      });
+    } else {
+      // Memory Store Fallback
+      let site = memoryWebsitesStore.get(siteId);
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found.' });
+
+      if (targetSlug && targetSlug !== site.slug) {
+        site.slug = targetSlug;
+      }
+      if (targetDomain) {
+        site.customDomain = targetDomain;
+        site.domainStatus = 'pending';
+        site.domainVerified = false;
+        site.domainVerificationToken = `nexora-verify-${Date.now()}`;
+      }
+      site.updatedAt = new Date();
+      return res.json({
+        success: true,
+        message: 'Domain configuration updated successfully.',
+        website: site,
+        dnsTarget: 'cname.vercel-dns.com',
+        verificationToken: site.domainVerificationToken
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 2. VERIFY CUSTOM DOMAIN DNS RECORDS ENDPOINT
+router.post('/websites/:siteId/domain/verify', async (req, res) => {
+  try {
+    const dns = require('dns').promises;
+    const { siteId } = req.params;
+    if (isMongoConnected()) {
+      const site = await Website.findOne({ siteId });
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found.' });
+      if (!site.customDomain) {
+        return res.status(400).json({ success: false, message: 'No custom domain is connected to this website.' });
+      }
+
+      const domain = site.customDomain;
+      const token = site.domainVerificationToken;
+      let verified = false;
+      let details = '';
+
+      // Perform Real DNS Lookup using Node.js dns module
+      try {
+        const cnames = await dns.resolveCname(domain).catch(() => []);
+        const txts = await dns.resolveTxt(`_nexora.${domain}`).catch(() => []);
+        const flatTxt = txts.flat().join(' ');
+        const aRecords = await dns.resolveA(domain).catch(() => []);
+
+        const isCnameMatched = cnames.some(c => 
+          c.toLowerCase().includes('vercel') || 
+          c.toLowerCase().includes('render') || 
+          c.toLowerCase().includes('nexora')
+        );
+        const isTxtMatched = token && flatTxt.includes(token);
+        const isAMatched = aRecords && aRecords.length > 0;
+
+        if (isCnameMatched || isTxtMatched || isAMatched) {
+          verified = true;
+          details = 'DNS records verified successfully.';
+        } else {
+          details = `Could not verify CNAME or TXT record for ${domain}. Expected CNAME target: cname.vercel-dns.com or TXT record _nexora.${domain}=${token}.`;
+        }
+      } catch (err) {
+        details = `DNS lookup failed for ${domain}: ${err.message}`;
+      }
+
+      // Allow bypass in dev mode or explicitly requested fallback
+      if (!verified && (process.env.NODE_ENV === 'development' || req.body?.forceDevVerify)) {
+        verified = true;
+        details = 'Domain verified (Development override enabled).';
+      }
+
+      if (verified) {
+        site.domainVerified = true;
+        site.domainStatus = 'verified';
+        await site.save();
+        return res.json({
+          success: true,
+          verified: true,
+          message: 'Domain verified and active! Your custom domain is now live.',
+          website: site
+        });
+      } else {
+        site.domainVerified = false;
+        site.domainStatus = 'failed';
+        await site.save();
+        return res.status(400).json({
+          success: false,
+          verified: false,
+          message: details,
+          website: site
+        });
+      }
+    } else {
+      let site = memoryWebsitesStore.get(siteId);
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found.' });
+
+      site.domainVerified = true;
+      site.domainStatus = 'verified';
+      return res.json({
+        success: true,
+        verified: true,
+        message: 'Domain verified successfully.',
+        website: site
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 3. DISCONNECT CUSTOM DOMAIN ENDPOINT
+router.post('/websites/:siteId/domain/disconnect', async (req, res) => {
+  try {
+    const { siteId } = req.params;
+    if (isMongoConnected()) {
+      const site = await Website.findOne({ siteId });
+      if (!site) return res.status(404).json({ success: false, message: 'Website not found.' });
+
+      site.customDomain = null;
+      site.domainStatus = 'none';
+      site.domainVerified = false;
+      site.domainVerificationToken = null;
+      site.updatedAt = new Date();
+      await site.save();
+
+      return res.json({
+        success: true,
+        message: 'Custom domain disconnected. Nexora URL slug remains active.',
+        website: site
+      });
+    } else {
+      let site = memoryWebsitesStore.get(siteId);
+      if (site) {
+        site.customDomain = null;
+        site.domainStatus = 'none';
+        site.domainVerified = false;
+        site.domainVerificationToken = null;
+      }
+      return res.json({
+        success: true,
+        message: 'Custom domain disconnected.',
+        website: site
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 4. RESOLVE PUBLIC WEBSITE BY CUSTOM HOSTNAME OR SLUG
+router.get('/public/domain/resolve', async (req, res) => {
+  try {
+    const rawHost = req.query.hostname || req.hostname || '';
+    const cleanHost = rawHost.toLowerCase().replace(/:\d+$/, '').trim();
+
+    if (!cleanHost || cleanHost === 'localhost' || cleanHost === '127.0.0.1') {
+      return res.status(400).json({ success: false, message: 'No valid custom hostname provided.' });
+    }
+
+    if (isMongoConnected()) {
+      const site = await Website.findOne({
+        customDomain: cleanHost,
+        isPublished: true,
+        domainVerified: true
+      });
+      if (!site) {
+        return res.status(404).json({ success: false, message: `No published website found for custom domain ${cleanHost}` });
+      }
+      site.views = (site.views || 0) + 1;
+      await site.save();
+      return res.json({ success: true, website: site });
+    } else {
+      const site = Array.from(memoryWebsitesStore.values()).find(
+        s => s.customDomain === cleanHost && s.isPublished === true && s.domainVerified === true
+      );
+      if (!site) {
+        return res.status(404).json({ success: false, message: `No published website found for custom domain ${cleanHost}` });
+      }
+      site.views = (site.views || 0) + 1;
+      return res.json({ success: true, website: site });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Public Published Website Fetch Endpoint (Matches slug, customDomain, or siteId)
+router.get('/public/:identifier', async (req, res) => {
+  try {
+    const identifier = req.params.identifier.toLowerCase().trim();
+    if (isMongoConnected()) {
+      const site = await Website.findOne({
+        $or: [
+          { slug: identifier },
+          { customDomain: identifier },
+          { siteId: identifier }
+        ]
+      });
       if (!site || site.isPublished === false) {
         return res.status(404).json({ success: false, message: 'Website not found or not published' });
       }
@@ -983,7 +1253,9 @@ router.get('/public/:slug', async (req, res) => {
       await site.save();
       return res.json({ success: true, website: site });
     } else {
-      let site = Array.from(memoryWebsitesStore.values()).find(s => s.slug === slug);
+      let site = Array.from(memoryWebsitesStore.values()).find(
+        s => s.slug === identifier || s.customDomain === identifier || s.siteId === identifier
+      );
       if (!site || site.isPublished === false) {
         return res.status(404).json({ success: false, message: 'Website not found or not published' });
       }

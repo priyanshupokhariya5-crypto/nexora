@@ -43,6 +43,30 @@ const WebsiteSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  customDomain: {
+    type: String,
+    default: null,
+    sparse: true,
+    lowercase: true,
+    trim: true
+  },
+  domainStatus: {
+    type: String,
+    enum: ['none', 'pending', 'verified', 'failed'],
+    default: 'none'
+  },
+  domainVerified: {
+    type: Boolean,
+    default: false
+  },
+  domainVerificationToken: {
+    type: String,
+    default: null
+  },
+  publishedAt: {
+    type: Date,
+    default: null
+  },
   views: {
     type: Number,
     default: 0

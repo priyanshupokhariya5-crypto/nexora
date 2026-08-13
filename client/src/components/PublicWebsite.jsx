@@ -20,7 +20,15 @@ export default function PublicWebsite({ slug: slugProp }) {
       setErrorMsg('');
 
       try {
-        const res = await apiFetch(`/api/public/${actualSlug}`);
+        const currentHost = window.location.hostname.toLowerCase();
+        const isStandardHost = currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost.endsWith('nexora.app') || currentHost.endsWith('vercel.app');
+
+        let endpoint = `/api/public/${actualSlug}`;
+        if ((!actualSlug || actualSlug === 'root') && !isStandardHost) {
+          endpoint = `/api/public/domain/resolve?hostname=${currentHost}`;
+        }
+
+        const res = await apiFetch(endpoint);
         const data = await res.json();
 
         if (data.success && data.website) {
@@ -35,9 +43,7 @@ export default function PublicWebsite({ slug: slugProp }) {
       }
     };
 
-    if (actualSlug) {
-      fetchPublicSite();
-    }
+    fetchPublicSite();
   }, [actualSlug]);
 
   if (loading) {

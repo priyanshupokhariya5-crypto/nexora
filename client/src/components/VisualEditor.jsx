@@ -14,6 +14,7 @@ import TemplateRenderer from './TemplateRenderer';
 import confetti from 'canvas-confetti';
 import { TEMPLATES_DATA } from '../data/templatesData';
 import { apiFetch, getApiUrl } from '../api';
+import DomainSettingsModal from './DomainSettingsModal';
 
 const CURATED_COLORS = [
   { name: 'Royal Blue', hex: '#2551e8' },
@@ -106,6 +107,7 @@ export default function VisualEditor({
   
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [showAddPageModal, setShowAddPageModal] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
   const [newPageName, setNewPageName] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
 
@@ -1542,6 +1544,15 @@ export default function VisualEditor({
         </div>
 
         <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
+          <button 
+            onClick={() => setShowDomainModal(true)} 
+            className="hidden sm:flex px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 items-center space-x-1.5 transition-colors"
+            title="Manage Nexora Slug & Custom Domain"
+          >
+            <Globe className="w-3.5 h-3.5 text-brand-400" />
+            <span>Domain</span>
+          </button>
+
           <button onClick={() => setIsPreviewMode(!isPreviewMode)} className={`hidden md:flex px-3 py-1.5 rounded-xl text-xs font-bold transition-all items-center space-x-1.5 ${isPreviewMode ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`}>
             <Eye className="w-3.5 h-3.5" />
             <span>{isPreviewMode ? 'Exit Preview' : 'Preview'}</span>
@@ -1950,6 +1961,17 @@ export default function VisualEditor({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Domain Settings Modal */}
+      {showDomainModal && (
+        <DomainSettingsModal
+          website={savedSiteData || initialSite || { siteId: `site_${Date.now()}`, slug: template.slug || template.id, title: siteTitle }}
+          onClose={() => setShowDomainModal(false)}
+          onUpdateWebsite={(updatedSite) => {
+            setSavedSiteData(updatedSite);
+          }}
+        />
       )}
 
     </div>

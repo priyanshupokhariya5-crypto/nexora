@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, ExternalLink, Edit3, Trash2, Globe, Eye, Sparkles, 
-  Layout, BarChart2, CheckCircle2, Clock, Layers, LogIn, Mail, RefreshCw
+  Layout, BarChart2, CheckCircle2, Clock, Layers, LogIn, Mail, RefreshCw, Link as LinkIcon
 } from 'lucide-react';
 import { apiFetch } from '../api';
+import DomainSettingsModal from './DomainSettingsModal';
 
 export default function Dashboard({ 
   user = null,
@@ -16,6 +17,7 @@ export default function Dashboard({
   const [activeTab, setActiveTab] = useState('websites'); // 'websites' or 'subscribers'
   const [subscribers, setSubscribers] = useState([]);
   const [subscribersLoading, setSubscribersLoading] = useState(false);
+  const [selectedDomainSite, setSelectedDomainSite] = useState(null);
 
   const fetchWebsites = async () => {
     try {
@@ -83,7 +85,7 @@ export default function Dashboard({
               {user ? `${user.name}'s Website Workspace` : 'My Website Workspaces'}
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Manage your saved landing pages, check page view stats, and view newsletter subscribers.
+              Manage your saved landing pages, page view stats, custom domain routing, and newsletter subscribers.
             </p>
           </div>
 
@@ -213,9 +215,21 @@ export default function Dashboard({
                       <h3 className="text-lg font-bold text-slate-900 font-display leading-tight">
                         {site.title}
                       </h3>
-                      <p className="text-xs text-slate-500 font-mono mt-1 truncate">
-                        /{site.slug}
-                      </p>
+                      
+                      <div className="mt-1 space-y-1 font-mono text-xs">
+                        <p className="text-slate-500 truncate flex items-center space-x-1">
+                          <span className="text-slate-400">Nexora:</span>
+                          <span className="text-brand-600 font-semibold">/site/{site.slug}</span>
+                        </p>
+                        {site.customDomain && (
+                          <p className="text-slate-500 truncate flex items-center space-x-1">
+                            <span className="text-slate-400">Custom:</span>
+                            <span className={`font-semibold ${site.domainVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
+                              {site.customDomain} {site.domainVerified ? '✓' : '(Pending)'}
+                            </span>
+                          </p>
+                        )}
+                      </div>
 
                       <div className="mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
                         <span>Preset: {site.templateId}</span>
@@ -230,6 +244,15 @@ export default function Dashboard({
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         <span>Edit Site</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedDomainSite(site)}
+                        className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center space-x-1 transition-colors border border-slate-200"
+                        title="Manage Nexora Slug & Custom Domain"
+                      >
+                        <Globe className="w-3.5 h-3.5 text-brand-600" />
+                        <span>Domain</span>
                       </button>
 
                       <button
@@ -327,6 +350,18 @@ export default function Dashboard({
               </div>
             )}
           </div>
+        )}
+
+        {/* Domain Settings Modal */}
+        {selectedDomainSite && (
+          <DomainSettingsModal
+            website={selectedDomainSite}
+            onClose={() => setSelectedDomainSite(null)}
+            onUpdateWebsite={(updatedSite) => {
+              setSavedSites(prev => prev.map(s => s.siteId === updatedSite.siteId ? updatedSite : s));
+              setSelectedDomainSite(updatedSite);
+            }}
+          />
         )}
 
       </div>

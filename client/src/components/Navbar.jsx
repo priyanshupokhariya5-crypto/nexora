@@ -52,42 +52,42 @@ export default function Navbar({
           </div>
         </motion.div>
 
-        {/* Center Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-1 p-1 bg-slate-100/80 rounded-2xl border border-slate-200/80 relative">
-          
-          <button
-            onClick={() => setCurrentView('landing')}
-            className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 ${
-              currentView === 'landing' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {currentView === 'landing' && (
-              <motion.div
-                layoutId="activePill"
-                className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span>Home</span>
-          </button>
+        {/* Center Navigation Links (Hidden on Public Landing Page before Login) */}
+        {user && (
+          <nav className="hidden md:flex items-center space-x-1 p-1 bg-slate-100/80 rounded-2xl border border-slate-200/80 relative">
+            
+            <button
+              onClick={() => setCurrentView('landing')}
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 ${
+                currentView === 'landing' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {currentView === 'landing' && (
+                <motion.div
+                  layoutId="activePill"
+                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span>Home</span>
+            </button>
 
-          <button
-            onClick={() => setCurrentView('pricing')}
-            className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 ${
-              currentView === 'pricing' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {currentView === 'pricing' && (
-              <motion.div
-                layoutId="activePill"
-                className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span>Pricing</span>
-          </button>
-          
-          {user && (
+            <button
+              onClick={() => setCurrentView('pricing')}
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 ${
+                currentView === 'pricing' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {currentView === 'pricing' && (
+                <motion.div
+                  layoutId="activePill"
+                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span>Pricing</span>
+            </button>
+            
             <button
               onClick={() => setCurrentView('catalog')}
               className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
@@ -104,9 +104,7 @@ export default function Navbar({
               <LayoutGrid className="w-3.5 h-3.5" />
               <span>Templates</span>
             </button>
-          )}
 
-          {user && (
             <button
               onClick={() => setCurrentView('dashboard')}
               className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
@@ -126,9 +124,9 @@ export default function Navbar({
                 {savedSitesCount}
               </span>
             </button>
-          )}
 
-        </nav>
+          </nav>
+        )}
 
         {/* Right Action Controls */}
         <div className="flex items-center space-x-2.5">

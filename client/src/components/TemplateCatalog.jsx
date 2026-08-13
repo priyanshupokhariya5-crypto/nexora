@@ -1,5 +1,8 @@
+import React, { useState } from 'react';
+import { Search, LayoutGrid, Sparkles, ArrowRight, Eye, ExternalLink, Globe, Star, Zap, Lock, X } from 'lucide-react';
+import { TEMPLATE_CATEGORIES, TEMPLATES_DATA } from '../data/templatesData';
+import TemplateRenderer from './TemplateRenderer';
 import PremiumLockModal from './PremiumLockModal';
-import { Lock } from 'lucide-react';
 
 export default function TemplateCatalog({ templates = [], onSelectTemplate, user = null, onOpenAuth }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -7,9 +10,10 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [showLockModal, setShowLockModal] = useState(false);
 
-  const activeTemplates = templates && templates.length > 0 ? templates : TEMPLATES_DATA;
+  const activeTemplates = Array.isArray(templates) && templates.length > 0 ? templates : TEMPLATES_DATA;
 
   const handleCustomizeClick = (tpl) => {
+    if (!tpl) return;
     if (!user) {
       if (onOpenAuth) onOpenAuth();
       return;
@@ -22,7 +26,8 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
     if (onSelectTemplate) onSelectTemplate(tpl);
   };
 
-  const filtered = activeTemplates.filter(tpl => {
+  const filtered = (activeTemplates || []).filter(tpl => {
+    if (!tpl) return false;
     const titleStr = (tpl.name || tpl.title || '').toLowerCase();
     const descStr = (tpl.description || tpl.tagline || '').toLowerCase();
     const catStr = (tpl.category || '').toLowerCase();
@@ -119,8 +124,8 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
                 key={tpl.id || tpl._id}
                 className="group bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-soft-md hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between w-full min-w-0 max-w-full"
               >
+                {/* Image and Header */}
                 <div>
-                  {/* Card Thumbnail Picture Header */}
                   <div className="relative aspect-[16/10] overflow-hidden bg-slate-900 w-full min-w-0 max-w-full">
                     <img 
                       src={thumbUrl} 
@@ -239,12 +244,12 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
                     </div>
                   )}
 
-                  {/* Primary Customize Button */}
+                  {/* Primary Button */}
                   <button
                     onClick={() => handleCustomizeClick(tpl)}
-                    className="w-full py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition-transform active:scale-95 flex items-center justify-center space-x-1.5"
+                    className="w-full py-3 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow transition-all duration-200 flex items-center justify-center space-x-2 group-hover:shadow-md"
                   >
-                    <span>Use Template / Customize</span>
+                    <span>Customize / Use Template</span>
                     <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
                   </button>
                 </div>
@@ -254,17 +259,21 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
         </div>
       )}
 
-      {/* Full-Screen Template Preview Modal */}
+      {/* Preview Fullscreen Modal */}
       {previewTemplate && (
-        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between w-full h-full">
-          {/* Modal Header */}
-          <div className="h-16 bg-slate-900 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between text-white flex-shrink-0 gap-2">
-            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-              <span className="font-extrabold text-xs sm:text-sm font-display truncate">{previewTemplate.name || previewTemplate.title}</span>
-              <span className="px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-amber-400 text-slate-950 uppercase flex-shrink-0">{previewTemplate.badge || 'Template'}</span>
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col animate-fade-in overflow-hidden">
+          {/* Preview Modal Bar */}
+          <div className="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between text-white flex-shrink-0">
+            <div className="flex items-center space-x-3">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                Live Preview
+              </span>
+              <h3 className="text-sm font-bold truncate max-w-xs sm:max-w-md font-display">
+                {previewTemplate.name || previewTemplate.title}
+              </h3>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={() => {
                   const tpl = previewTemplate;
@@ -298,7 +307,7 @@ export default function TemplateCatalog({ templates = [], onSelectTemplate, user
       {showLockModal && (
         <PremiumLockModal
           title="Premium Template"
-          description="This template is available with a Premium plan."
+          description="Premium templates are coming soon."
           onClose={() => setShowLockModal(false)}
         />
       )}

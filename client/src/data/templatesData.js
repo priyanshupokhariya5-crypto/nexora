@@ -56,7 +56,7 @@ export const TEMPLATES_DATA = [
           "href": "/about"
         },
         {
-          "label": "Daily Essentials",
+          "label": "Essentials",
           "href": "/services"
         },
         {
@@ -64,7 +64,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Store Location",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -216,15 +216,15 @@ export const TEMPLATES_DATA = [
           "href": "/about"
         },
         {
-          "label": "Menu Showcase",
+          "label": "Menu",
           "href": "/menu"
         },
         {
-          "label": "Atmosphere Gallery",
+          "label": "Gallery",
           "href": "/gallery"
         },
         {
-          "label": "Diner Reviews",
+          "label": "Reviews",
           "href": "/reviews"
         },
         {
@@ -364,11 +364,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Our Beans",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Cafe Menu",
+          "label": "Menu",
           "href": "/menu"
         },
         {
@@ -376,7 +376,7 @@ export const TEMPLATES_DATA = [
           "href": "/reviews"
         },
         {
-          "label": "Location & Hours",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -660,11 +660,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Studio",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Beauty Services",
+          "label": "Services",
           "href": "/services"
         },
         {
@@ -676,7 +676,7 @@ export const TEMPLATES_DATA = [
           "href": "/reviews"
         },
         {
-          "label": "Book Appointment",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -816,7 +816,7 @@ export const TEMPLATES_DATA = [
           "href": "/about"
         },
         {
-          "label": "Grooming Services",
+          "label": "Services",
           "href": "/services"
         },
         {
@@ -824,7 +824,7 @@ export const TEMPLATES_DATA = [
           "href": "/reviews"
         },
         {
-          "label": "Book Chair",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -960,15 +960,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Gym",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Training Programs",
+          "label": "Programs",
           "href": "/programs"
         },
         {
-          "label": "Certified Coaches",
+          "label": "Coaches",
           "href": "/trainers"
         },
         {
@@ -976,11 +976,11 @@ export const TEMPLATES_DATA = [
           "href": "/results"
         },
         {
-          "label": "Member Stories",
+          "label": "Reviews",
           "href": "/testimonials"
         },
         {
-          "label": "Join & Contact",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -1266,15 +1266,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Agency",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Featured Properties",
+          "label": "Properties",
           "href": "/properties"
         },
         {
-          "label": "Why Choose Us",
+          "label": "Benefits",
           "href": "/why-us"
         },
         {
@@ -1282,7 +1282,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Schedule Visit",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -1569,7 +1569,7 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Studio",
+          "label": "About",
           "href": "/about"
         },
         {
@@ -1873,7 +1873,7 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Agency Story",
+          "label": "About",
           "href": "/about"
         },
         {
@@ -1881,7 +1881,7 @@ export const TEMPLATES_DATA = [
           "href": "/services"
         },
         {
-          "label": "Proven Results",
+          "label": "Results",
           "href": "/results"
         },
         {
@@ -1889,7 +1889,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Request Audit",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -2025,7 +2025,7 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Engineering Ethos",
+          "label": "About",
           "href": "/about"
         },
         {
@@ -2033,7 +2033,7 @@ export const TEMPLATES_DATA = [
           "href": "/services"
         },
         {
-          "label": "Selected Works",
+          "label": "Portfolio",
           "href": "/portfolio"
         },
         {
@@ -2177,15 +2177,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Platform Overview",
+          "label": "Overview",
           "href": "/about"
         },
         {
-          "label": "Core Features",
+          "label": "Features",
           "href": "/features"
         },
         {
-          "label": "Pricing Tiers",
+          "label": "Pricing",
           "href": "/pricing"
         },
         {
@@ -2329,11 +2329,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Firm",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "IT Services",
+          "label": "Services",
           "href": "/services"
         },
         {
@@ -2481,15 +2481,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Threat Defense",
+          "label": "Overview",
           "href": "/about"
         },
         {
-          "label": "Security Services",
+          "label": "Services",
           "href": "/services"
         },
         {
-          "label": "Compliance Audit",
+          "label": "Compliance",
           "href": "/features"
         },
         {
@@ -2633,15 +2633,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "The Firm",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Practice Areas",
+          "label": "Services",
           "href": "/services"
         },
         {
-          "label": "Case Results",
+          "label": "Results",
           "href": "/results"
         },
         {
@@ -2785,15 +2785,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Firm",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Tax & Accounting",
+          "label": "Services",
           "href": "/services"
         },
         {
-          "label": "Pricing Plans",
+          "label": "Pricing",
           "href": "/pricing"
         },
         {
@@ -2801,7 +2801,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Book Audit",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -2937,11 +2937,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Clinic",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Medical Services",
+          "label": "Services",
           "href": "/services"
         },
         {
@@ -2953,7 +2953,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Book Visit",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -3089,11 +3089,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Studio",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Dental Treatments",
+          "label": "Treatments",
           "href": "/services"
         },
         {
@@ -3105,7 +3105,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Book Exam",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -3241,23 +3241,23 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Academy",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Academic Programs",
+          "label": "Programs",
           "href": "/programs"
         },
         {
-          "label": "Faculty Team",
+          "label": "Faculty",
           "href": "/team"
         },
         {
-          "label": "Student Results",
+          "label": "Results",
           "href": "/results"
         },
         {
-          "label": "Enrollment & Contact",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -3393,19 +3393,19 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Agency",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Featured Expeditions",
+          "label": "Expeditions",
           "href": "/services"
         },
         {
-          "label": "Photo Gallery",
+          "label": "Gallery",
           "href": "/gallery"
         },
         {
-          "label": "Traveler Reviews",
+          "label": "Reviews",
           "href": "/testimonials"
         },
         {
@@ -3545,15 +3545,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Resort Sanctuary",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Suites & Villas",
+          "label": "Suites",
           "href": "/services"
         },
         {
-          "label": "Guest Reviews",
+          "label": "Reviews",
           "href": "/testimonials"
         },
         {
@@ -3693,15 +3693,15 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Agency",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Event Showcase",
+          "label": "Portfolio",
           "href": "/portfolio"
         },
         {
-          "label": "Planning Services",
+          "label": "Services",
           "href": "/services"
         },
         {
@@ -3834,7 +3834,7 @@ export const TEMPLATES_DATA = [
       "logoText": "Apex Structures",
       "heroTitle": "Building Solid Foundations For Tomorrow's Skyline",
       "heroSubtitle": "General contracting, commercial high-rise construction, industrial warehouse buildouts, and civil infrastructure.",
-      "ctaText": "Request Project Bid",
+      "ctaText": "Request Bid",
       "ctaLink": "/contact",
       "heroImageUrl": "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
@@ -3845,11 +3845,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Firm",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Build Showcase",
+          "label": "Projects",
           "href": "/portfolio"
         },
         {
@@ -3857,11 +3857,11 @@ export const TEMPLATES_DATA = [
           "href": "/services"
         },
         {
-          "label": "Safety & Standards",
+          "label": "Standards",
           "href": "/features"
         },
         {
-          "label": "Request Bid",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -4145,11 +4145,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Our Formulas",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Skin Rituals",
+          "label": "Rituals",
           "href": "/services"
         },
         {
@@ -4293,11 +4293,11 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "Atelier Story",
+          "label": "About",
           "href": "/about"
         },
         {
-          "label": "Collection Lookbook",
+          "label": "Collection",
           "href": "/portfolio"
         },
         {
@@ -4309,7 +4309,7 @@ export const TEMPLATES_DATA = [
           "href": "/testimonials"
         },
         {
-          "label": "Showroom Contact",
+          "label": "Contact",
           "href": "/contact"
         }
       ],
@@ -4449,11 +4449,11 @@ export const TEMPLATES_DATA = [
           "href": "/about"
         },
         {
-          "label": "Selected Case Studies",
+          "label": "Work",
           "href": "/portfolio"
         },
         {
-          "label": "Design Capabilities",
+          "label": "Services",
           "href": "/services"
         },
         {

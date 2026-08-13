@@ -440,17 +440,17 @@ export default function TemplateRenderer({
         <div>
           {/* NAVBAR */}
           <header className={`border-b ${isDark ? 'border-slate-800 bg-slate-900/95 text-white' : 'border-slate-200/80 bg-white/95 text-slate-900'} sticky top-0 z-40 backdrop-blur-md shadow-soft-xs w-full min-w-0 max-w-full`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-[4.25rem] py-3.5 flex items-center justify-between gap-4 w-full min-w-0">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-[4rem] py-3 flex items-center justify-between gap-3 sm:gap-4 w-full min-w-0">
               
               {/* COLUMN 1: Brand Logo + Brand Name Container (LEFT) */}
-              <div className="flex items-center min-w-0 max-w-[40%] sm:max-w-[45%] xl:max-w-[320px] flex-shrink-0">
+              <div className="flex items-center min-w-0 flex-shrink-0 max-w-[55%] sm:max-w-[45%] xl:max-w-[300px]">
                 <a 
                   href="#" 
                   onClick={(e) => handleLinkClick(e, '/')} 
-                  className="flex items-center space-x-2.5 cursor-pointer min-w-0 overflow-hidden group"
+                  className="flex items-center space-x-2 sm:space-x-2.5 cursor-pointer min-w-0 overflow-hidden group"
                 >
                   {logoImage ? (
-                    <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[90px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
+                    <EditableImage slotKey="logoImageUrl" src={logoImage} alt="Brand Logo" className="h-7 sm:h-8 max-w-[85px] sm:max-w-[120px] object-contain rounded-md flex-shrink-0" />
                   ) : isEditMode ? (
                     <div 
                       onClick={(e) => {
@@ -486,7 +486,7 @@ export default function TemplateRenderer({
               </div>
 
               {/* COLUMN 2: Center Navigation Links (CENTER) */}
-              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden 2xl:flex'} items-center justify-center space-x-5 xl:space-x-6 text-xs font-semibold opacity-90 flex-1 min-w-0 overflow-hidden`}>
+              <nav className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:flex'} items-center justify-center space-x-3.5 xl:space-x-5 2xl:space-x-6 text-xs font-semibold opacity-90 flex-1 min-w-0 overflow-hidden px-2`}>
                 {defaultNavLinks.map((link, idx) => {
                   const isLinkActive = (link.href === '/' && currentRoute === 'home') || (link.href !== '/' && internalPath.toLowerCase().includes(link.href.toLowerCase()));
                   return (
@@ -504,12 +504,12 @@ export default function TemplateRenderer({
               </nav>
 
               {/* COLUMN 3: Right Actions / CTA Button + Hamburger Toggle (RIGHT) */}
-              <div className="flex items-center space-x-3 flex-shrink-0">
+              <div className="flex items-center space-x-2.5 sm:space-x-3 flex-shrink-0 ml-auto lg:ml-0">
                 {/* Desktop CTA Button */}
                 <a 
                   href={data.ctaLink || "/contact"} 
                   onClick={(e) => handleLinkClick(e, data.ctaLink || "/contact")}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden 2xl:inline-flex'} px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'hidden' : 'hidden lg:inline-flex'} px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-white shadow transition-transform active:scale-95 hover:opacity-90 cursor-pointer flex-shrink-0 whitespace-nowrap`} 
                   style={{ backgroundColor: accentColor }}
                 >
                   <EditableText fieldKey="ctaText" value={data.ctaText || 'Contact Us'} />
@@ -518,7 +518,7 @@ export default function TemplateRenderer({
                 {/* Mobile / Tablet Hamburger Toggle Button */}
                 <button
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
-                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : '2xl:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
+                  className={`${(viewportMode === 'mobile' || viewportMode === 'tablet') ? 'flex' : 'lg:hidden flex'} items-center justify-center p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors flex-shrink-0 min-w-[40px] border border-slate-200/40 dark:border-slate-800`}
                   aria-label="Toggle navigation menu"
                 >
                   <span className="text-lg font-bold leading-none">{mobileNavOpen ? '✕' : '☰'}</span>

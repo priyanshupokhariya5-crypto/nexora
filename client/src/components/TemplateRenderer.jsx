@@ -158,12 +158,13 @@ export default function TemplateRenderer({
 
   const isDark = bgTheme === 'dark';
 
-  const defaultNavLinks = data.navLinks || [
+  const rawNavLinks = data.navLinks || [
     { label: 'Home', href: '/' },
     { label: 'About', href: '/about' },
     { label: data.servicesTitle ? data.servicesTitle.split(' ')[0] : 'Services', href: '/services' },
     { label: 'Contact', href: '/contact' }
   ];
+  const defaultNavLinks = rawNavLinks.slice(0, 5);
 
   const renderIcon = (iconName) => {
     const IconComp = ICON_MAP[iconName] || Sparkles;

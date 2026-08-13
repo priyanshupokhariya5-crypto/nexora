@@ -47,27 +47,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About Us",
-          "href": "/about"
-        },
-        {
-          "label": "Essentials",
-          "href": "/services"
-        },
-        {
-          "label": "Customer Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Essentials",
+                    "href": "/services"
+          },
+          {
+                    "label": "Reviews",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Quality You Can Trust Right In Your Neighborhood",
       "features": [
         {
@@ -207,31 +207,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Our Story",
-          "href": "/about"
-        },
-        {
-          "label": "Menu",
-          "href": "/menu"
-        },
-        {
-          "label": "Gallery",
-          "href": "/gallery"
-        },
-        {
-          "label": "Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Reservations",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Menu",
+                    "href": "/services"
+          },
+          {
+                    "label": "Reviews",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Bistro Craft Philosophy",
       "features": [
         {
@@ -359,27 +355,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Menu",
-          "href": "/menu"
-        },
-        {
-          "label": "Customer Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Menu",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Roast & Brew Standard",
       "features": [
         {
@@ -507,27 +499,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Our Story",
-          "href": "/about"
-        },
-        {
-          "label": "Fresh Bakes",
-          "href": "/services"
-        },
-        {
-          "label": "Customer Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Contact Us",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Story",
+                    "href": "/about"
+          },
+          {
+                    "label": "Bakes",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Art of Traditional Baking",
       "features": [
         {
@@ -655,31 +643,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Style Gallery",
-          "href": "/gallery"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Reviews",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Luxe & Glow Experience",
       "features": [
         {
@@ -807,27 +791,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Our Story",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Story",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Iron & Blade Craft",
       "features": [
         {
@@ -955,35 +935,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Programs",
-          "href": "/programs"
-        },
-        {
-          "label": "Coaches",
-          "href": "/trainers"
-        },
-        {
-          "label": "Results",
-          "href": "/results"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Programs",
+                    "href": "/services"
+          },
+          {
+                    "label": "Reviews",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The PulseFit Advantage",
       "features": [
         {
@@ -1110,31 +1082,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1599447421416-3414500d18a5?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Sanctuary",
-          "href": "/about"
-        },
-        {
-          "label": "Class Schedule",
-          "href": "/services"
-        },
-        {
-          "label": "Workshops",
-          "href": "/programs"
-        },
-        {
-          "label": "Student Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact Us",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Sanctuary",
+                    "href": "/about"
+          },
+          {
+                    "label": "Schedule",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Our Holistic Philosophy",
       "features": [
         {
@@ -1261,31 +1225,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Properties",
-          "href": "/properties"
-        },
-        {
-          "label": "Benefits",
-          "href": "/why-us"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Properties",
+                    "href": "/services"
+          },
+          {
+                    "label": "Reviews",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Why Clients Choose Prime Acre",
       "features": [
         {
@@ -1413,31 +1373,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Studio Philosophy",
-          "href": "/about"
-        },
-        {
-          "label": "Selected Projects",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Design Process",
-          "href": "/process"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact Us",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Philosophy",
+                    "href": "/about"
+          },
+          {
+                    "label": "Projects",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Our Design Principles",
       "features": [
         {
@@ -1564,31 +1516,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1616137466211-f939a420be84?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Project Portfolio",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Design Services",
-          "href": "/services"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Inquire",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Projects",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Sanctuary Touch",
       "features": [
         {
@@ -1716,31 +1660,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Portfolio Lookbook",
-          "href": "/portfolio"
-        },
-        {
-          "label": "About Lead",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Book Studio",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Portfolio",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Lenscraft Experience",
       "features": [
         {
@@ -1868,31 +1804,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Capabilities",
-          "href": "/services"
-        },
-        {
-          "label": "Results",
-          "href": "/results"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Story",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Results",
+                    "href": "/testimonials"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The NexaGrowth Difference",
       "features": [
         {
@@ -2020,31 +1952,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Portfolio",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Ethos",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Engineering Standards",
       "features": [
         {
@@ -2172,31 +2096,27 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Overview",
-          "href": "/about"
-        },
-        {
-          "label": "Features",
-          "href": "/features"
-        },
-        {
-          "label": "Pricing",
-          "href": "/pricing"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Overview",
+                    "href": "/about"
+          },
+          {
+                    "label": "Features",
+                    "href": "/services"
+          },
+          {
+                    "label": "Pricing",
+                    "href": "/pricing"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Enterprise Cloud Features",
       "features": [
         {
@@ -2324,31 +2244,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Capabilities",
-          "href": "/features"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Consultation",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Vantage Advantage",
       "features": [
         {
@@ -2476,31 +2388,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "Overview",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Compliance",
-          "href": "/features"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Emergency Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Defense",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The ShieldX Shield",
       "features": [
         {
@@ -2628,31 +2532,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Results",
-          "href": "/results"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Consultation",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Firm",
+                    "href": "/about"
+          },
+          {
+                    "label": "Practices",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Our Legal Philosophy",
       "features": [
         {
@@ -2780,31 +2676,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Pricing",
-          "href": "/pricing"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Apex Standard",
       "features": [
         {
@@ -2932,31 +2820,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Patient Info",
-          "href": "/features"
-        },
-        {
-          "label": "Patient Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Why Families Choose CarePulse",
       "features": [
         {
@@ -3084,31 +2964,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Treatments",
-          "href": "/services"
-        },
-        {
-          "label": "Smile Gallery",
-          "href": "/gallery"
-        },
-        {
-          "label": "Patient Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Studio",
+                    "href": "/about"
+          },
+          {
+                    "label": "Treatments",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Pearl Dental Experience",
       "features": [
         {
@@ -3236,31 +3108,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Programs",
-          "href": "/programs"
-        },
-        {
-          "label": "Faculty",
-          "href": "/team"
-        },
-        {
-          "label": "Results",
-          "href": "/results"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Academy",
+                    "href": "/about"
+          },
+          {
+                    "label": "Programs",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The ScholarEdge Advantage",
       "features": [
         {
@@ -3388,31 +3252,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Expeditions",
-          "href": "/services"
-        },
-        {
-          "label": "Gallery",
-          "href": "/gallery"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Inquire",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Expeditions",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Wanderlust Difference",
       "features": [
         {
@@ -3540,27 +3396,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Suites",
-          "href": "/services"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Reserve",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Sanctuary",
+                    "href": "/about"
+          },
+          {
+                    "label": "Suites",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Resort Amenities",
       "features": [
         {
@@ -3688,31 +3540,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Portfolio",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Inquire",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Gala Prestige Standard",
       "features": [
         {
@@ -3840,31 +3684,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Projects",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Capabilities",
-          "href": "/services"
-        },
-        {
-          "label": "Standards",
-          "href": "/features"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Projects",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Apex Build Guarantee",
       "features": [
         {
@@ -3992,27 +3828,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About Us",
-          "href": "/about"
-        },
-        {
-          "label": "Auto Services",
-          "href": "/services"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/reviews"
-        },
-        {
-          "label": "Book Service",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Services",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Precision Auto Difference",
       "features": [
         {
@@ -4140,27 +3972,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Rituals",
-          "href": "/services"
-        },
-        {
-          "label": "Customer Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact Us",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Formulas",
+                    "href": "/about"
+          },
+          {
+                    "label": "Rituals",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Clean Beauty Commitment",
       "features": [
         {
@@ -4288,31 +4116,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About",
-          "href": "/about"
-        },
-        {
-          "label": "Collection",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Craftsmanship",
-          "href": "/features"
-        },
-        {
-          "label": "Client Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "Story",
+                    "href": "/about"
+          },
+          {
+                    "label": "Collection",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "The Atelier Craft",
       "features": [
         {
@@ -4440,31 +4260,23 @@ export const TEMPLATES_DATA = [
       "aboutImageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
       "navLinks": [
-        {
-          "label": "Home",
-          "href": "/"
-        },
-        {
-          "label": "About Me",
-          "href": "/about"
-        },
-        {
-          "label": "Work",
-          "href": "/portfolio"
-        },
-        {
-          "label": "Services",
-          "href": "/services"
-        },
-        {
-          "label": "Reviews",
-          "href": "/testimonials"
-        },
-        {
-          "label": "Contact",
-          "href": "/contact"
-        }
-      ],
+          {
+                    "label": "Home",
+                    "href": "/"
+          },
+          {
+                    "label": "About",
+                    "href": "/about"
+          },
+          {
+                    "label": "Work",
+                    "href": "/services"
+          },
+          {
+                    "label": "Contact",
+                    "href": "/contact"
+          }
+],
       "featuresTitle": "Design Expertise",
       "features": [
         {

@@ -171,15 +171,23 @@ export default function VisualEditor({
     setSaveStatus('saving');
     const timer = setTimeout(async () => {
       try {
+        const currentBrandName = customState.brandName || customState.logoText || siteTitle || template.title;
         const payload = {
           userId: user?.id,
           siteId: initialSite?.siteId || savedSiteData?.siteId,
           templateId: template.id,
-          title: siteTitle,
+          brandName: currentBrandName,
+          title: currentBrandName,
           accentColor: customState.accentColor,
           fontFamily: customState.fontFamily,
           bgTheme: customState.bgTheme,
-          customData: customState,
+          customData: {
+            ...customState,
+            brandName: currentBrandName,
+            logoText: currentBrandName,
+            websiteName: currentBrandName,
+            title: currentBrandName
+          },
           isPublished: Boolean(initialSite?.isPublished || savedSiteData?.isPublished)
         };
 
@@ -901,15 +909,23 @@ export default function VisualEditor({
     }
     setSaveStatus('saving');
     try {
+      const currentBrandName = customState.brandName || customState.logoText || siteTitle || template.title;
       const payload = {
         userId: user?.id || 'usr_guest',
         siteId: initialSite?.siteId || savedSiteData?.siteId,
         templateId: template.id,
-        title: siteTitle,
+        brandName: currentBrandName,
+        title: currentBrandName,
         accentColor: customState.accentColor,
         fontFamily: customState.fontFamily,
         bgTheme: customState.bgTheme,
-        customData: customState,
+        customData: {
+          ...customState,
+          brandName: currentBrandName,
+          logoText: currentBrandName,
+          websiteName: currentBrandName,
+          title: currentBrandName
+        },
         isPublished: true
       };
 

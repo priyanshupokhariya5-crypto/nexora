@@ -839,14 +839,14 @@ router.delete('/templates/:id', requireAdmin, async (req, res) => {
 // 5. WEBSITES CRUD ENDPOINTS (AUTO-SAVE & MONGODB SYNC)
 // ==========================================
 
-// Helper to generate unique slug from title (Website/Brand Name)
-const generateUniqueSlug = async (title, currentSiteId = null, existingSlug = null) => {
-  // If the website already has a valid slug (e.g. existing published site), preserve it!
-  if (existingSlug && existingSlug.trim()) {
+// Helper to generate unique slug from Brand Name
+const generateUniqueSlug = async (brandName, currentSiteId = null, existingSlug = null, isAlreadyPublished = false) => {
+  // Preserve existing slug ONLY if website is ALREADY PUBLISHED!
+  if (isAlreadyPublished && existingSlug && existingSlug.trim()) {
     return existingSlug.trim().toLowerCase();
   }
 
-  let baseSlug = (title || 'my-website')
+  let baseSlug = (brandName || 'my-website')
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
@@ -883,9 +883,17 @@ const generateUniqueSlug = async (title, currentSiteId = null, existingSlug = nu
 
 router.post('/websites', requireAuth, async (req, res) => {
   try {
-    const { siteId, templateId, title, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
+    const { siteId, templateId, brandName, title, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
 
-    if (!templateId || !title || !customData) {
+    const effectiveBrandName = 
+      brandName || 
+      customData?.brandName || 
+      customData?.logoText || 
+      title || 
+      customData?.websiteName || 
+      'My Website';
+
+    if (!templateId || !customData) {
       return res.status(400).json({ success: false, message: 'Missing required website configuration parameters.' });
     }
 
@@ -906,19 +914,34 @@ router.post('/websites', requireAuth, async (req, res) => {
       });
     }
 
-    // Determine unique slug automatically from website name/title
-    const targetSlug = await generateUniqueSlug(title, generateId, existingSite?.slug);
+    // Preserve slug ONLY if website is already published!
+    const isAlreadyPublished = Boolean(existingSite?.isPublished);
+    const targetSlug = await generateUniqueSlug(
+      effectiveBrandName, 
+      generateId, 
+      existingSite?.slug, 
+      isAlreadyPublished
+    );
+
+    const updatedCustomData = {
+      ...customData,
+      brandName: effectiveBrandName,
+      logoText: effectiveBrandName,
+      websiteName: effectiveBrandName,
+      title: effectiveBrandName
+    };
 
     const sitePayload = {
       userId: authenticatedUserId,
       siteId: generateId,
       templateId,
-      title,
+      brandName: effectiveBrandName,
+      title: effectiveBrandName,
       slug: targetSlug,
       accentColor: accentColor || '#2551e8',
       fontFamily: fontFamily || 'sans',
       bgTheme: bgTheme || 'light',
-      customData,
+      customData: updatedCustomData,
       isPublished: isPublished !== undefined ? Boolean(isPublished) : false,
       publishedAt: isPublished ? (existingSite?.publishedAt || new Date()) : existingSite?.publishedAt,
       updatedAt: new Date()

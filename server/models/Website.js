@@ -18,6 +18,10 @@ const WebsiteSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  brandName: {
+    type: String,
+    default: null
+  },
   slug: {
     type: String,
     required: true,

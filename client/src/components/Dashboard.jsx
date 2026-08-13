@@ -216,19 +216,17 @@ export default function Dashboard({
                         {site.title}
                       </h3>
                       
-                      <div className="mt-1 space-y-1 font-mono text-xs">
+                      <div className="mt-2 space-y-1 font-mono text-xs">
                         <p className="text-slate-500 truncate flex items-center space-x-1">
-                          <span className="text-slate-400">Nexora:</span>
+                          <span className="text-slate-400 font-sans text-[11px]">Nexora URL:</span>
                           <span className="text-brand-600 font-semibold">/site/{site.slug}</span>
                         </p>
-                        {site.customDomain && (
-                          <p className="text-slate-500 truncate flex items-center space-x-1">
-                            <span className="text-slate-400">Custom:</span>
-                            <span className={`font-semibold ${site.domainVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              {site.customDomain} {site.domainVerified ? '✓' : '(Pending)'}
-                            </span>
-                          </p>
-                        )}
+                        <p className="text-slate-500 truncate flex items-center space-x-1 text-[11px]">
+                          <span className="text-slate-400 font-sans">Custom Domain:</span>
+                          <span className="text-amber-700 font-extrabold uppercase text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200">
+                            Coming Soon
+                          </span>
+                        </p>
                       </div>
 
                       <div className="mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">

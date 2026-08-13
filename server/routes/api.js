@@ -839,9 +839,51 @@ router.delete('/templates/:id', requireAdmin, async (req, res) => {
 // 5. WEBSITES CRUD ENDPOINTS (AUTO-SAVE & MONGODB SYNC)
 // ==========================================
 
+// Helper to generate unique slug from title (Website/Brand Name)
+const generateUniqueSlug = async (title, currentSiteId = null, existingSlug = null) => {
+  // If the website already has a valid slug (e.g. existing published site), preserve it!
+  if (existingSlug && existingSlug.trim()) {
+    return existingSlug.trim().toLowerCase();
+  }
+
+  let baseSlug = (title || 'my-website')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
+  if (!baseSlug) baseSlug = 'my-website';
+
+  let candidateSlug = baseSlug;
+  let counter = 1;
+
+  if (isMongoConnected()) {
+    while (true) {
+      const existing = await Website.findOne({ 
+        slug: candidateSlug, 
+        siteId: { $ne: currentSiteId } 
+      });
+      if (!existing) break;
+      counter += 1;
+      candidateSlug = `${baseSlug}-${counter}`;
+    }
+  } else {
+    while (true) {
+      const existing = Array.from(memoryWebsitesStore.values()).find(
+        s => s.slug === candidateSlug && s.siteId !== currentSiteId
+      );
+      if (!existing) break;
+      counter += 1;
+      candidateSlug = `${baseSlug}-${counter}`;
+    }
+  }
+
+  return candidateSlug;
+};
+
 router.post('/websites', requireAuth, async (req, res) => {
   try {
-    const { siteId, templateId, title, slug, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
+    const { siteId, templateId, title, accentColor, fontFamily, bgTheme, customData, isPublished } = req.body;
 
     if (!templateId || !title || !customData) {
       return res.status(400).json({ success: false, message: 'Missing required website configuration parameters.' });
@@ -849,45 +891,42 @@ router.post('/websites', requireAuth, async (req, res) => {
 
     const authenticatedUserId = req.authUserId;
     const generateId = siteId || 'site_' + Math.random().toString(36).substr(2, 9);
-    const generateSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(100 + Math.random() * 900);
 
-    // Enforce ownership: User can ONLY update/publish their own website
+    let existingSite = null;
     if (isMongoConnected()) {
-      const existing = await Website.findOne({ siteId: generateId });
-      if (existing && existing.userId && existing.userId.toString() !== authenticatedUserId.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Forbidden: You can only publish or modify websites belonging to your account.'
-        });
-      }
+      existingSite = await Website.findOne({ siteId: generateId });
     } else {
-      const existing = memoryWebsitesStore.get(generateId);
-      if (existing && existing.userId && existing.userId.toString() !== authenticatedUserId.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Forbidden: You can only publish or modify websites belonging to your account.'
-        });
-      }
+      existingSite = memoryWebsitesStore.get(generateId);
     }
+
+    if (existingSite && existingSite.userId && existingSite.userId.toString() !== authenticatedUserId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You can only publish or modify websites belonging to your account.'
+      });
+    }
+
+    // Determine unique slug automatically from website name/title
+    const targetSlug = await generateUniqueSlug(title, generateId, existingSite?.slug);
 
     const sitePayload = {
       userId: authenticatedUserId,
       siteId: generateId,
       templateId,
       title,
-      slug: generateSlug,
+      slug: targetSlug,
       accentColor: accentColor || '#2551e8',
       fontFamily: fontFamily || 'sans',
       bgTheme: bgTheme || 'light',
       customData,
       isPublished: isPublished !== undefined ? Boolean(isPublished) : false,
+      publishedAt: isPublished ? (existingSite?.publishedAt || new Date()) : existingSite?.publishedAt,
       updatedAt: new Date()
     };
 
     if (isMongoConnected()) {
-      const existing = await Website.findOne({ siteId: generateId });
       let savedSite;
-      if (existing) {
+      if (existingSite) {
         savedSite = await Website.findOneAndUpdate({ siteId: generateId }, sitePayload, { new: true });
       } else {
         savedSite = new Website(sitePayload);

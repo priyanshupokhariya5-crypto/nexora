@@ -757,13 +757,6 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
                 <span>Start Free Now</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
-              <button
-                onClick={onExploreCatalog}
-                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition-all"
-              >
-                Watch 2-Min Demo
-              </button>
             </div>
           </motion.div>
         </div>

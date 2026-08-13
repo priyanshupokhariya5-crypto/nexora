@@ -42,7 +42,7 @@ export const TEMPLATES_DATA = [
       "heroTitle": "Fresh Groceries, Delivered Daily.",
       "heroSubtitle": "Stock up on premium spices, cold-pressed oils, fresh farm produce, and everyday kitchen essentials right in your neighborhood.",
       "ctaText": "Explore Essentials",
-      "ctaLink": "/products",
+      "ctaLink": "/services",
       "heroImageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=800&q=80",
@@ -60,15 +60,11 @@ export const TEMPLATES_DATA = [
           "href": "/services"
         },
         {
-          "label": "Products Showcase",
-          "href": "/products"
-        },
-        {
           "label": "Customer Reviews",
           "href": "/testimonials"
         },
         {
-          "label": "Store Info",
+          "label": "Store Location",
           "href": "/contact"
         }
       ],
@@ -4138,8 +4134,8 @@ export const TEMPLATES_DATA = [
       "logoText": "Botanical Radiance",
       "heroTitle": "Pure Botanical Science For Radiant Healthy Skin",
       "heroSubtitle": "Clean, dermatologist-tested clinical serums, organic botanical oils, and nourishing skincare formulas engineered without toxins.",
-      "ctaText": "Discover Products",
-      "ctaLink": "/products",
+      "ctaText": "Discover Rituals",
+      "ctaLink": "/services",
       "heroImageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
       "aboutImageUrl": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
       "galleryImageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80",
@@ -4154,7 +4150,7 @@ export const TEMPLATES_DATA = [
         },
         {
           "label": "Skin Rituals",
-          "href": "/products"
+          "href": "/services"
         },
         {
           "label": "Customer Reviews",

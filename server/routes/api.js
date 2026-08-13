@@ -327,8 +327,183 @@ router.delete('/admin/themes/:id', requireAdmin, async (req, res) => {
       memoryThemesStore.delete(id);
       return res.json({ success: true, message: 'Theme deleted successfully' });
     }
+// ==========================================
+// 2.5 PROTECTED ADMIN USER MANAGEMENT ENDPOINTS
+// ==========================================
+
+// GET /api/admin/users — Returns user list, website counts, and system stats
+router.get('/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const searchQuery = (req.query.q || '').trim();
+
+    if (isMongoConnected()) {
+      let userFilter = {};
+      if (searchQuery) {
+        const regex = new RegExp(searchQuery, 'i');
+        userFilter = {
+          $or: [{ name: regex }, { email: regex }]
+        };
+      }
+
+      // Fetch users without passwords
+      const users = await User.find(userFilter, '-password').sort({ createdAt: -1 });
+
+      // Efficient database aggregation: Count websites grouped by userId
+      const websiteCounts = await Website.aggregate([
+        { $group: { _id: '$userId', count: { $sum: 1 } } }
+      ]);
+
+      const countMap = new Map();
+      websiteCounts.forEach(item => {
+        if (item._id) {
+          countMap.set(item._id.toString(), item.count);
+        }
+      });
+
+      // Compute System Stats from MongoDB
+      const totalUsers = await User.countDocuments();
+      const totalWebsites = await Website.countDocuments();
+      const freeUsers = await User.countDocuments({ $or: [{ plan: 'free' }, { plan: { $exists: false } }] });
+      const premiumUsers = await User.countDocuments({ plan: { $in: ['pro', 'business'] } });
+
+      const formattedUsers = users.map(u => {
+        const uId = u._id.toString();
+        const siteCount = countMap.get(uId) || countMap.get(u.email) || 0;
+
+        return {
+          id: uId,
+          name: u.name,
+          email: u.email,
+          role: u.role || 'user',
+          plan: u.plan || 'free',
+          status: u.subscriptionStatus || 'active',
+          premiumAccess: Boolean(u.premiumAccess),
+          websiteCount: siteCount,
+          createdAt: u.createdAt
+        };
+      });
+
+      return res.json({
+        success: true,
+        stats: {
+          totalUsers,
+          totalWebsites,
+          freeUsers,
+          premiumUsers
+        },
+        users: formattedUsers
+      });
+    } else {
+      // Memory Store Fallback
+      let allUsers = Array.from(memoryUsersStore.values());
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        allUsers = allUsers.filter(u => 
+          (u.name && u.name.toLowerCase().includes(q)) || 
+          (u.email && u.email.toLowerCase().includes(q))
+        );
+      }
+
+      const allWebsites = Array.from(memoryWebsitesStore.values());
+
+      const formattedUsers = allUsers.map(u => {
+        const userSites = allWebsites.filter(s => s.userId === u.id || s.userId === u.email);
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role || 'user',
+          plan: u.plan || 'free',
+          status: u.subscriptionStatus || 'active',
+          premiumAccess: Boolean(u.premiumAccess),
+          websiteCount: userSites.length,
+          createdAt: u.createdAt || new Date()
+        };
+      });
+
+      const totalUsers = memoryUsersStore.size;
+      const totalWebsites = memoryWebsitesStore.size;
+      const freeUsers = formattedUsers.filter(u => u.plan === 'free').length;
+      const premiumUsers = formattedUsers.filter(u => u.plan !== 'free').length;
+
+      return res.json({
+        success: true,
+        stats: {
+          totalUsers,
+          totalWebsites,
+          freeUsers,
+          premiumUsers
+        },
+        users: formattedUsers
+      });
+    }
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// GET /api/admin/users/:userId/websites — Returns websites belonging to a specific user
+router.get('/admin/users/:userId/websites', requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (isMongoConnected()) {
+      let targetUser = await User.findById(userId);
+      if (!targetUser) {
+        targetUser = await User.findOne({ _id: userId });
+      }
+      if (!targetUser) {
+        targetUser = await User.findOne({ email: userId });
+      }
+
+      if (!targetUser) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
+
+      const targetIdStr = targetUser._id.toString();
+      const userWebsites = await Website.find({
+        $or: [{ userId: targetIdStr }, { userId: targetUser.email }]
+      }).sort({ updatedAt: -1 });
+
+      return res.json({
+        success: true,
+        user: {
+          id: targetIdStr,
+          name: targetUser.name,
+          email: targetUser.email,
+          role: targetUser.role,
+          plan: targetUser.plan || 'free',
+          status: targetUser.subscriptionStatus || 'active',
+          createdAt: targetUser.createdAt
+        },
+        websites: userWebsites
+      });
+    } else {
+      const targetUser = Array.from(memoryUsersStore.values()).find(u => u.id === userId || u.email === userId);
+      if (!targetUser) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
+
+      const userWebsites = Array.from(memoryWebsitesStore.values()).filter(s => 
+        s.userId === targetUser.id || s.userId === targetUser.email
+      );
+
+      return res.json({
+        success: true,
+        user: {
+          id: targetUser.id,
+          name: targetUser.name,
+          email: targetUser.email,
+          role: targetUser.role || 'user',
+          plan: targetUser.plan || 'free',
+          status: targetUser.subscriptionStatus || 'active',
+          createdAt: targetUser.createdAt || new Date()
+        },
+        websites: userWebsites
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 

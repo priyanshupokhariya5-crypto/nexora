@@ -726,6 +726,150 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
         </div>
       </section>
 
+      {/* 9. READY TO BUILD CTA SECTION */}
+      <section className="py-20 md:py-28 bg-slate-950 text-white relative overflow-hidden border-t border-slate-800 w-full min-w-0 max-w-full">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[600px] h-[300px] bg-gradient-to-r from-brand-600/30 to-amber-500/20 blur-3xl pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 w-full min-w-0 max-w-full">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative z-10 max-w-3xl mx-auto w-full min-w-0 max-w-full"
+          >
+            <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30 uppercase tracking-widest font-display">
+              Instant Website Builder
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold mt-6 leading-tight font-display">
+              Ready to Build Your Website in Minutes?
+            </h2>
+            <p className="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed">
+              Join thousands of business owners creating stunning, high-converting landing pages with zero code.
+            </p>
+
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full min-w-0 max-w-full">
+              <button
+                onClick={onExploreCatalog}
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-600/40 transition-all flex items-center justify-center space-x-2"
+              >
+                <Sparkles className="w-5 h-5 text-amber-300" />
+                <span>Start Free Now</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={onExploreCatalog}
+                className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition-all"
+              >
+                Watch 2-Min Demo
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 10. FOOTER SECTION */}
+      <footer className="bg-slate-900 text-white border-t border-slate-800 pt-16 pb-12 w-full min-w-0 max-w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0 max-w-full">
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12 w-full min-w-0 max-w-full">
+            
+            {/* Brand Column */}
+            <div className="col-span-2">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white">
+                  <Zap className="w-5 h-5 fill-current" />
+                </div>
+                <span className="text-2xl font-bold font-display tracking-tight">Nexora</span>
+              </div>
+              <p className="mt-4 text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
+                The human-crafted SaaS website builder. Build, edit, and publish business websites using tailored templates with multi-image slots.
+              </p>
+
+              {/* Newsletter Form */}
+              <form onSubmit={handleNewsletterSubmit} className="mt-6 max-w-sm">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 font-display">
+                  Subscribe to Product Updates
+                </label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="email"
+                    required
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Enter your work email"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 w-full"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow flex-shrink-0 flex items-center space-x-1"
+                  >
+                    <span>Subscribe</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {newsletterSuccess && (
+                  <p className="mt-2 text-xs text-emerald-400 font-semibold">Thank you for subscribing!</p>
+                )}
+              </form>
+
+              {/* Social Icons */}
+              <div className="mt-6 flex items-center space-x-4 text-slate-400">
+                <a href="#twitter" className="hover:text-white transition-colors" aria-label="Twitter"><Twitter className="w-4 h-4" /></a>
+                <a href="#github" className="hover:text-white transition-colors" aria-label="GitHub"><Github className="w-4 h-4" /></a>
+                <a href="#linkedin" className="hover:text-white transition-colors" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /></a>
+                <a href="#discord" className="hover:text-white transition-colors" aria-label="Discord"><Discord className="w-4 h-4" /></a>
+              </div>
+            </div>
+
+            {/* Column 2: Templates */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 font-display">Templates</h4>
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><button onClick={onExploreCatalog} className="hover:text-white transition-colors">E-Commerce Store</button></li>
+                <li><button onClick={onExploreCatalog} className="hover:text-white transition-colors">Gym & Fitness</button></li>
+                <li><button onClick={onExploreCatalog} className="hover:text-white transition-colors">Restaurant & Cafe</button></li>
+                <li><button onClick={onExploreCatalog} className="hover:text-white transition-colors">Law & Legal Counsel</button></li>
+                <li><button onClick={onExploreCatalog} className="hover:text-white transition-colors">Real Estate & Villas</button></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Resources */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 font-display">Resources</h4>
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><a href="#documentation" className="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#help" className="hover:text-white transition-colors">Support Center</a></li>
+                <li><a href="#api" className="hover:text-white transition-colors">API Reference</a></li>
+                <li><a href="#status" className="hover:text-white transition-colors">System Status</a></li>
+              </ul>
+            </div>
+
+            {/* Column 4: Legal & Tech */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 font-display">Company</h4>
+              <ul className="space-y-2.5 text-xs text-slate-400">
+                <li><a href="#privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="#terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="#security" className="hover:text-white transition-colors">Security Overview</a></li>
+                <li><span className="text-emerald-400 font-semibold">MongoDB Connected</span></li>
+              </ul>
+            </div>
+
+          </div>
+
+          <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 w-full min-w-0 max-w-full">
+            <p>© 2026 Nexora Platform Inc. All rights reserved.</p>
+            <div className="flex space-x-6 mt-4 sm:mt-0">
+              <span className="hover:text-slate-400 cursor-pointer">Privacy</span>
+              <span className="hover:text-slate-400 cursor-pointer">Terms</span>
+              <span className="hover:text-slate-400 cursor-pointer">Cookies</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       {/* Full-Screen Template Preview Modal */}
       {previewModalTemplate && (
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between w-full h-full">

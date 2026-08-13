@@ -142,7 +142,7 @@ export default function SaaSPage({ templates = [], onSelectTemplate, onExploreCa
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-brand-600 selection:text-white overflow-x-hidden w-full max-w-full min-w-0">
       
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-40 border-b border-slate-200/80 bg-grid-light w-full min-w-0 max-w-full">
+      <section className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-40 border-b border-slate-200/80 bg-white w-full min-w-0 max-w-full">
         
         {/* Ambient Glows */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[800px] h-[500px] bg-gradient-to-tr from-brand-100/50 via-indigo-100/40 to-amber-100/40 rounded-full blur-3xl -z-10 pointer-events-none overflow-hidden" />

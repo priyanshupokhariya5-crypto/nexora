@@ -3997,7 +3997,7 @@ export const TEMPLATES_DATA = [
           "href": "/"
         },
         {
-          "label": "About Shop",
+          "label": "About Us",
           "href": "/about"
         },
         {

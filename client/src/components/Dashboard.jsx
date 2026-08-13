@@ -355,10 +355,6 @@ export default function Dashboard({
           <DomainSettingsModal
             website={selectedDomainSite}
             onClose={() => setSelectedDomainSite(null)}
-            onUpdateWebsite={(updatedSite) => {
-              setSavedSites(prev => prev.map(s => s.siteId === updatedSite.siteId ? updatedSite : s));
-              setSelectedDomainSite(updatedSite);
-            }}
           />
         )}
 

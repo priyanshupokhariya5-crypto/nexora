@@ -428,6 +428,7 @@ export default function App() {
         <Dashboard
           user={user}
           onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenAdminThemes={() => setIsAdminThemeOpen(true)}
           onEditSite={handleEditSite}
           onCreateNew={() => navigateToView('catalog', '/templates')}
         />
@@ -438,6 +439,14 @@ export default function App() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Admin Theme & Template Manager Modal */}
+      <AdminThemeModal
+        isOpen={isAdminThemeOpen}
+        onClose={() => setIsAdminThemeOpen(false)}
+        user={user}
+        onThemeAdded={fetchTemplates}
       />
 
       {/* Global App Lock Modal */}

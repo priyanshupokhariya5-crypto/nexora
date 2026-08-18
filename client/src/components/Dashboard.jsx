@@ -11,6 +11,7 @@ import PremiumLockModal from './PremiumLockModal';
 export default function Dashboard({ 
   user = null,
   onOpenAuth,
+  onOpenAdminThemes,
   onEditSite, 
   onCreateNew 
 }) {
@@ -21,6 +22,8 @@ export default function Dashboard({
   const [subscribersLoading, setSubscribersLoading] = useState(false);
   const [selectedDomainSite, setSelectedDomainSite] = useState(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+
+  const isAdmin = user && (user.role === 'admin' || user.email === 'admin@nexora.com' || user.email === 'priyanshupokhariya5@gmail.com');
 
   // Admin User Management State
   const [adminUsers, setAdminUsers] = useState([]);
@@ -150,6 +153,17 @@ export default function Dashboard({
           </div>
 
           <div className="flex items-center space-x-3 self-start md:self-auto">
+            {isAdmin && (
+              <button
+                onClick={onOpenAdminThemes}
+                className="px-4 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs flex items-center space-x-2 border border-amber-200 shadow-soft-sm transition-all transform active:scale-95 cursor-pointer"
+                title="Open Admin Theme Manager"
+              >
+                <Shield className="w-4 h-4 text-amber-600" />
+                <span>Admin Themes</span>
+              </button>
+            )}
+
             {!user && (
               <button
                 onClick={onOpenAuth}
@@ -184,7 +198,7 @@ export default function Dashboard({
             <span>Saved Websites ({savedSites.length})</span>
           </button>
 
-          {(user?.role === 'admin' || user?.email === 'admin@nexora.com' || user?.email === 'priyanshupokhariya5@gmail.com') && (
+          {isAdmin && (
             <>
               <button
                 onClick={() => setActiveTab('users')}
@@ -208,6 +222,15 @@ export default function Dashboard({
               >
                 <Mail className="w-4 h-4" />
                 <span>Newsletter Subscribers ({subscribers.length})</span>
+              </button>
+
+              <button
+                onClick={onOpenAdminThemes}
+                className="px-4 py-3 font-bold text-sm text-amber-700 hover:text-amber-900 border-b-2 border-transparent hover:border-amber-400 transition-colors flex items-center space-x-2 cursor-pointer"
+                title="Manage Admin Website Themes in MongoDB"
+              >
+                <Shield className="w-4 h-4 text-amber-600" />
+                <span>Admin Theme Manager</span>
               </button>
             </>
           )}

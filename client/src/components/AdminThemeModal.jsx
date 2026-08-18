@@ -49,8 +49,15 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
     try {
       const res = await apiFetch('/api/admin/themes');
       const data = await res.json();
-      if (data.success) {
-        setThemes(data.themes || []);
+      if (data.success && data.themes && data.themes.length > 0) {
+        setThemes(data.themes);
+      } else {
+        const res2 = await apiFetch('/api/templates');
+        const data2 = await res2.json();
+        if (data2.success) {
+          const adminCreated = (data2.templates || []).filter(t => t.isAdminCreated || t.id?.startsWith('thm_'));
+          setThemes(adminCreated);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch admin themes:', err);
@@ -61,6 +68,14 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
     if (isOpen) {
       fetchAdminThemes();
       resetForm();
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape' && onClose) {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, [isOpen]);
 
@@ -153,24 +168,27 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
     }
   };
 
-  const validateUrls = () => {
-    const urls = [
-      { name: 'Preview URL', val: previewUrl },
-      { name: 'Demo URL', val: demoUrl },
-      { name: 'Live Website URL', val: liveUrl },
-      { name: 'Documentation URL', val: documentationUrl }
-    ];
-
-    for (const item of urls) {
-      if (item.val && item.val.trim() !== '') {
-        const clean = item.val.trim();
-        if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-          setErrorMsg(`${item.name} must start with http:// or https://`);
-          return false;
-        }
+  const validateAndFormatUrls = () => {
+    const format = (val) => {
+      if (!val || typeof val !== 'string' || !val.trim()) return '';
+      let clean = val.trim();
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
       }
-    }
-    return true;
+      return clean;
+    };
+
+    const cleanPreview = format(previewUrl);
+    const cleanDemo = format(demoUrl);
+    const cleanLive = format(liveUrl);
+    const cleanDocs = format(documentationUrl);
+
+    setPreviewUrl(cleanPreview);
+    setDemoUrl(cleanDemo);
+    setLiveUrl(cleanLive);
+    setDocumentationUrl(cleanDocs);
+
+    return { cleanPreview, cleanDemo, cleanLive, cleanDocs };
   };
 
   const handleSubmit = async (e) => {
@@ -183,7 +201,7 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
       return;
     }
 
-    if (!validateUrls()) return;
+    const { cleanPreview, cleanDemo, cleanLive, cleanDocs } = validateAndFormatUrls();
 
     setLoading(true);
 
@@ -198,10 +216,10 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
         author,
         tags,
         badge,
-        previewUrl,
-        demoUrl,
-        liveUrl,
-        documentationUrl,
+        previewUrl: cleanPreview,
+        demoUrl: cleanDemo,
+        liveUrl: cleanLive,
+        documentationUrl: cleanDocs,
         thumbnail,
         image: thumbnail,
         heroImage,
@@ -262,8 +280,11 @@ export default function AdminThemeModal({ isOpen, onClose, onThemeAdded, user = 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 max-w-3xl w-full mx-2 border border-slate-200 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in"
+      onClick={(e) => { if (e.target === e.currentTarget && onClose) onClose(); }}
+    >
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 max-w-3xl w-full mx-2 border border-slate-200 shadow-2xl relative max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         
         {/* Close Button */}
         <button

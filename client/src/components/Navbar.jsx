@@ -15,6 +15,8 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const isAdmin = user && (user.role === 'admin' || user.email === 'admin@nexora.com' || user.email === 'priyanshupokhariya5@gmail.com');
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {
@@ -43,18 +45,23 @@ export default function Navbar({
           whileTap={{ scale: 0.98 }}
         >
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-500 flex items-center justify-center text-white shadow-md shadow-brand-600/25 group-hover:shadow-brand-600/40 transition-all duration-300">
-            <Zap className="w-5 h-5 fill-current text-white" />
+            <Sparkles className="w-5 h-5" />
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl font-extrabold tracking-tight text-slate-900 font-display">
-              Nexora
-            </span>
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-1.5">
+              <span className="text-xl font-extrabold text-slate-900 tracking-tight font-display">
+                Nexora
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-brand-50 text-brand-600 border border-brand-200/60 uppercase tracking-wide">
+                Studio
+              </span>
+            </div>
           </div>
         </motion.div>
 
-        {/* Center Navigation Links (Hidden on Public Landing Page before Login) */}
-        {user && (
-          <nav className="hidden md:flex items-center space-x-1 p-1 bg-slate-100/80 rounded-2xl border border-slate-200/80 relative">
+        {/* Center Navigation Links */}
+        {currentView !== 'editor' && (
+          <nav className="hidden md:flex items-center space-x-1 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 shadow-inner-sm">
             
             <button
               onClick={() => setCurrentView('landing')}
@@ -73,24 +80,8 @@ export default function Navbar({
             </button>
 
             <button
-              onClick={() => setCurrentView('pricing')}
-              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 ${
-                currentView === 'pricing' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {currentView === 'pricing' && (
-                <motion.div
-                  layoutId="activePill"
-                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span>Pricing</span>
-            </button>
-            
-            <button
               onClick={() => setCurrentView('catalog')}
-              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
+              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-1.5 ${
                 currentView === 'catalog' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -105,25 +96,27 @@ export default function Navbar({
               <span>Templates</span>
             </button>
 
-            <button
-              onClick={() => setCurrentView('dashboard')}
-              className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
-                currentView === 'dashboard' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              {currentView === 'dashboard' && (
-                <motion.div
-                  layoutId="activePill"
-                  className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <Layers className="w-3.5 h-3.5" />
-              <span>My Websites</span>
-              <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-slate-200 text-slate-700">
-                {savedSitesCount}
-              </span>
-            </button>
+            {user && (
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className={`relative px-4 py-2 rounded-xl text-xs font-bold transition-colors duration-200 z-10 flex items-center space-x-2 ${
+                  currentView === 'dashboard' ? 'text-brand-700 font-extrabold' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {currentView === 'dashboard' && (
+                  <motion.div
+                    layoutId="activePill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-soft-sm border border-slate-200/60 -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <Layers className="w-3.5 h-3.5" />
+                <span>My Websites</span>
+                <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-md bg-slate-200 text-slate-700">
+                  {savedSitesCount}
+                </span>
+              </button>
+            )}
 
           </nav>
         )}
@@ -132,12 +125,12 @@ export default function Navbar({
         <div className="flex items-center space-x-2.5">
 
           {/* Admin Themes Access Button (ADMIN ONLY) */}
-          {user?.role === 'admin' && (
+          {isAdmin && (
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={onOpenAdminThemes}
-              className="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-xs font-bold transition-all duration-200 shadow-soft-sm"
+              className="hidden sm:inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-xs font-bold transition-all duration-200 shadow-soft-sm cursor-pointer"
               title="Admin Template Themes Manager"
             >
               <ShieldCheck className="w-4 h-4 text-amber-600" />
@@ -180,7 +173,7 @@ export default function Navbar({
                       <span>My Websites</span>
                     </button>
 
-                    {user?.role === 'admin' && (
+                    {isAdmin && (
                       <button
                         onClick={() => { onOpenAdminThemes(); setDropdownOpen(false); }}
                         className="w-full px-4 py-2 text-left text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center space-x-2 border-t border-slate-100"
